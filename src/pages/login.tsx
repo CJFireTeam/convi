@@ -9,7 +9,7 @@ export default function Login() {
         event.preventDefault();
         const data = new FormData(event.currentTarget);
         try {
-          const resp = await axios.post('api/auth/login',
+          const resp = await axios.post(process.env.NEXT_PUBLIC_BACKEND_URL + 'auth/local',
           {
             identifier: data.get('email'),
             password: data.get('password'),

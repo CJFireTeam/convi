@@ -9,6 +9,11 @@ const config: Config = {
   ],
     theme: {
     extend: {
+      colors: {
+        primary: {
+
+        }
+      },
       animation: {
         'spin': 'spin 3s linear infinite',
       },

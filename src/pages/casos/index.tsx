@@ -47,7 +47,7 @@ function Table({ data }: { data: caseInterface[] }) {
             <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
               {capitalizeFirstLetter(person.attributes.directed.data.attributes.firstname)} {capitalizeFirstLetter(person.attributes.directed.data.attributes.first_lastname)}
             </td>
-            <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+            {/* <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
               {person.title}
             </td>
             <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
@@ -60,7 +60,7 @@ function Table({ data }: { data: caseInterface[] }) {
               <a href="#" className="text-indigo-600 hover:text-indigo-900">
                 Edit<span className="sr-only">, {person.name}</span>
               </a>
-            </td>
+            </td> */}
           </tr>
         ))}
       </tbody>
@@ -164,8 +164,8 @@ export default function Casos() {
   const [data, setData] = useState<caseInterface[]>([]);
   const { push } = useRouter();
   useEffect(() => {
-    const establishment = JSON.parse(Cookies.get("establishment")).id;
-    const userId = JSON.parse(Cookies.get("user")).id;
+    const establishment = JSON.parse(Cookies.get("establishment") || "{}").id;
+    const userId = JSON.parse(Cookies.get("user") || "{}").id;
 
     const getData = async () => {
       try {

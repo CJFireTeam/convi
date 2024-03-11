@@ -174,10 +174,10 @@ const CheckboxUniqueComponent: React.FC<{
   setElement: (newElement: string, element: string) => void;
   elementOption: string;
 }> = ({ form, setElement, elementOption }) => {
+  const [selectedOption, setSelectedOption] = useState<string>("");
   if (!Array.isArray(form.options)) {
     return "OCURRIO UN ERROR";
   }
-  const [selectedOption, setSelectedOption] = useState<string>("");
 
   const handleOptionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
@@ -388,7 +388,7 @@ export default function CrearCasos() {
       if (prop === 'who') {
         return schoolCase[prop].values.length === 0;
       }
-      return schoolCase[prop].length === 0;
+      return String(schoolCase[prop as keyof SchoolCase]).length === 0;
     });
     if (isMissingRequiredProp) {
       toast.error('Se requiere rellenar campos')
@@ -396,10 +396,10 @@ export default function CrearCasos() {
     }
     
     const id = toast.loading("Guardando...",)
-    const userId = JSON.parse(Cookies.get("user")).id;
+    const userId = JSON.parse(Cookies.get("user")  || "{}").id;
     schoolCase.created_by_id = userId;
     schoolCase.updated_by_id = userId;
-    schoolCase.establishment = JSON.parse(Cookies.get("establishment")).id
+    schoolCase.establishment = JSON.parse(Cookies.get("establishment") || "{}").id
     setCreating(true)
     setSchoolCase(schoolCase);
     try {

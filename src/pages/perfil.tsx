@@ -1,3 +1,3 @@
-export default perfil () {
+export default function Perfil () {
     return (<h1></h1>)
 }

@@ -21,8 +21,12 @@ interface SchoolCase {
   who: {
     values: string[];
   };
-  where: string;
-  when: string;
+  where: {
+    values: string[];
+  };
+  when: {
+    values: string[];
+  };
   establishment: number;
   story: string;
   measures: string;
@@ -123,8 +127,9 @@ const TextComponent: React.FC<{
 };
 const CheckboxMultipleComponent: React.FC<{
   form: groupQuestionI;
-  setElement: (newElement: string[]) => void;
-}> = ({ form, setElement }) => {
+  setElement: (newElement: string[],element:string) => void;
+  elementArray: string;
+}> = ({ form, setElement,elementArray }) => {
   const [element, setElementState] = useState<string[]>([]);
   if (!Array.isArray(form.options) || !form.options) {
     return "OCURRIO UN ERROR";
@@ -137,7 +142,7 @@ const CheckboxMultipleComponent: React.FC<{
       updatedElement = [...element, title];
     }
     setElementState(updatedElement);
-    setElement(updatedElement);
+    setElement(updatedElement,elementArray);
   };
 
   return (
@@ -306,23 +311,23 @@ const SchoolComponent: React.FC<{
 const Form: React.FC<{
   fields: groupQuestionI[];
   roleList: roleListI[];
-  setWho: (newElement: string[]) => void;
+  setArray: (newElement: string[],element:string) => void;
   setElement: (newElement: string | number, element: string) => void;
   create: (event: React.FormEvent<HTMLFormElement>) => void;
   creating: boolean;
-}> = ({ fields, roleList, setWho, setElement, create,creating }) => (
+}> = ({ fields, roleList, setArray, setElement, create,creating }) => (
   <form onSubmit={create}>
     <div className="flex flex-col md:flex-row">
-      <CheckboxMultipleComponent form={fields[0]} setElement={setWho} />
-      <CheckboxUniqueComponent
+      <CheckboxMultipleComponent form={fields[0]} setElement={setArray}  elementArray="who"/>
+      <CheckboxMultipleComponent
         form={fields[1]}
-        elementOption="where"
-        setElement={setElement}
+        elementArray="where"
+        setElement={setArray}
       />
-      <CheckboxUniqueComponent
+      <CheckboxMultipleComponent
         form={fields[2]}
-        elementOption="when"
-        setElement={setElement}
+        elementArray="when"
+        setElement={setArray}
       />
     </div>
     <div className="flex flex-col md:flex-row">
@@ -370,8 +375,8 @@ export default function CrearCasos() {
     updated_by_id: 0,
     created_by_id: 0,
     who: { values: [] },
-    where: "",
-    when: "",
+    where: { values: [] },
+    when: { values: [] },
     story: "",
     measures: "",
     directed: 0,
@@ -385,16 +390,13 @@ export default function CrearCasos() {
     }
     const requiredProps = ['where', 'when', 'story', 'measures','who'];
     const isMissingRequiredProp = requiredProps.some(prop => {
-      if (prop === 'who') {
-        return schoolCase[prop].values.length === 0;
-      }
+
       return String(schoolCase[prop as keyof SchoolCase]).length === 0;
     });
     if (isMissingRequiredProp) {
       toast.error('Se requiere rellenar campos')
       return;
     }
-    
     const id = toast.loading("Guardando...",)
     const userId = JSON.parse(Cookies.get("user")  || "{}").id;
     schoolCase.created_by_id = userId;
@@ -415,8 +417,8 @@ export default function CrearCasos() {
       toast.update(id, {render: "Ocurrio un error", type: "error", isLoading: false,autoClose:3000 });
     }
   };
-  const setWho = (newElement: string[]) => {
-    setSchoolCase((prev) => ({ ...prev, who: { values: newElement } }));
+  const setArray = (newElement: string[],element: string) => {
+    setSchoolCase((prev) => ({ ...prev, [element]: { values: newElement } }));
   };
 
   const setOne = (newElement: string | number, element: string | number) => {
@@ -447,7 +449,7 @@ export default function CrearCasos() {
         <Form
           fields={formInitial}
           roleList={roleList}
-          setWho={setWho}
+          setArray={setArray}
           setElement={setOne}
           create={create}
           creating={creating}

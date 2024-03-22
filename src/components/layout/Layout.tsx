@@ -24,12 +24,14 @@ import { useLoaderContext } from "../../context/loader";
 import axios from "axios";
 import { redirect, usePathname, useRouter } from "next/navigation";
 import Head from "next/head";
+import {useUserStore} from "../../store/userStore";
+import { api_me } from "../../services/axios.services";
 type LayoutProps = {
   children: ReactNode;
 };
 const userNavigation = [
-  { name: "Your profile", href: "#" },
-  { name: "Sign out", href: "#" },
+  { name: "Mi perfil", href: "/perfil" },
+  { name: "Desconectar", href: "/logout" },
 ];
 const initialNavigation = [
   { name: "Dashboard", href: "/", icon: HomeIcon, current: true },
@@ -51,6 +53,7 @@ function classNames(...classes: string[]) {
 }
 
 export default function Layout(props: LayoutProps) {
+  const {bearer,setRole,GetRole,user,isLoading} = useUserStore()
   const [navigation, setNavigation] = useState(initialNavigation);
   const { Loader, setLoader } = useLoaderContext();
   const [title, setTitle] = useState("");
@@ -59,7 +62,7 @@ export default function Layout(props: LayoutProps) {
   const [nameUser, setnameUser] = useState("");
   const { push } = useRouter();
   const pathname = usePathname();
-  const [role, setRole] = useState("");
+  const [role, setRoleUI] = useState("");
   useEffect(() => {
     if (pathname === "/") {
       const updatedNavigation = navigation.map((element) => ({
@@ -83,8 +86,17 @@ export default function Layout(props: LayoutProps) {
   function capitalizeFirstLetter(string: string) {
     return string.charAt(0).toUpperCase() + string.slice(1);
   }
-
+  function desconectar() {
+    Cookies.remove("bearer")
+    Cookies.remove("establishment")
+    Cookies.remove("role")
+    push("/login")
+  }
   function redirection(e: any) {
+    if (e.href === "/logout") {
+      desconectar()
+      return;
+    }
     push(e.href);
   }
 
@@ -92,26 +104,21 @@ export default function Layout(props: LayoutProps) {
     (async () => {})();
     const me = async () => {
       try {
-        setLoader(true);
-        const token: any = JSON.parse(Cookies.get("user") || "{}");
-        setnameUser(
-          capitalizeFirstLetter(token.firstname) +
-            " " +
-            capitalizeFirstLetter(token.first_lastname)
-        );
-        const data = await axios.get(
-          process.env.NEXT_PUBLIC_BACKEND_URL + "users/me?populate=*",
-          { headers: { Authorization: "Bearer " + Cookies.get("bearer") } }
-        );
-        Cookies.set("role", JSON.stringify(data.data.role));
-        setRole(capitalizeFirstLetter(data.data.role.name));
-        Cookies.set("establishment", JSON.stringify(data.data.establishment));
-        setEstablishment(data.data.establishment.name.toUpperCase());
+        const data = await api_me()
+        setRole(data.data.role)
+        if (GetRole() !== "Authenticated") {
+          Cookies.set("establishment", JSON.stringify(data.data.establishment));
+          setEstablishment(data.data.establishment.name.toUpperCase());
+          setRoleUI(capitalizeFirstLetter(data.data.role.name));
+        }
         setLoader(false);
       } catch (error) {
+
+        console.log(user)
+        console.log(error)
         setLoader(false);
-        // Cookies.remove("bearer");
-        // push("/login");
+        Cookies.remove("bearer");
+        push("/login");
       }
     };
     me();
@@ -181,7 +188,7 @@ export default function Layout(props: LayoutProps) {
                             {navigation.map((item) => (
                               <li key={item.name}>
                                 <a
-                                  href={item.href}
+                                   onClick={() => redirection(item)}
                                   className={classNames(
                                     item.current
                                       ? 'bg-gray-800 text-white'
@@ -331,7 +338,7 @@ export default function Layout(props: LayoutProps) {
                     <UserIcon className="h-8 w-8 rounded-full bg-gray-50"></UserIcon>
                     <span className="hidden lg:flex lg:items-center">
                       <span className="ml-4 text-sm font-semibold leading-6 text-gray-900" aria-hidden="true">
-                      {nameUser}
+                      {capitalizeFirstLetter(user.firstname)} {capitalizeFirstLetter(user.first_lastname)}
                       </span>
                       <ChevronDownIcon className="ml-2 h-5 w-5 text-gray-400" aria-hidden="true" />
                     </span>
@@ -353,7 +360,7 @@ export default function Layout(props: LayoutProps) {
                             onClick={() => redirection(item)}
                               className={classNames(
                                 active ? 'bg-gray-50' : '',
-                                'block px-3 py-1 text-sm leading-6 text-gray-900'
+                                'block px-3 py-1 text-sm leading-6 text-gray-900 cursor-pointer'
                               )}
                             >
                               {item.name}

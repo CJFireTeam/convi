@@ -6,14 +6,16 @@ import Layout from "../components/layout/Layout";
 import { ToastContainer } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
 
+const excludedPaths = ['/login', '/register']; // Agrega aquí las rutas que quieres excluir
+
 export default function App({ Component, pageProps }: AppProps) {
   const router = useRouter();
+  const isExcludedPath = excludedPaths.includes(router.pathname);
 
-  const isLoginPage = router.pathname === "/login";
   return (
     <LoaderProvider>
       <ToastContainer />
-      {!isLoginPage ? (
+      {!isExcludedPath ? (
         <Layout>
           <Component {...pageProps} />
         </Layout>

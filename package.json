@@ -11,13 +11,20 @@
   "dependencies": {
     "@headlessui/react": "^1.7.18",
     "@heroicons/react": "^2.1.1",
+    "@redux-devtools/extension": "^3.3.0",
     "axios": "^1.6.7",
     "js-cookie": "^3.0.5",
     "jwt-decode": "^4.0.0",
     "next": "14.1.3",
     "react": "^18",
     "react-dom": "^18",
-    "react-toastify": "^10.0.4"
+    "react-modal": "^3.16.1",
+    "react-select": "^5.8.0",
+    "react-toastify": "^10.0.4",
+    "zukeeper": "^1.0.2",
+    "zustand": "^4.5.2",
+    "zustymiddleware": "^1.2.0",
+    "zustymiddlewarets": "^1.4.2"
   },
   "devDependencies": {
     "@tailwindcss/forms": "^0.5.7",
@@ -25,6 +32,7 @@
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
+    "@types/react-modal": "^3.16.3",
     "autoprefixer": "^10.0.1",
     "eslint": "^8",
     "eslint-config-next": "14.1.3",

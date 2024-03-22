@@ -11,8 +11,15 @@ const config: Config = {
     extend: {
       colors: {
         primary: {
-
-        }
+          100: '#ebf8ff', // Azul claro
+          500: '#3490dc', // Azul original
+          900: '#1c3d5a', // Azul oscuro
+        },
+        secondary: {
+          100: '#d6f5d6', // Verde claro
+          500: '#38a169', // Verde original
+          900: '#1d4733', // Verde oscuro
+        },
       },
       animation: {
         'spin': 'spin 3s linear infinite',

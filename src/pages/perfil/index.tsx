@@ -1,3 +1,3 @@
 export default function Perfil () {
-    return (<h1></h1>)
+    return (<h1>asd</h1>)
 }

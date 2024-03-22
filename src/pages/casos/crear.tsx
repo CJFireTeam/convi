@@ -6,6 +6,8 @@ import { useEffect, useState } from "react";
 import UserInterface from "../../interfaces/user.interface";
 import { Cog8ToothIcon } from "@heroicons/react/24/outline";
 import { ToastContainer, toast } from "react-toastify";
+import { useUserStore } from "../../store/userStore";
+import { SchoolComponent } from "../../components/case/school.component";
 interface valueInterface {
   title: string;
   value: string | boolean;
@@ -34,13 +36,7 @@ interface SchoolCase {
   created_by_id: number;
   updated_by_id: number;
 }
-interface roleListI {
-  id: number;
-  attributes: {
-    name: string;
-    reference: number;
-  };
-}
+
 
 const formInitial: groupQuestionI[] = [
   {
@@ -127,9 +123,9 @@ const TextComponent: React.FC<{
 };
 const CheckboxMultipleComponent: React.FC<{
   form: groupQuestionI;
-  setElement: (newElement: string[],element:string) => void;
+  setElement: (newElement: string[], element: string) => void;
   elementArray: string;
-}> = ({ form, setElement,elementArray }) => {
+}> = ({ form, setElement, elementArray }) => {
   const [element, setElementState] = useState<string[]>([]);
   if (!Array.isArray(form.options) || !form.options) {
     return "OCURRIO UN ERROR";
@@ -142,7 +138,7 @@ const CheckboxMultipleComponent: React.FC<{
       updatedElement = [...element, title];
     }
     setElementState(updatedElement);
-    setElement(updatedElement,elementArray);
+    setElement(updatedElement, elementArray);
   };
 
   return (
@@ -225,100 +221,20 @@ const CheckboxUniqueComponent: React.FC<{
   );
 };
 
-const SchoolComponent: React.FC<{
-  form: groupQuestionI;
-  roleList: roleListI[];
-  setElement: (newElement: string | number, element: string) => void;
-  elementOption: string;
-}> = ({ form, roleList, setElement, elementOption }) => {
-  const [selectedRole, setSelectedRole] = useState<number>(
-    roleList[0].attributes.reference
-  );
-  const [userList, setUserList] = useState<UserInterface[]>([]);
-  const [selectedValue, setSelectedValue] = useState(0);
-  const handleChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    console.log("hola", event.target.value);
-    setSelectedValue(Number(event.target.value));
-    setElement(Number(event.target.value), elementOption);
-  };
-  useEffect(() => {
-    const usersByRole = async (selectedRole: number) => {
-      const data = await axios.get(
-        process.env.NEXT_PUBLIC_BACKEND_URL +
-          "users?populate=role&filters[role][id][$eq]=" +
-          selectedRole,
-        { headers: { Authorization: "Bearer " + Cookies.get("bearer") } }
-      );
-      if (data.data.length === 0) {
-      }
-      setUserList(data.data);
-    };
-    // Aquí puedes poner el código que quieres que se ejecute cuando el rol cambie
-    usersByRole(selectedRole);
-  }, [selectedRole]);
-
-  const handleRoleChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedValue(0);
-    setElement(0, elementOption);
-    setSelectedRole(Number(event.target.value));
-  };
-
-  return (
-    <div className="md:flex-1 divide-y md:mx-1 my-1 divide-gray-200 overflow-hidden shadow-xl rounded-lg bg-white shadow animate-fadein">
-      <div className="px-4 py-5 sm:px-6 text-left">
-        <h6 className="font-bold md:text-base text-sm">{form.title}</h6>
-      </div>
-      <div className="flex flex-col md:flex-row m-2">
-        <label className="md:flex-1 mr-4">
-          <h6 className="text-sm leading-6 text-gray-900 font-bold">Cargo</h6>
-          <select
-            className="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
-            value={selectedRole}
-            onChange={handleRoleChange}
-          >
-            {roleList.map((role: roleListI) => (
-              <option
-                value={role.attributes.reference}
-                key={role.attributes.reference}
-              >
-                {role.attributes.name}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className="md:flex-1">
-          <span className="text-sm font-bold leading-6 text-gray-900">
-            Selecciona a quién dirigir la denuncia
-          </span>
-          <select
-            value={selectedValue}
-            onChange={handleChange}
-            className="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
-          >
-            <option value={0}>Seleccione el usuario</option>
-            {userList.map((user: UserInterface) => (
-              <option value={user.id} key={user.id}>
-                {user.firstname} {user.first_lastname}
-              </option>
-            ))}
-          </select>
-        </label>
-      </div>
-    </div>
-  );
-};
-
 const Form: React.FC<{
   fields: groupQuestionI[];
-  roleList: roleListI[];
-  setArray: (newElement: string[],element:string) => void;
+  setArray: (newElement: string[], element: string) => void;
   setElement: (newElement: string | number, element: string) => void;
   create: (event: React.FormEvent<HTMLFormElement>) => void;
   creating: boolean;
-}> = ({ fields, roleList, setArray, setElement, create,creating }) => (
+}> = ({ fields, setArray, setElement, create, creating }) => (
   <form onSubmit={create}>
     <div className="flex flex-col md:flex-row">
-      <CheckboxMultipleComponent form={fields[0]} setElement={setArray}  elementArray="who"/>
+      <CheckboxMultipleComponent
+        form={fields[0]}
+        setElement={setArray}
+        elementArray="who"
+      />
       <CheckboxMultipleComponent
         form={fields[1]}
         elementArray="where"
@@ -343,14 +259,14 @@ const Form: React.FC<{
       />
     </div>
     <div className="flex flex-col md:flex-row">
-      {roleList.length > 0 && (
         <SchoolComponent
           form={fields[5]}
-          roleList={roleList}
-          setElement={setElement}
-          elementOption="directed"
+          setOwner={setElement}
+          OwnerString="directed"
+          setSite={setElement}
+          OwnerSite="establishment"
         />
-      )}
+      
     </div>
     <div className="flex flex-col md:flex-row items-center justify-center m-2">
       <button
@@ -359,16 +275,20 @@ const Form: React.FC<{
         type="submit"
       >
         <span>Registrar Denuncia</span>
-        {creating && (<Cog8ToothIcon className="animate-spin text-white w-6 mt-0 md:mt-1" aria-hidden="true" />)}
-        </button>
+        {creating && (
+          <Cog8ToothIcon
+            className="animate-spin text-white w-6 mt-0 md:mt-1"
+            aria-hidden="true"
+          />
+        )}
+      </button>
     </div>
   </form>
 );
 
 export default function CrearCasos() {
-  const [roleList, setRoleList] = useState([]);
-  const [creating,setCreating] = useState(false);
-  const resolveAfter3Sec = new Promise(resolve => setTimeout(resolve, 3000));
+  const [creating, setCreating] = useState(false);
+  const resolveAfter3Sec = new Promise((resolve) => setTimeout(resolve, 3000));
   const { push } = useRouter();
   const [schoolCase, setSchoolCase] = useState<SchoolCase>({
     establishment: 0,
@@ -385,24 +305,22 @@ export default function CrearCasos() {
     event.preventDefault();
     //VALIDATIONS
     if (schoolCase.directed === 0) {
-      toast.error('Se necesita seleecionar el encargado de la denuncia')
-      return ;
+      toast.error("Se necesita seleecionar el encargado de la denuncia");
+      return;
     }
-    const requiredProps = ['where', 'when', 'story', 'measures','who'];
-    const isMissingRequiredProp = requiredProps.some(prop => {
-
+    const requiredProps = ["where", "when", "story", "measures", "who"];
+    const isMissingRequiredProp = requiredProps.some((prop) => {
       return String(schoolCase[prop as keyof SchoolCase]).length === 0;
     });
     if (isMissingRequiredProp) {
-      toast.error('Se requiere rellenar campos')
+      toast.error("Se requiere rellenar campos");
       return;
     }
-    const id = toast.loading("Guardando...",)
-    const userId = JSON.parse(Cookies.get("user")  || "{}").id;
+    const id = toast.loading("Guardando...");
+    const userId = JSON.parse(Cookies.get("user") || "{}").id;
     schoolCase.created_by_id = userId;
     schoolCase.updated_by_id = userId;
-    schoolCase.establishment = JSON.parse(Cookies.get("establishment") || "{}").id
-    setCreating(true)
+    setCreating(true);
     setSchoolCase(schoolCase);
     try {
       const data = await axios.post(
@@ -410,33 +328,29 @@ export default function CrearCasos() {
         { data: schoolCase },
         { headers: { Authorization: "Bearer " + Cookies.get("bearer") } }
       );
-      setRoleList(data.data.data);
-      toast.update(id, {render: "Guardado correctamente", type: "success", isLoading: false,autoClose:3000});
-      push('/casos')
+      toast.update(id, {
+        render: "Guardado correctamente",
+        type: "success",
+        isLoading: false,
+        autoClose: 3000,
+      });
+      push("/casos");
     } catch (error) {
-      toast.update(id, {render: "Ocurrio un error", type: "error", isLoading: false,autoClose:3000 });
+      toast.update(id, {
+        render: "Ocurrio un error",
+        type: "error",
+        isLoading: false,
+        autoClose: 3000,
+      });
     }
   };
-  const setArray = (newElement: string[],element: string) => {
+  const setArray = (newElement: string[], element: string) => {
     setSchoolCase((prev) => ({ ...prev, [element]: { values: newElement } }));
   };
 
   const setOne = (newElement: string | number, element: string | number) => {
     setSchoolCase((prev) => ({ ...prev, [element]: newElement }));
   };
-
-  useEffect(() => {
-    const roles = async () => {
-      try {
-        const data = await axios.get(
-          process.env.NEXT_PUBLIC_BACKEND_URL + "role-lists",
-          { headers: { Authorization: "Bearer " + Cookies.get("bearer") } }
-        );
-        setRoleList(data.data.data);
-      } catch (error) {}
-    };
-    roles();
-  }, []);
   return (
     <div className="divide-y divide-gray-200 overflow-hidden rounded-lg bg-white shadow">
       <div className="px-4 py-3 sm:px-6">
@@ -448,13 +362,11 @@ export default function CrearCasos() {
       <div className="px-4 py-5 sm:p-6 bg-slate-50">
         <Form
           fields={formInitial}
-          roleList={roleList}
           setArray={setArray}
           setElement={setOne}
           create={create}
           creating={creating}
         />
-        
       </div>
     </div>
   );

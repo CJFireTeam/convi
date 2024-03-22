@@ -6,6 +6,8 @@ import { useEffect, useState } from "react";
 import metaI from "../../interfaces/meta.interface";
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/20/solid";
 import { capitalizeFirstLetter } from "../../shared/functions";
+import { useUserStore } from "../../store/userStore";
+import { api_cases } from "../../services/axios.services";
 
 function Table({ data }: { data: caseInterface[] }) {
   return (
@@ -45,7 +47,12 @@ function Table({ data }: { data: caseInterface[] }) {
         {data.map((person) => (
           <tr key={person.id}>
             <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
-              {capitalizeFirstLetter(person.attributes.directed.data.attributes.firstname)} {capitalizeFirstLetter(person.attributes.directed.data.attributes.first_lastname)}
+              {capitalizeFirstLetter(
+                person.attributes.directed.data.attributes.firstname
+              )}{" "}
+              {capitalizeFirstLetter(
+                person.attributes.directed.data.attributes.first_lastname
+              )}
             </td>
             {/* <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
               {person.title}
@@ -160,26 +167,23 @@ function Paginator() {
 }
 
 export default function Casos() {
+  const {user} = useUserStore()
   const [metaData, setMetada] = useState<metaI>();
   const [data, setData] = useState<caseInterface[]>([]);
   const { push } = useRouter();
   useEffect(() => {
-    const establishment = JSON.parse(Cookies.get("establishment") || "{}").id;
     const userId = JSON.parse(Cookies.get("user") || "{}").id;
-
     const getData = async () => {
       try {
-        const data = await axios.get(
-          `
-          ${process.env.NEXT_PUBLIC_BACKEND_URL}cases?populate=directed&filters[establishment][id][$eq]=${establishment}&filters[createdBy]=${userId}`,
-          { headers: { Authorization: "Bearer " + Cookies.get("bearer") } }
-        );
+        const data = await api_cases(user?.id)
         setData(data.data.data);
         setMetada(data.data.meta);
-      } catch (error) {}
+      } catch (error) {
+        console.log(error)
+      }
     };
     getData();
-  }, []);
+  }, [user]);
   const redirect = () => {
     push("/casos/crear");
   };

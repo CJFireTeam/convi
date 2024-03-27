@@ -101,7 +101,7 @@ export const SchoolComponent: React.FC<{
                   value={role.attributes.reference}
                   key={role.attributes.reference}
                 >
-                  {role.attributes.name} {role.attributes.reference}
+                  {role.attributes.name}
                 </option>
               ))}
             </select>

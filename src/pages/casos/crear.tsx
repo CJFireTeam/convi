@@ -289,7 +289,6 @@ export default function CrearCasos() {
   const [creating, setCreating] = useState(false);
   const {bearer,setRole,GetRole,user,isLoading} = useUserStore()
 
-  const resolveAfter3Sec = new Promise((resolve) => setTimeout(resolve, 3000));
   const { push } = useRouter();
   const [schoolCase, setSchoolCase] = useState<SchoolCase>({
     establishment: 0,
@@ -318,8 +317,8 @@ export default function CrearCasos() {
     }
     const id = toast.loading("Guardando...");
     schoolCase.created = user.id;
+    if (GetRole() !== "Authenticated") schoolCase.establishment = user.establishment;
     setCreating(true);
-    setSchoolCase(schoolCase);
     try {
       const data = await axios.post(
         process.env.NEXT_PUBLIC_BACKEND_URL + "cases",

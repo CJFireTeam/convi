@@ -172,7 +172,6 @@ export default function Casos() {
   const [data, setData] = useState<caseInterface[]>([]);
   const { push } = useRouter();
   useEffect(() => {
-    const userId = JSON.parse(Cookies.get("user") || "{}").id;
     const getData = async () => {
       try {
         const data = await api_cases(user?.id)

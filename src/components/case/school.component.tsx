@@ -54,14 +54,17 @@ export const SchoolComponent: React.FC<{
       setOwner(Number(event.target.value), OwnerString);
     };
     useEffect(() => {
+      setUserList([])
       const getUsers = async () => {
         const data = await api_usersByRole(selectedRole,establecimiento)
-        setUserList(data.data.data[0].attributes.users.data)
+        if (data.data.data.length > 0) setUserList(data.data.data[0].attributes.users.data)
+        else {
+
+      }
       }
       if (GetRole() === "Authenticated") setDatailsSchool(true);
       if (selectedRole !== 0 && establecimiento !== 0) getUsers()
-      else {
-      }
+
     },[selectedRole,establecimiento])
     //REGIONES 
     useEffect(() => {

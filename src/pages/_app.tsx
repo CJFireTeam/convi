@@ -6,7 +6,7 @@ import Layout from "../components/layout/Layout";
 import { ToastContainer } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
 
-const excludedPaths = ['/login', '/register']; // Agrega aquí las rutas que quieres excluir
+const excludedPaths = ['/login', '/register', '/recover']; // Agrega aquí las rutas que quieres excluir
 
 export default function App({ Component, pageProps }: AppProps) {
   const router = useRouter();

@@ -21,6 +21,7 @@
     "react-modal": "^3.16.1",
     "react-select": "^5.8.0",
     "react-toastify": "^10.0.4",
+    "swr": "^2.2.5",
     "zukeeper": "^1.0.2",
     "zustand": "^4.5.2",
     "zustymiddleware": "^1.2.0",

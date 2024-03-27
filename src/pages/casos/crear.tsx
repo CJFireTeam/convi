@@ -33,8 +33,6 @@ interface SchoolCase {
   story: string;
   measures: string;
   directed: number;
-  created_by_id: number;
-  updated_by_id: number;
   created:number;
 }
 
@@ -295,8 +293,6 @@ export default function CrearCasos() {
   const { push } = useRouter();
   const [schoolCase, setSchoolCase] = useState<SchoolCase>({
     establishment: 0,
-    updated_by_id: 0,
-    created_by_id: 0,
     who: { values: [] },
     where: { values: [] },
     when: { values: [] },
@@ -322,7 +318,6 @@ export default function CrearCasos() {
     }
     const id = toast.loading("Guardando...");
     schoolCase.created = user.id;
-    schoolCase.updated_by_id = user.id;
     setCreating(true);
     setSchoolCase(schoolCase);
     try {

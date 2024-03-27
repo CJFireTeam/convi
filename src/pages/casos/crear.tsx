@@ -35,6 +35,7 @@ interface SchoolCase {
   directed: number;
   created_by_id: number;
   updated_by_id: number;
+  created:number;
 }
 
 
@@ -288,6 +289,8 @@ const Form: React.FC<{
 
 export default function CrearCasos() {
   const [creating, setCreating] = useState(false);
+  const {bearer,setRole,GetRole,user,isLoading} = useUserStore()
+
   const resolveAfter3Sec = new Promise((resolve) => setTimeout(resolve, 3000));
   const { push } = useRouter();
   const [schoolCase, setSchoolCase] = useState<SchoolCase>({
@@ -300,6 +303,7 @@ export default function CrearCasos() {
     story: "",
     measures: "",
     directed: 0,
+    created: 0
   });
   const create = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -317,9 +321,8 @@ export default function CrearCasos() {
       return;
     }
     const id = toast.loading("Guardando...");
-    const userId = JSON.parse(Cookies.get("user") || "{}").id;
-    schoolCase.created_by_id = userId;
-    schoolCase.updated_by_id = userId;
+    schoolCase.created = user.id;
+    schoolCase.updated_by_id = user.id;
     setCreating(true);
     setSchoolCase(schoolCase);
     try {

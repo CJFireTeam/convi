@@ -45,7 +45,7 @@ export function api_establishmentByComuna(comuna: string) {
 }
   //FALTA AGREGAR EL LUGAR
 export function api_cases(createdBy: number) {
-  let query = `cases?populate=directed`
+  let query = `cases?populate[directed][populate][0]=role`
   query = query + `&filters[created]=${createdBy}`
   return api.get(query)
 }

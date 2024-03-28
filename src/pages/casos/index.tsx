@@ -12,7 +12,7 @@ import { EyeIcon, PencilIcon } from "@heroicons/react/24/outline";
 
 function Table({ data }: { data: caseInterface[] }) {
   const paseDate = (date: string) => {
-    const fecha = new Date("2024-03-27T14:55:23.953Z");
+    const fecha = new Date(date);
 
     const dia = fecha.getDate();
     const mes = String(fecha.getMonth() + 1).padStart(2, "0");

@@ -44,13 +44,11 @@ function classNames(...classes: string[]) {
 }
 
 export default function Layout(props: LayoutProps) {
-  const {bearer,setRole,GetRole,user,isLoading} = useUserStore()
+  const {setUser,bearer,setRole,GetRole,user,isLoading,setStablishment,GetStablishment} = useUserStore()
   const [navigation, setNavigation] = useState(initialNavigation);
   const { Loader, setLoader } = useLoaderContext();
   const [title, setTitle] = useState("");
-  const [establishment, setEstablishment] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [nameUser, setnameUser] = useState("");
   const { push } = useRouter();
   const pathname = usePathname();
   const [role, setRoleUI] = useState("");
@@ -96,10 +94,8 @@ export default function Layout(props: LayoutProps) {
     const me = async () => {
       try {
         const data = await api_me()
-        setRole(data.data.role)
+        setUser(data.data)
         if (GetRole() !== "Authenticated") {
-          Cookies.set("establishment", JSON.stringify(data.data.establishment));
-          setEstablishment(data.data.establishment.name.toUpperCase());
           setRoleUI(capitalizeFirstLetter(data.data.role.name));
         }
         setLoader(false);
@@ -165,7 +161,7 @@ export default function Layout(props: LayoutProps) {
                   {/* Sidebar component, swap this element with another sidebar if you like */}
                   <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-gray-900 px-6 pb-4 ring-1 ring-white/10">
                     <div className="flex h-16 shrink-0 items-center">
-                      <h1 className="h-8 w-auto">{establishment}</h1>
+                      <h1 className="h-8 w-auto">{user.establishment.name.toUpperCase()}</h1>
                       <img
                         className="h-8 w-auto"
                         src="https://tailwindui.com/img/logos/mark.svg?color=indigo&shade=500"
@@ -219,7 +215,7 @@ export default function Layout(props: LayoutProps) {
           {/* Sidebar component, swap this element with another sidebar if you like */}
           <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-gray-900 px-6 pb-4">
           <div className="flex h-16 items-center justify-center text-center text-white">
-  <h1 className="h-8 w-auto">{establishment}</h1>
+  <h1 className="h-8 w-auto">{ user.establishment.name.toUpperCase()}</h1>
 </div>
             <nav className="flex flex-1 flex-col">
               <ul role="list" className="flex flex-1 flex-col gap-y-7">

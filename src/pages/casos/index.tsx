@@ -202,18 +202,20 @@ export default function Casos() {
   const { push } = useRouter();
   useEffect(() => {
     const getData = async () => {
+      let assigned : number | undefined= undefined;
       try {
         if (GetRole() !== "Authenticated") {
-          console.log(user.establishment);
+          assigned = user?.id
         }
-        if (user?.id === 0) return;
-        const data = await api_cases(user?.id);
+        const data = await api_cases({createdBy:user?.id,userId:assigned});
         setData(data.data.data);
         setMetada(data.data.meta);
       } catch (error) {
         console.log(error);
       }
     };
+    if (user?.id === 0) return;
+
     getData();
   }, [user]);
   const redirect = () => {

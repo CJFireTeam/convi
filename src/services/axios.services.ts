@@ -44,9 +44,10 @@ export function api_establishmentByComuna(comuna: string) {
   return api.get("establishments?fields[0]=name&filters[Comuna][$eq]=" +comuna)
 }
   //FALTA AGREGAR EL LUGAR
-export function api_cases(createdBy: number) {
+export function api_cases({createdBy,userId}:{createdBy: number,userId?:number}) {
   let query = `cases?populate[directed][populate][0]=role`
-  query = query + `&filters[created]=${createdBy}`
+  query = query + `&[$and]filters[created][id][$eq]=${createdBy}`
+  if (userId) query = query + `&populate[created][populate][1]=role&[$and]filters[directed][id][$eq]=${userId}` 
   return api.get(query)
 }
 

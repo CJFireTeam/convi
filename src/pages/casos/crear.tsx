@@ -317,7 +317,7 @@ export default function CrearCasos() {
     }
     const id = toast.loading("Guardando...");
     schoolCase.created = user.id;
-    if (GetRole() !== "Authenticated") schoolCase.establishment = user.establishment;
+    if (GetRole() !== "Authenticated") schoolCase.establishment = user.establishment.id;
     setCreating(true);
     try {
       const data = await axios.post(

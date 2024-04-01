@@ -34,7 +34,7 @@ const userNavigation = [
   { name: "Desconectar", href: "/logout" },
 ];
 const initialNavigation = [
-  { name: "Dashboard", href: "/", icon: HomeIcon, current: true },
+  { name: "Home", href: "/", icon: HomeIcon, current: true },
   { name: "Casos", href: "/casos", icon: UsersIcon, current: false },
 ];
 

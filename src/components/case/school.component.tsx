@@ -37,7 +37,7 @@ export const SchoolComponent: React.FC<{
     setSite: (newElement: string | number, element: string) => void;
     OwnerSite: string;
   }> = ({ form, setOwner, OwnerString,setSite,OwnerSite }) => {
-    const {GetRole,role} = useUserStore()
+    const {GetRole,role,GetStablishment} = useUserStore()
     const [roleList, setRoleList] = useState([]);
     const [selectedRole, setSelectedRole] = useState<number>(0);
     const [userList, setUserList] = useState<UserInterface[]>([]);
@@ -58,12 +58,11 @@ export const SchoolComponent: React.FC<{
       const getUsers = async () => {
         const data = await api_usersByRole(selectedRole,establecimiento)
         if (data.data.data.length > 0) setUserList(data.data.data[0].attributes.users.data)
-        else {
-
       }
+      if (GetRole() === "Authenticated"){
+        setDatailsSchool(true);
+        if (selectedRole !== 0 && establecimiento !== 0) getUsers()
       }
-      if (GetRole() === "Authenticated") setDatailsSchool(true);
-      if (selectedRole !== 0 && establecimiento !== 0) getUsers()
 
     },[selectedRole,establecimiento,role])
     //REGIONES 
@@ -77,6 +76,16 @@ export const SchoolComponent: React.FC<{
       roles()
     },[])
 
+    useEffect(() => {
+      const getUsers = async () => {
+        console.log(role)
+        const data = await api_usersByRole(selectedRole,GetStablishment().id)
+        if (data.data.data.length > 0) setUserList(data.data.data[0].attributes.users.data)
+      }
+      if (GetRole() !== "Authenticated"){
+        getUsers()
+      }
+    },[selectedRole])
     const handleRoleChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
       setSelectedRole(Number(event.target.value));
       setSelectedValue(0);

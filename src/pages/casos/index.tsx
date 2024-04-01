@@ -246,7 +246,7 @@ export default function Casos() {
           <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
             <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
               <Table data={data} />
-              <Paginator />
+              {/* <Paginator /> */}
             </div>
           </div>
         </div>

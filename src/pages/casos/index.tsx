@@ -125,7 +125,7 @@ function Paginator() {
           <p className="text-sm text-gray-700">
             Mostrando <span className="font-medium">1</span> to{" "}
             <span className="font-medium">10</span> of{" "}
-            <span className="font-medium">97</span> results
+            <span className="font-medium">10</span> results
           </p>
         </div>
         <div>
@@ -246,7 +246,7 @@ export default function Casos() {
           <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
             <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
               <Table data={data} />
-              {/* <Paginator /> */}
+              <Paginator />
             </div>
           </div>
         </div>

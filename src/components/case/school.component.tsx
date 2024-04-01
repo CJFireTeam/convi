@@ -37,7 +37,7 @@ export const SchoolComponent: React.FC<{
     setSite: (newElement: string | number, element: string) => void;
     OwnerSite: string;
   }> = ({ form, setOwner, OwnerString,setSite,OwnerSite }) => {
-    const {GetRole} = useUserStore()
+    const {GetRole,role} = useUserStore()
     const [roleList, setRoleList] = useState([]);
     const [selectedRole, setSelectedRole] = useState<number>(0);
     const [userList, setUserList] = useState<UserInterface[]>([]);
@@ -65,7 +65,7 @@ export const SchoolComponent: React.FC<{
       if (GetRole() === "Authenticated") setDatailsSchool(true);
       if (selectedRole !== 0 && establecimiento !== 0) getUsers()
 
-    },[selectedRole,establecimiento])
+    },[selectedRole,establecimiento,role])
     //REGIONES 
     useEffect(() => {
       const roles = async () => {

@@ -98,6 +98,7 @@ export default function Layout(props: LayoutProps) {
         if (GetRole() !== "Authenticated") {
           setRoleUI(capitalizeFirstLetter(data.data.role.name));
         }
+        setRole(data.data.role)
         setLoader(false);
       } catch (error) {
 

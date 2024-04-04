@@ -12,7 +12,7 @@ api.interceptors.request.use(
   (config) => {
     const newToken = Cookies.get("bearer");
     config.headers.Authorization = 'Bearer ' + newToken;
-    
+
     return config;
   },
   (error) => {
@@ -34,20 +34,20 @@ api.interceptors.response.use(
 export function api_me() {
   return api.get('users/me?populate=*');
 }
-export function api_usersByRole(role: number,establishment:number) {
-  let query = `filters[id][$eq]=${establishment}`
-  query = query + `&populate[users][populate][1]=role&filters[users][role][id]=${role}`
-  return api.get(`establishments?${query}`)
+export function api_usersByRole(role: number, establishment: number) {
+  let query = `populate[users][filters][role]=${role}`
+  return api.get(`establishments/${establishment}?${query}`)
 }
+/* http://localhost:1337/api/establishments/2?populate[users][filters][role]=4 */
 
 export function api_establishmentByComuna(comuna: string) {
-  return api.get("establishments?fields[0]=name&filters[Comuna][$eq]=" +comuna)
+  return api.get("establishments?fields[0]=name&filters[Comuna][$eq]=" + comuna)
 }
-  //FALTA AGREGAR EL LUGAR
-export function api_cases({createdBy,userId}:{createdBy: number,userId?:number}) {
+//FALTA AGREGAR EL LUGAR
+export function api_cases({ createdBy, userId }: { createdBy: number, userId?: number }) {
   let query = `cases?populate[directed][populate][0]=role`
   query = query + `&[$and]filters[created][id][$eq]=${createdBy}`
-  if (userId) query = query + `&populate[created][populate][1]=role&[$and]filters[directed][id][$eq]=${userId}` 
+  if (userId) query = query + `&populate[created][populate][1]=role&[$and]filters[directed][id][$eq]=${userId}`
   return api.get(query)
 }
 

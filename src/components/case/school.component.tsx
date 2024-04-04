@@ -78,12 +78,16 @@ export const SchoolComponent: React.FC<{
 
     useEffect(() => {
       const getUsers = async () => {
-        console.log(role)
         const data = await api_usersByRole(selectedRole,GetStablishment().id)
-        if (data.data.data.length > 0) setUserList(data.data.data[0].attributes.users.data)
+        console.log(data.data.data);
+        setUserList(data.data.data.attributes.users.data)
       }
+      
       if (GetRole() !== "Authenticated"){
-        getUsers()
+        
+        if (selectedRole !== 0){
+          getUsers()
+        }
       }
     },[selectedRole])
     const handleRoleChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
@@ -95,7 +99,7 @@ export const SchoolComponent: React.FC<{
     return (
       <div className="md:flex-1 divide-y md:mx-1 my-1 divide-gray-200 overflow-hidden shadow-xl rounded-lg bg-white shadow animate-fadein">
         <div className="px-4 py-5 sm:px-6 text-left">
-          <h6 className="font-bold md:text-base text-sm">{form.title} {selectedRole}</h6>
+          <h6 className="font-bold md:text-base text-sm">{form.title} </h6>
         </div>
         {datailsSchool && <DetailedSchoolComponent establecimiento={establecimiento}  setEstablecimiento={handleChangeEstablecimiento}/>}
         <div className="flex flex-col md:flex-row m-2">
@@ -122,6 +126,7 @@ export const SchoolComponent: React.FC<{
             <span className="text-sm font-bold leading-6 text-gray-900">
               Selecciona a quién dirigir la denuncia
             </span>
+            
             <select
               value={selectedValue}
               onChange={handleChange}

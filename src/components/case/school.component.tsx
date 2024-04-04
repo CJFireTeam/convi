@@ -79,7 +79,6 @@ export const SchoolComponent: React.FC<{
     useEffect(() => {
       const getUsers = async () => {
         const data = await api_usersByRole(selectedRole,GetStablishment().id)
-        console.log(data.data.data);
         setUserList(data.data.data.attributes.users.data)
       }
       

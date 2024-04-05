@@ -83,9 +83,9 @@ export const SchoolComponent: React.FC<{
     const getUsers = async () => {
       const data = await api_usersByRole(selectedRole, GetStablishment().id);
       setUserList(data.data.data.attributes.users.data);
-    };
+    }; 
     if (useUserStore.getState().GetRole() !== "Authenticated") {
-      if (selectedRole !== 0 && establecimiento !== 0) getUsers();
+      if (selectedRole !== 0 && GetStablishment().id !== 0) getUsers();
     }
   }, [selectedRole]);
   const handleRoleChange = (event: React.ChangeEvent<HTMLSelectElement>) => {

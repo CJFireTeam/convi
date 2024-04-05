@@ -26,6 +26,18 @@ interface caseInterface {
                     first_lastname: string;
                     firstname: string;
                     secondname: string;
+                    role: {
+                        data: {
+                            id:number,
+                            attributes: {
+                                createdAt: string;
+                                updatedAt: string;
+                                description: string;
+                                name: string;
+                                type: string;
+                            }
+                        }
+                    }
                 };
             };
         };

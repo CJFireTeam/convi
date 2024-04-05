@@ -8,8 +8,18 @@ import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/20/solid";
 import { capitalizeFirstLetter } from "../../shared/functions";
 import { useUserStore } from "../../store/userStore";
 import { api_cases } from "../../services/axios.services";
+import { EyeIcon, PencilIcon } from "@heroicons/react/24/outline";
 
 function Table({ data }: { data: caseInterface[] }) {
+  const paseDate = (date: string) => {
+    const fecha = new Date(date);
+
+    const dia = fecha.getDate();
+    const mes = String(fecha.getMonth() + 1).padStart(2, "0");
+    const año = fecha.getFullYear();
+
+    return `${dia}/${mes}/${año}`;
+  };
   return (
     <table className="min-w-full divide-y divide-gray-300">
       <thead className="bg-gray-50">
@@ -18,34 +28,46 @@ function Table({ data }: { data: caseInterface[] }) {
             scope="col"
             className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6"
           >
-            Encargado
+            #
           </th>
           <th
             scope="col"
             className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
           >
-            Title
+            Cargo
           </th>
           <th
             scope="col"
             className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
           >
-            Email
+            Nombre
           </th>
           <th
             scope="col"
             className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
           >
-            Role
+            Fecha de creacion
           </th>
-          <th scope="col" className="relative py-3.5 pl-3 pr-4 sm:pr-6">
-            <span className="sr-only">Edit</span>
+          <th
+            scope="col"
+            className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+          >
+            Acciones
           </th>
         </tr>
       </thead>
       <tbody className="divide-y divide-gray-200 bg-white">
-        {data.map((person) => (
-          <tr key={person.id}>
+        {data.map((person, index) => (
+          <tr key={index}>
+            <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
+              {index + 1}
+            </td>
+            <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
+              {
+                person.attributes.directed.data.attributes.role.data.attributes
+                  .name
+              }
+            </td>
             <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
               {capitalizeFirstLetter(
                 person.attributes.directed.data.attributes.firstname
@@ -53,6 +75,13 @@ function Table({ data }: { data: caseInterface[] }) {
               {capitalizeFirstLetter(
                 person.attributes.directed.data.attributes.first_lastname
               )}
+            </td>
+            <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
+              {paseDate(person.attributes.createdAt)}
+            </td>
+            <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6 flex space-x-2 items-center">
+              <EyeIcon className="h-6 w-6" aria-hidden="true" />
+              <PencilIcon className="h-6 w-6" aria-hidden="true" />
             </td>
             {/* <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
               {person.title}
@@ -96,7 +125,7 @@ function Paginator() {
           <p className="text-sm text-gray-700">
             Mostrando <span className="font-medium">1</span> to{" "}
             <span className="font-medium">10</span> of{" "}
-            <span className="font-medium">97</span> results
+            <span className="font-medium">10</span> results
           </p>
         </div>
         <div>
@@ -167,21 +196,26 @@ function Paginator() {
 }
 
 export default function Casos() {
-  const {user} = useUserStore()
+  const { user, GetRole } = useUserStore();
   const [metaData, setMetada] = useState<metaI>();
   const [data, setData] = useState<caseInterface[]>([]);
   const { push } = useRouter();
   useEffect(() => {
-    const userId = JSON.parse(Cookies.get("user") || "{}").id;
     const getData = async () => {
+      let assigned : number | undefined= undefined;
       try {
-        const data = await api_cases(user?.id)
+        if (GetRole() !== "Authenticated") {
+          assigned = user?.id
+        }
+        const data = await api_cases({createdBy:user?.id,userId:assigned});
         setData(data.data.data);
         setMetada(data.data.meta);
       } catch (error) {
-        console.log(error)
+        console.log(error);
       }
     };
+    if (user?.id === 0) return;
+
     getData();
   }, [user]);
   const redirect = () => {
@@ -190,14 +224,14 @@ export default function Casos() {
 
   return (
     <div className="px-4 sm:px-6 lg:px-8">
-      <div className="sm:flex sm:items-center">
+      <div className="flex items-center justify-between ">
         <div className="sm:flex-auto">
           <h1 className="text-base font-semibold leading-6 text-gray-900">
             Mis Casos
           </h1>
           <p className="mt-2 text-sm text-gray-700"></p>
         </div>
-        <div className="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
+        <div className=" sm:ml-16 sm:mt-0 sm:flex-none">
           <button
             type="button"
             className="block rounded-md bg-indigo-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"

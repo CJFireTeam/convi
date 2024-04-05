@@ -5,7 +5,7 @@ import Cookies from "js-cookie";
 let token = Cookies.get("bearer");
 
 const api2 = axios.create({
-  baseURL:  process.env.NEXT_PUBLIC_LOCAL_URL, // Cambia la URL base según tus necesidades
+  baseURL:  process.env.NEXT_PUBLIC_LOCAL_URL || process.env.VERCEL_URL, // Cambia la URL base según tus necesidades
   headers: {
     'Content-Type': 'application/json',
     'Authorization': 'Bearer ' + token,

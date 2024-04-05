@@ -33,8 +33,7 @@ interface SchoolCase {
   story: string;
   measures: string;
   directed: number;
-  created_by_id: number;
-  updated_by_id: number;
+  created:number;
 }
 
 
@@ -288,18 +287,18 @@ const Form: React.FC<{
 
 export default function CrearCasos() {
   const [creating, setCreating] = useState(false);
-  const resolveAfter3Sec = new Promise((resolve) => setTimeout(resolve, 3000));
+  const {bearer,setRole,GetRole,user,isLoading} = useUserStore()
+
   const { push } = useRouter();
   const [schoolCase, setSchoolCase] = useState<SchoolCase>({
     establishment: 0,
-    updated_by_id: 0,
-    created_by_id: 0,
     who: { values: [] },
     where: { values: [] },
     when: { values: [] },
     story: "",
     measures: "",
     directed: 0,
+    created: 0
   });
   const create = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -317,11 +316,9 @@ export default function CrearCasos() {
       return;
     }
     const id = toast.loading("Guardando...");
-    const userId = JSON.parse(Cookies.get("user") || "{}").id;
-    schoolCase.created_by_id = userId;
-    schoolCase.updated_by_id = userId;
+    schoolCase.created = user.id;
+    if (GetRole() !== "Authenticated") schoolCase.establishment = user.establishment.id;
     setCreating(true);
-    setSchoolCase(schoolCase);
     try {
       const data = await axios.post(
         process.env.NEXT_PUBLIC_BACKEND_URL + "cases",

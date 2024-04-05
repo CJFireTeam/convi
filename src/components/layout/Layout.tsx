@@ -107,7 +107,7 @@ export default function Layout(props: LayoutProps) {
         console.log(error)
         setLoader(false);
         Cookies.remove("bearer");
-        push("/login");
+        //push("/login");
       }
     };
     me();

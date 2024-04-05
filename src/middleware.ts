@@ -1,5 +1,5 @@
 import type { NextRequest } from 'next/server'
-const excludedPaths = ['/login', '/register'];
+const excludedPaths = ['/login', '/register','/recover'];
 
 export function middleware(request: NextRequest) {
   const currentUser = request.cookies.get('bearer')?.value

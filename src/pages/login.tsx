@@ -92,6 +92,9 @@ export default function Login() {
       router.push({ pathname: "/register" });
     }, 500);
   };
+  const recover = () => {
+    router.push({ pathname: "/recover" });
+  };
   return (
     <>
       <div
@@ -144,6 +147,7 @@ export default function Login() {
                   <a
                     href="#"
                     className="font-semibold text-indigo-600 hover:text-indigo-500"
+                    onClick={recover}
                   >
                     Olvide mi contraseña
                   </a>

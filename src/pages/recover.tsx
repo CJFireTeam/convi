@@ -8,6 +8,7 @@ import { recoverPasswordSchema } from "@/validations/recoverSchema";
 import axios, { AxiosError } from "axios";
 import { useSearchParams } from 'next/navigation';
 import React, { useEffect } from 'react';
+import { toast } from "react-toastify";
 
 
 type Inputs = {
@@ -31,8 +32,9 @@ function RecoverPassword({ code }: { code: string | null }) {
         process.env.NEXT_PUBLIC_BACKEND_URL + "auth/forgot-password",
         data
       );
+      toast.success('Hemos enviado un correo electrónico a la dirección proporcionada. Si no encuentras el correo electrónico en tu bandeja de entrada, asegúrate de verificar también la carpeta de spam o correo no deseado.');
     } catch (error) {
-      console.error('Error:', error);
+      toast.error('Ocurrió un error al procesar tu solicitud. Por favor, inténtalo de nuevo más tarde.');
     }
   };
   if (code) return <></>
@@ -47,7 +49,7 @@ function RecoverPassword({ code }: { code: string | null }) {
               htmlFor="email"
               className="block text-sm font-medium leading-6 text-gray-900"
             >
-              Correo electrónico
+              Ingresa tu correo electrónico
             </label>
             <div className="mt-2">
               <input
@@ -55,6 +57,7 @@ function RecoverPassword({ code }: { code: string | null }) {
                 type="email"
                 autoComplete="email"
                 {...register('email')}
+                placeholder="convi@ejemplo.cl"
                 className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
               />
               {errors.email?.message && (<p className="text-red-600 text-sm mt-1">{errors.email.message}</p>)}
@@ -81,6 +84,21 @@ function RecoverPassword({ code }: { code: string | null }) {
 
 function ChangePassword({ code }: { code: string | null }){
   const router = useRouter();
+
+  const onSubmit = async (data: Inputs) => {
+    try {
+      const response = await axios.post(`${process.env.NEXT_PUBLIC_BACKEND_URL}auth/reset-password`, {
+        code,
+        password: data.newPassword,
+        passwordConfirmation: data.confirmNewPassword,
+      });
+      toast.success('¡Contraseña cambiada con éxito!');
+      router.push('/login');
+    } catch (error) {
+      toast.error('Ocurrió un error al cambiar la contraseña. Por favor, inténtalo de nuevo más tarde.');
+    }
+  };
+
   const {register, handleSubmit, formState: {errors} } = useForm<Inputs>({
     resolver: zodResolver(recoverPasswordSchema),
   });
@@ -93,9 +111,7 @@ function ChangePassword({ code }: { code: string | null }){
   return (<div className="mt-3 sm:mx-auto sm:w-full sm:max-w-sm">
   <form className="space-y-6" 
     noValidate
-    onSubmit={handleSubmit((data) => {
-      console.log(data);
-    })}
+    onSubmit={handleSubmit(onSubmit)}
   >
     <div>
       <label
@@ -160,7 +176,6 @@ export default function Recover() {
   const searchParams = useSearchParams();
   const code = searchParams.get('code');
 
-  console.log(code)
 
   return (
     <div className="flex min-h-full flex-1 flex-col justify-center px-6 py-12 lg:px-8 transition-transform">
@@ -172,7 +187,7 @@ export default function Recover() {
           priority
         />
         <h2 className="mt-10 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900">
-          ¿Olvidaste tu contraseña?
+          Recuperar Contraseña
         </h2>
       </div>
       <RecoverPassword code={code} />

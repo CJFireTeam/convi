@@ -109,7 +109,7 @@ export const SchoolComponent: React.FC<{
         <label className="md:flex-1 mr-4">
           <h6 className="text-sm leading-6 text-gray-900 font-bold">Cargo</h6>
           <select
-            className="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
+            className="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-primary sm:text-sm sm:leading-6"
             value={selectedRole}
             onChange={handleRoleChange}
           >
@@ -132,7 +132,7 @@ export const SchoolComponent: React.FC<{
           <select
             value={selectedValue}
             onChange={handleChange}
-            className="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
+            className="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-primary sm:text-sm sm:leading-6"
           >
             <option value={0}>Seleccione el usuario</option>
             {userList.map((user: UserInterface) => (
@@ -215,7 +215,7 @@ export const DetailedSchoolComponent: React.FC<{
             Región del establecimiento
           </h6>
           <select
-            className="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
+            className="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-primary sm:text-sm sm:leading-6"
             value={regionSelected}
             onChange={handleChangeRegion}
           >
@@ -234,7 +234,7 @@ export const DetailedSchoolComponent: React.FC<{
           <select
             value={comunaSelected}
             onChange={handleChangeComuna}
-            className="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
+            className="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-primary sm:text-sm sm:leading-6"
           >
             <option value={""}>Seleccione la comuna</option>
             {comunaList.map((comuna: string) => (
@@ -255,7 +255,7 @@ export const DetailedSchoolComponent: React.FC<{
           <select
             value={establecimientoSelected}
             onChange={handleChangeEstablecimiento}
-            className="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
+            className="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-primary sm:text-sm sm:leading-6"
           >
             <option value={""}>Seleccione el establecimiento</option>
             {establecimientoList.map((stablishment: stablishmentI) => (

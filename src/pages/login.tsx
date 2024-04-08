@@ -130,7 +130,7 @@ export default function Login() {
                   type="email"
                   autoComplete="email"
                   required
-                  className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                  className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-info sm:text-sm sm:leading-6"
                 />
               </div>
             </div>
@@ -146,7 +146,7 @@ export default function Login() {
                 <div className="text-sm">
                   <a
                     href="#"
-                    className="font-semibold text-indigo-600 hover:text-indigo-500"
+                    className="font-semibold text-primary hover:text-info"
                     onClick={recover}
                   >
                     Olvide mi contraseña
@@ -160,7 +160,7 @@ export default function Login() {
                   type="password"
                   autoComplete="current-password"
                   required
-                  className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                  className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-info sm:text-sm sm:leading-6"
                 />
               </div>
             </div>
@@ -168,7 +168,7 @@ export default function Login() {
             <div>
               <button
                 type="submit"
-                className={`flex w-full justify-center rounded-md ${error ? `bg-red-500 hover:bg-red-800` : `bg-indigo-600 hover:bg-indigo-500`} px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600`}
+                className={`flex w-full justify-center rounded-md ${error ? `bg-primary` : `bg-primary hover:bg-accent`} px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600`}
               >
               {error && (<ExclamationTriangleIcon className="w-6 text-white" aria-hidden="true" />)}
                 Conectar
@@ -178,7 +178,7 @@ export default function Login() {
           <div className="flex justify-center m-1">
             <button
               onClick={register}
-              className="font-semibold text-primary-500 hover:text-primary-900"
+              className="font-semibold text-info hover:text-primary"
             >
               Registrate
             </button>

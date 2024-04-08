@@ -108,11 +108,11 @@ const TextComponent: React.FC<{
         <h6 className="font-bold md:text-base text-sm">{form.title}</h6>
       </div>
       <div className="flex items-center justify-center">
-        <div className="mx-4 w-full">
+        <div className="mx-4 w-full mt-2">
           <textarea
             value={textValue}
             onChange={handleTextChange}
-            className="border rounded-lg bg-gray-100 focus:outline-none focus:ring focus:border-blue-500 p-2 resize-y w-full h-full"
+            className="border rounded-lg bg-gray-100 focus:outline-none focus:ring-primary focus:border-primary  p-2 resize-y w-full h-full"
             rows={5}
           ></textarea>
         </div>
@@ -157,7 +157,7 @@ const CheckboxMultipleComponent: React.FC<{
                   name={e.title}
                   type="checkbox"
                   onChange={() => handleCheckboxChange(e.title)}
-                  className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
+                  className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
                 />
                 <span className="ml-3 text-sm leading-6">{e.title}</span>
               </label>
@@ -169,56 +169,6 @@ const CheckboxMultipleComponent: React.FC<{
   );
 };
 
-const CheckboxUniqueComponent: React.FC<{
-  form: groupQuestionI;
-  setElement: (newElement: string, element: string) => void;
-  elementOption: string;
-}> = ({ form, setElement, elementOption }) => {
-  const [selectedOption, setSelectedOption] = useState<string>("");
-  if (!Array.isArray(form.options)) {
-    return "OCURRIO UN ERROR";
-  }
-
-  const handleOptionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newValue = e.target.value;
-    setSelectedOption(newValue);
-    setElement(newValue, elementOption);
-  };
-
-  return (
-    <div className="md:flex-1 divide-y md:mx-1 my-1 divide-gray-200 overflow-hidden shadow-xl rounded-lg bg-white shadow animate-fadein">
-      <div className="px-4 py-5 sm:px-6 text-center">
-        <h6 className="font-bold md:text-base text-sm">{form.title}</h6>
-      </div>
-      <fieldset className="px-4 py-5 sm:p-6">
-        <legend className="sr-only">Notifications</legend>
-        <div className="space-y-2">
-          {form.options.map((e, index) => {
-            return (
-              <label key={index} className="relative flex items-start">
-                <input
-                  value={e.title}
-                  type="radio"
-                  name={form.title}
-                  aria-describedby={`${form.title}-${index}`}
-                  checked={selectedOption === e.title}
-                  onChange={handleOptionChange}
-                  className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
-                />
-                <span
-                  id={`${form.title}-${index}`}
-                  className="ml-3 text-sm leading-6"
-                >
-                  {e.title}
-                </span>
-              </label>
-            );
-          })}
-        </div>
-      </fieldset>
-    </div>
-  );
-};
 
 const Form: React.FC<{
   fields: groupQuestionI[];
@@ -270,7 +220,7 @@ const Form: React.FC<{
     <div className="flex flex-col md:flex-row items-center justify-center m-2">
       <button
         disabled={creating}
-        className="flex rounded-full bg-indigo-600 px-3.5 py-2 text-sm md:text-lg font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+        className="flex rounded-full bg-primary px-3.5 py-2 text-sm md:text-lg font-semibold text-white shadow-sm hover:brightness-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
         type="submit"
       >
         <span>Registrar Denuncia</span>

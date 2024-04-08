@@ -6,21 +6,11 @@ const config: Config = {
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/layout/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/context/*.{js,ts,jsx,tsx,mdx}",
+    'node_modules/daisyui/dist/**/*.js',
+    'node_modules/react-daisyui/dist/**/*.js',
   ],
-    theme: {
+  theme: {
     extend: {
-      colors: {
-        primary: {
-          100: '#ebf8ff', // Azul claro
-          500: '#3490dc', // Azul original
-          900: '#1c3d5a', // Azul oscuro
-        },
-        secondary: {
-          100: '#d6f5d6', // Verde claro
-          500: '#38a169', // Verde original
-          900: '#1d4733', // Verde oscuro
-        },
-      },
       animation: {
         'spin': 'spin 3s linear infinite',
       },
@@ -31,6 +21,33 @@ const config: Config = {
       },
     },
   },
-  plugins: [require('@tailwindcss/forms')],
+  daisyui: {
+    themes: [
+      {
+        mytheme: {
+
+          "primary": "#0d9488",
+
+          "secondary": "#009dbe",
+
+          "accent": "#007c00",
+
+          "neutral": "#e5e7eb",
+
+          "base-100": "#e5e7eb",
+
+          "info": "#00c9ff",
+
+          "success": "#577f00",
+
+          "warning": "#ff9700",
+
+          "error": "#fb4c66",
+        },
+      },
+    ],
+  },
+  transpilePackages: ['react-daisyui'],
+  plugins: [require('@tailwindcss/forms'), require('daisyui')],
 };
 export default config;

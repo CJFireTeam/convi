@@ -193,7 +193,7 @@ export default function Sugerencia() {
                                         <span className="font-bold md:text-base text-sm">
                                             Importante: su consulta o sugerencia será recepcionada por el equipo de convivencia
                                             escolar del establecimiento y será respondida a la brevedad por esta misma aplicación,
-                                            podrá ver la respuesta en la sección "Mis casos".
+                                            podrá ver la respuesta en la sección Mis casos.
                                         </span>
                                     </div>
                                     <button

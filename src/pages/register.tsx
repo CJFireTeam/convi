@@ -40,14 +40,16 @@ export default function Register() {
     try {
       const data = new FormData(event.currentTarget);
       const jsonData: { [key: string]: string } = {};
-
+  
       data.forEach((value, key) => {
         jsonData[key] = value.toString();
       });
       jsonData["username"] = jsonData["email"];
       setemail(jsonData["username"]);
+  
       await axios.post(
-        process.env.NEXT_PUBLIC_BACKEND_URL + "auth/local/register",jsonData
+        process.env.NEXT_PUBLIC_BACKEND_URL + "auth/local/register",
+        jsonData
       );
       openModal();
       toast.update(id, {
@@ -57,16 +59,20 @@ export default function Register() {
         autoClose: 3000,
       });
     } catch (error) {
-      if (error instanceof AxiosError) {
-        if (error.response) {
-          if (error.response.data.error.details.errors.length > 0)
-            toast.update(id, {
-              render: error.response.data.error.details.errors[0].message,
-              type: "error",
-              isLoading: false,
-              autoClose: 3000,
-            });
-        }
+      if (error instanceof AxiosError && error.response && error.response.status === 400) {
+        toast.update(id, {
+          render: error.response.data.message || "Error: El email se encuentra en uso",
+          type: "error",
+          isLoading: false,
+          autoClose: 3000,
+        });
+      } else {
+        toast.update(id, {
+          render: "Ocurrió un error al crear la cuenta",
+          type: "error",
+          isLoading: false,
+          autoClose: 3000,
+        });
       }
     }
   };

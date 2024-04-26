@@ -1,5 +1,5 @@
 import { Children, Fragment, ReactNode, useEffect, useState } from "react";
-import { Dialog, Transition, Menu } from "@headlessui/react";
+import { Dialog, Transition, Menu, Disclosure } from "@headlessui/react";
 import { jwtDecode } from "jwt-decode";
 import Cookies from "js-cookie";
 import {
@@ -10,16 +10,11 @@ import {
 
 import {
   Bars3Icon,
-  BellIcon,
-  CalendarIcon,
-  ChartPieIcon,
-  Cog6ToothIcon,
-  DocumentDuplicateIcon,
-  FolderIcon,
   HomeIcon,
   UsersIcon,
   XMarkIcon,
   LightBulbIcon,
+  ArchiveBoxIcon
 } from "@heroicons/react/24/outline";
 import { useLoaderContext } from "../../context/loader";
 import axios from "axios";
@@ -33,16 +28,6 @@ type LayoutProps = {
 const userNavigation = [
   { name: "Mi perfil", href: "/perfil" },
   { name: "Desconectar", href: "/logout" },
-];
-const initialNavigation = [
-  {
-    name: "Te Escuchamos",
-    href: "/casos/crear",
-    icon: UsersIcon,
-    current: false,
-  },
-  { name: "Home", href: "/", icon: HomeIcon, current: true },
-  { name: "Casos", href: "/casos", icon: UsersIcon, current: false },
 ];
 
 function classNames(...classes: string[]) {
@@ -60,7 +45,19 @@ export default function Layout(props: LayoutProps) {
     setStablishment,
     GetStablishment,
   } = useUserStore();
-  const [navigation, setNavigation] = useState(initialNavigation);
+  const [navigation, setNavigation] = useState<
+    {
+      name: string;
+      href: string;
+      icon: React.ForwardRefExoticComponent<
+        Omit<React.SVGProps<SVGSVGElement>, "ref"> & {
+          title?: string;
+          titleId?: string;
+        } & React.RefAttributes<SVGSVGElement>
+      >;
+      current: boolean;
+    }[]
+  >([]);
   const { Loader, setLoader } = useLoaderContext();
   const [title, setTitle] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -113,11 +110,10 @@ export default function Layout(props: LayoutProps) {
         if (GetRole() !== "Authenticated") {
           setRoleUI(capitalizeFirstLetter(data.data.role.name));
         }
+
         setRole(data.data.role);
         setLoader(false);
       } catch (error) {
-        console.log(user);
-        console.log(error);
         setLoader(false);
         Cookies.remove("bearer");
         //push("/login");
@@ -125,280 +121,206 @@ export default function Layout(props: LayoutProps) {
     };
     me();
   }, []);
+
   useEffect(() => {
     if (useUserStore.getState().GetRole() === "Authenticated") {
-      initialNavigation.push({
-        name: "Sugerencias",
-        href: "/casos",
-        icon: LightBulbIcon,
-        current: false,
-      });
+      setNavigation([
+        { name: "Home", href: "/", icon: HomeIcon, current: true },
+        {
+          name: "Te Escuchamos",
+          href: "/te_escuchamos",
+          icon: UsersIcon,
+          current: false,
+        },
+        // { name: "Casos", href: "/casos", icon: UsersIcon, current: false },
+        {
+          name: "Sugerencias",
+          href: "#",
+          icon: LightBulbIcon,
+          current: false,
+        },
+      ]);
     }
-  }, []);
+    if (useUserStore.getState().GetRole() === "Encargado de Convivencia Escolar") {
+      setNavigation([
+        { name: "Home", href: "/", icon: HomeIcon, current: true },
+        {
+          name: "Denuncia",
+          href: "/casos/crear",
+          icon: UsersIcon,
+          current: false,
+        },
+        // { name: "Casos", href: "/casos", icon: UsersIcon, current: false },
+        {
+          name: "Sugerencias",
+          href: "/casos",
+          icon: LightBulbIcon,
+          current: false,
+        },
+        {
+          name: "Lista de casos",
+          href: "/casos",
+          icon: ArchiveBoxIcon,
+          current: false,
+        },
+      ]);
+    }
+  }, [useUserStore.getState().GetRole()]);
 
   return (
     <>
-      <Head>
-        <title>{title}</title>
-      </Head>
-      <div>
-        <Transition.Root show={sidebarOpen} as={Fragment}>
-          <Dialog
-            as="div"
-            className="relative z-50 lg:hidden"
-            onClose={setSidebarOpen}
-          >
-            <Transition.Child
-              as={Fragment}
-              enter="transition-opacity ease-linear duration-300"
-              enterFrom="opacity-0"
-              enterTo="opacity-100"
-              leave="transition-opacity ease-linear duration-300"
-              leaveFrom="opacity-100"
-              leaveTo="opacity-0"
-            >
-              <div className="fixed inset-0 bg-gray-900/80" />
-            </Transition.Child>
-
-            <div className="fixed inset-0 flex">
-              <Transition.Child
-                as={Fragment}
-                enter="transition ease-in-out duration-300 transform"
-                enterFrom="-translate-x-full"
-                enterTo="translate-x-0"
-                leave="transition ease-in-out duration-300 transform"
-                leaveFrom="translate-x-0"
-                leaveTo="-translate-x-full"
-              >
-                <Dialog.Panel className="relative mr-16 flex w-full max-w-xs flex-1">
-                  <Transition.Child
-                    as={Fragment}
-                    enter="ease-in-out duration-300"
-                    enterFrom="opacity-0"
-                    enterTo="opacity-100"
-                    leave="ease-in-out duration-300"
-                    leaveFrom="opacity-100"
-                    leaveTo="opacity-0"
-                  >
-                    <div className="absolute left-full top-0 flex w-16 justify-center pt-5">
-                      <button
-                        type="button"
-                        className="-m-2.5 p-2.5"
-                        onClick={() => setSidebarOpen(false)}
+      <Disclosure as="nav" className="bg-white shadow">
+        {({ open }) => (
+          <>
+            <div className="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8">
+              <div className="relative flex h-16 justify-between">
+                <div className="absolute inset-y-0 left-0 flex items-center sm:hidden">
+                  {/* Mobile menu button */}
+                  <Disclosure.Button className="relative inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary">
+                    <span className="absolute -inset-0.5" />
+                    <span className="sr-only">Open main menu</span>
+                    {open ? (
+                      <XMarkIcon className="block h-6 w-6" aria-hidden="true" />
+                    ) : (
+                      <Bars3Icon className="block h-6 w-6" aria-hidden="true" />
+                    )}
+                  </Disclosure.Button>
+                </div>
+                <div className="flex flex-1 items-center justify-center sm:items-stretch sm:justify-start">
+                  <div className="flex flex-shrink-0 items-center"></div>
+                  <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
+                    {/* Current: "border-indigo-500 text-gray-900", Default: "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700" */}
+                    {navigation.map((item, index) => (
+                      <a
+                        key={index}
+                        className={classNames(
+                          "animate-fadein",
+                          item.current
+                            ? "inline-flex items-center border-b-2 border-primary px-1 pt-1 text-sm font-medium text-gray-900 cursor-pointer "
+                            : "inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-900 cursor-pointer"
+                        )}
+                        // className="inline-flex items-center ${} px-1 pt-1 text-sm font-medium text-gray-900"
+                        onClick={() => redirection(item)}
                       >
-                        <span className="sr-only">Close sidebar</span>
-                        <XMarkIcon
-                          className="h-6 w-6 text-white"
+                        <item.icon
+                          className="h-6 w-6 shrink-0 mr-1"
                           aria-hidden="true"
                         />
-                      </button>
-                    </div>
-                  </Transition.Child>
-                  {/* Sidebar component, swap this element with another sidebar if you like */}
-                  <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-gray-900 px-6 pb-4 ring-1 ring-white/10">
-                    <div className="flex h-16 shrink-0 items-center">
-                      <h1 className="h-8 w-auto">
-                        {user.establishment
-                          ? user.establishment.name.toUpperCase()
-                          : ""}
-                      </h1>
-                      <img
-                        className="h-8 w-auto"
-                        src="https://tailwindui.com/img/logos/mark.svg?color=indigo&shade=500"
-                        alt="Your Company"
-                      />
-                    </div>
-                    <nav className="flex flex-1 flex-col">
-                      <ul role="list" className="flex flex-1 flex-col gap-y-7">
-                        <li>
-                          <ul role="list" className="-mx-2 space-y-1">
-                            {navigation.map((item) => (
-                              <li key={item.name}>
-                                <a
-                                  onClick={() => redirection(item)}
-                                  className={classNames(
-                                    item.current
-                                      ? "bg-gray-800 text-white"
-                                      : "text-gray-400 hover:text-white hover:bg-gray-800",
-                                    "group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold"
-                                  )}
-                                >
-                                  <item.icon
-                                    className="h-6 w-6 shrink-0"
-                                    aria-hidden="true"
-                                  />
-                                  {item.name}
-                                </a>
-                              </li>
-                            ))}
-                          </ul>
-                        </li>
-                        <li></li>
-                        <li className="mt-auto">
-                          <a
-                            href="#"
-                            className="group -mx-2 flex gap-x-3 rounded-md p-2 text-sm font-semibold leading-6 text-gray-400 hover:bg-gray-800 hover:text-white"
-                          >
-                            <Cog6ToothIcon
-                              className="h-6 w-6 shrink-0"
-                              aria-hidden="true"
-                            />
-                            Settings
-                          </a>
-                        </li>
-                      </ul>
-                    </nav>
-                  </div>
-                </Dialog.Panel>
-              </Transition.Child>
-            </div>
-          </Dialog>
-        </Transition.Root>
-
-        {/* Static sidebar for desktop */}
-        <div className="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-72 lg:flex-col">
-          {/* Sidebar component, swap this element with another sidebar if you like */}
-          <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-gray-900 px-6 pb-4">
-            <div className="flex h-16 items-center justify-center text-center text-white">
-              <h1 className="h-8 w-auto">
-                {user.establishment
-                  ? user.establishment.name.toUpperCase()
-                  : ""}
-              </h1>
-            </div>
-            <nav className="flex flex-1 flex-col">
-              <ul role="list" className="flex flex-1 flex-col gap-y-7">
-                <li>
-                  <ul role="list" className="-mx-2 space-y-1">
-                    {navigation.map((item) => (
-                      <li key={item.name}>
-                        <a
-                          onClick={() => redirection(item)}
-                          className={classNames(
-                            item.current
-                              ? "bg-gray-800 text-white"
-                              : "text-gray-400 hover:text-white hover:bg-gray-800",
-                            "group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold cursor-pointer"
-                          )}
-                        >
-                          <item.icon
-                            className="h-6 w-6 shrink-0"
-                            aria-hidden="true"
-                          />
-                          {item.name}
-                        </a>
-                      </li>
+                        {item.name}
+                      </a>
                     ))}
-                  </ul>
-                </li>
-                <li></li>
-                <li className="mt-auto">
-                  <a
-                    href="#"
-                    className="group -mx-2 flex gap-x-3 rounded-md p-2 text-sm font-semibold leading-6 text-gray-400 hover:bg-gray-800 hover:text-white"
-                  >
-                    <Cog6ToothIcon
-                      className="h-6 w-6 shrink-0"
-                      aria-hidden="true"
-                    />
-                    Settings
-                  </a>
-                </li>
-              </ul>
-            </nav>
-          </div>
-        </div>
-
-        <div className="lg:pl-72">
-          <div className="sticky top-0 z-40 flex h-16 shrink-0 items-center gap-x-4 border-b border-gray-200 bg-white px-4 shadow-sm sm:gap-x-6 sm:px-6 lg:px-8">
-            <button
-              type="button"
-              className="-m-2.5 p-2.5 text-gray-700 lg:hidden"
-              onClick={() => setSidebarOpen(true)}
-            >
-              <span className="sr-only">Open sidebar</span>
-              <Bars3Icon className="h-6 w-6" aria-hidden="true" />
-            </button>
-
-            {/* Separator */}
-            <div
-              className="h-6 w-px bg-gray-900/10 lg:hidden"
-              aria-hidden="true"
-            />
-
-            <div className="flex flex-1 gap-x-4 self-stretch lg:gap-x-6">
-              <div className="relative flex flex-1" />
-              <div className="flex items-center gap-x-4 lg:gap-x-6">
-                <button
-                  type="button"
-                  className="-m-2.5 p-2.5 text-gray-400 hover:text-gray-500"
-                >
-                  <span className="sr-only">View notifications</span>
-                  <BellIcon className="h-6 w-6" aria-hidden="true" />
-                </button>
-
-                {/* Separator */}
-                <div
-                  className="hidden lg:block lg:h-6 lg:w-px lg:bg-gray-900/10"
-                  aria-hidden="true"
-                />
-
-                {/* Profile dropdown */}
-                <Menu as="div" className="relative">
-                  <Menu.Button className="-m-1.5 flex items-center p-1.5">
+                  </div>
+                </div>
+                <div className="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
+                  {/* Profile dropdown */}
+                  <Menu as="div" className="relative ml-3">
+                    <div>
+                      <Menu.Button className="relative flex rounded-full bg-white text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2">
+                        <span className="absolute -inset-1.5" />
+                        <span className="sr-only">Open user menu</span>
+                        <UserIcon className="h-8 w-8 rounded-full" />
+                      </Menu.Button>
+                    </div>
+                    <Transition
+                      as={Fragment}
+                      enter="transition ease-out duration-200"
+                      enterFrom="transform opacity-0 scale-95"
+                      enterTo="transform opacity-100 scale-100"
+                      leave="transition ease-in duration-75"
+                      leaveFrom="transform opacity-100 scale-100"
+                      leaveTo="transform opacity-0 scale-95"
+                    >
+                      <Menu.Items className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                        {userNavigation.map((item) => (
+                          <Menu.Item key={item.name}>
+                            {({ active }) => (
+                              <a
+                                onClick={() => redirection(item)}
+                                className={classNames(
+                                  active ? "bg-gray-50" : "",
+                                  "block px-3 py-1 text-sm leading-6 text-gray-900 cursor-pointer"
+                                )}
+                              >
+                                <span className="cursor-pointer">
+                                  {item.name}
+                                </span>
+                              </a>
+                            )}
+                          </Menu.Item>
+                        ))}
+                      </Menu.Items>
+                    </Transition>
+                  </Menu>
+                </div>
+              </div>
+              <Menu as="div" className="relative ml-4 flex-shrink-0">
+                <div>
+                  <Menu.Button className="relative flex rounded-full bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                    <span className="absolute -inset-1.5" />
                     <span className="sr-only">Open user menu</span>
-                    <UserIcon className="h-8 w-8 rounded-full bg-gray-50"></UserIcon>
-                    <span className="hidden lg:flex lg:items-center">
-                      <span
-                        className="ml-4 text-sm font-semibold leading-6 text-gray-900"
-                        aria-hidden="true"
-                      >
-                        {capitalizeFirstLetter(user.firstname)}{" "}
-                        {capitalizeFirstLetter(user.first_lastname)}
-                      </span>
-                      <ChevronDownIcon
-                        className="ml-2 h-5 w-5 text-gray-400"
+                  </Menu.Button>
+                </div>
+                <Transition
+                  as={Fragment}
+                  enter="transition ease-out duration-100"
+                  enterFrom="transform opacity-0 scale-95"
+                  enterTo="transform opacity-100 scale-100"
+                  leave="transition ease-in duration-75"
+                  leaveFrom="transform opacity-100 scale-100"
+                  leaveTo="transform opacity-0 scale-95"
+                >
+                  <Menu.Items className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                    {userNavigation.map((item) => (
+                      <Menu.Item key={item.name}>
+                        {({ active }) => (
+                          <a
+                            href={item.href}
+                            className={classNames(
+                              active ? "bg-gray-100" : "",
+                              "block px-4 py-2 text-sm text-gray-700"
+                            )}
+                          >
+                            {item.name}
+                          </a>
+                        )}
+                      </Menu.Item>
+                    ))}
+                  </Menu.Items>
+                </Transition>
+              </Menu>
+            </div>
+            <Disclosure.Panel className="sm:hidden">
+              <div className="space-y-1 pb-4 pt-2">
+                {/* Current: "bg-indigo-50 border-indigo-500 text-indigo-700", Default: "border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700" */}
+                {navigation.map((item, index) => (
+                  <Disclosure.Button
+                    key={index}
+                    as="a"
+                    className={classNames(
+                      "cursor-pointer animate-fadein",
+                      item.current
+                        ? "flex items-center justify-between block border-l-4 border-primary bg-primary bg-opacity-10 py-2 pl-3 pr-4 text-base font-medium text-primary"
+                        : "flex items-center justify-between block border-l-4 border-transparent py-2 pl-3 pr-4 text-base font-medium text-gray-500 hover:border-gray-300 hover:bg-gray-50 hover:text-gray-700"
+                    )}
+                    onClick={() => redirection(item)}
+                  >
+                    <div className="inline-block flex items-center">
+                      <item.icon
+                        className="h-6 w-6 shrink-0"
                         aria-hidden="true"
                       />
-                    </span>
-                  </Menu.Button>
-                  <Transition
-                    as={Fragment}
-                    enter="transition ease-out duration-100"
-                    enterFrom="transform opacity-0 scale-95"
-                    enterTo="transform opacity-100 scale-100"
-                    leave="transition ease-in duration-75"
-                    leaveFrom="transform opacity-100 scale-100"
-                    leaveTo="transform opacity-0 scale-95"
-                  >
-                    <Menu.Items className="absolute right-0 z-10 mt-2.5 w-32 origin-top-right rounded-md bg-white py-2 shadow-lg ring-1 ring-gray-900/5 focus:outline-none">
-                      {userNavigation.map((item) => (
-                        <Menu.Item key={item.name}>
-                          {({ active }) => (
-                            <a
-                              onClick={() => redirection(item)}
-                              className={classNames(
-                                active ? "bg-gray-50" : "",
-                                "block px-3 py-1 text-sm leading-6 text-gray-900 cursor-pointer"
-                              )}
-                            >
-                              {item.name}
-                            </a>
-                          )}
-                        </Menu.Item>
-                      ))}
-                    </Menu.Items>
-                  </Transition>
-                </Menu>
+                      <span className="mx-2">{item.name}</span>
+                    </div>
+                  </Disclosure.Button>
+                ))}
               </div>
-            </div>
-          </div>
-
-          <main className="py-10">
-            <div className="px-4 sm:px-6 lg:px-8">{props.children}</div>
-          </main>
-        </div>
-      </div>
+            </Disclosure.Panel>
+          </>
+        )}
+      </Disclosure>
+      <main className="py-10">
+        <div className="px-4 sm:px-6 lg:px-8">{props.children}</div>
+      </main>
     </>
   );
 }

@@ -1,14 +1,15 @@
 import Cookies from "js-cookie";
 import { useRouter } from "next/router";
 import axios from "axios";
-import Layout from "../../components/layout/Layout";
 import { useEffect, useState } from "react";
-import metaI from "../../interfaces/meta.interface";
+
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/20/solid";
-import { capitalizeFirstLetter } from "../../shared/functions";
-import { useUserStore } from "../../store/userStore";
-import { api_cases } from "../../services/axios.services";
+
 import { EyeIcon, PencilIcon } from "@heroicons/react/24/outline";
+import { capitalizeFirstLetter } from "../shared/functions";
+import { useUserStore } from "../store/userStore";
+import metaI from "../interfaces/meta.interface";
+import { api_cases } from "../services/axios.services";
 
 function Table({ data }: { data: caseInterface[] }) {
   const paseDate = (date: string) => {
@@ -189,7 +190,7 @@ function Paginator() {
   );
 }
 
-export default function Casos() {
+export default function CasosAuthenticated() {
   const { user, GetRole } = useUserStore();
   const [metaData, setMetada] = useState<metaI>();
   const [data, setData] = useState<caseInterface[]>([]);

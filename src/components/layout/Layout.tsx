@@ -208,6 +208,7 @@ export default function Layout(props: LayoutProps) {
                         />
                         {item.name}
                       </a>
+                      
                     ))}
                   </div>
                 </div>
@@ -217,6 +218,7 @@ export default function Layout(props: LayoutProps) {
                     <div>
                       <Menu.Button className="relative flex rounded-full bg-white text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2">
                         <span className="absolute -inset-1.5" />
+                        <span className="text-black mt-1 mr-1"> {user.firstname} {user.first_lastname}</span>
                         <span className="sr-only">Open user menu</span>
                         <UserIcon className="h-8 w-8 rounded-full" />
                       </Menu.Button>

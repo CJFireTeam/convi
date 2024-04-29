@@ -66,6 +66,7 @@ export default function Register() {
           isLoading: false,
           autoClose: 3000,
         });
+        router.push({ pathname: "/login" });
       } else {
         toast.update(id, {
           render: "Ocurrió un error al crear la cuenta",

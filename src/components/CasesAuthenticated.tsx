@@ -1,17 +1,29 @@
 import Cookies from "js-cookie";
 import { useRouter } from "next/router";
 import axios from "axios";
-import { useEffect, useState } from "react";
-
+import { useEffect, useState, useRef,useCallback } from "react";
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/20/solid";
-
 import { EyeIcon, PencilIcon } from "@heroicons/react/24/outline";
 import { capitalizeFirstLetter } from "../shared/functions";
 import { useUserStore } from "../store/userStore";
 import metaI from "../interfaces/meta.interface";
 import { api_cases } from "../services/axios.services";
-
+import { Button, Divider, Input, Modal } from "react-daisyui";
 function Table({ data }: { data: caseInterface[] }) {
+
+  const [selectedPerson, setSelectedPerson] = useState<caseInterface | null>(null);
+
+  const creationRef = useRef<HTMLDialogElement>(null);
+
+  const handleShowModal = useCallback((person: caseInterface) => {
+      setSelectedPerson(person);
+      creationRef.current?.showModal();
+  }, [creationRef]);
+
+  const handleCloseModal = useCallback(() => {
+    creationRef.current?.close();
+  }, [creationRef]);
+
   const paseDate = (date: string) => {
     const fecha = new Date(date);
 
@@ -35,13 +47,13 @@ function Table({ data }: { data: caseInterface[] }) {
             scope="col"
             className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
           >
-            Cargo
+            Derivado a
           </th>
           <th
             scope="col"
-            className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+            className="px-3 py-3.5 text-left text-sm font-semibod text-gray-900"
           >
-            Nombre
+            Cargo
           </th>
           <th
             scope="col"
@@ -70,12 +82,6 @@ function Table({ data }: { data: caseInterface[] }) {
               {index + 1}
             </td>
             <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
-              {
-                person.attributes.directed.data.attributes.role.data.attributes
-                  .name
-              }
-            </td>
-            <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
               {capitalizeFirstLetter(
                 person.attributes.directed.data.attributes.firstname
               )}{" "}
@@ -84,10 +90,18 @@ function Table({ data }: { data: caseInterface[] }) {
               )}
             </td>
             <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
+              {
+                person.attributes.directed.data.attributes.role.data.attributes
+                  .name
+              }
+            </td>
+            <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
               {paseDate(person.attributes.createdAt)}
             </td>
             <td className="py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6  space-x-2 items-center">
-              <EyeIcon className="h-6 w-6" aria-hidden="true" />
+              <button onClick={() =>{handleShowModal(person)}}>
+                <EyeIcon className="h-6 w-6" aria-hidden="true"/>
+              </button>
             </td>
             <td className="py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6  space-x-2 items-center">
               <PencilIcon className="h-6 w-6" aria-hidden="true" />
@@ -95,6 +109,63 @@ function Table({ data }: { data: caseInterface[] }) {
           </tr>
         ))}
       </tbody>
+      <Modal backdrop responsive ref={creationRef} className="bg-white">
+        <Modal.Header className="font-bold">
+          Informacion del caso:
+        </Modal.Header>
+        <Divider />
+        <Modal.Body>
+        <ul>
+      </ul>
+            <div className="my-2">
+              <div className="flex flex-wrap">
+                <div className="flex flex-col w-full">
+                  <label className="label">
+                    <span className="label-text">¿Quiénes participaron?</span>
+                  </label>
+                  <textarea value={selectedPerson ? selectedPerson.attributes.who.values.join(" , ") : ''} readOnly rows={1}></textarea>
+                </div>
+              </div> 
+              <div className="flex flex-wrap">
+                <div className="flex flex-col w-full">
+                    <label className="label">
+                      <span className="label-text">¿Dónde ocurrió?</span>
+                    </label>
+                    <textarea value={selectedPerson ? selectedPerson.attributes.where.values.join(" , ") : ''} readOnly rows={1}></textarea>
+                </div>
+              </div>
+              <div className="flex flex-wrap">
+                <div className="flex flex-col w-full">
+                <label className="label">
+                      <span className="label-text">¿Cuándo ocurrió?</span>
+                  </label>
+                  <textarea value={selectedPerson ? selectedPerson.attributes.when.values.join(" , ") : ''} readOnly rows={1}></textarea>
+                </div>
+              </div>
+              <div className="flex flex-wrap">
+                <div className="flex flex-col w-full">
+                <label className="label">
+                      <span className="label-text">Relato de los hechos</span>
+                  </label>
+                  <textarea value={selectedPerson ?selectedPerson.attributes.story : ''} readOnly rows={1}></textarea>
+                </div>
+              </div>
+              <div className="flex flex-wrap">
+                <div className="flex flex-col w-full">
+                <label className="label">
+                      <span className="label-text">¿Se tomaron medidas?:</span>
+                  </label>
+                  <textarea value={selectedPerson ?selectedPerson.attributes.measures : ''} readOnly rows={1}></textarea>
+                </div>
+              </div>
+            <div className="my-2">
+            <div className="flex items-center justify-center">
+              <Button color="neutral" onClick={() =>{handleCloseModal()}}>Cerrar</Button>
+            </div>
+          </div>
+          </div>
+        </Modal.Body>
+      </Modal>
     </table>
   );
 }
@@ -216,7 +287,7 @@ export default function CasosAuthenticated() {
   const redirect = () => {
     push("/casos/crear");
   };
-
+  
   return (
     <div className="px-4 sm:px-6 lg:px-8">
       <div className="flex items-center justify-between ">

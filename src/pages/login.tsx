@@ -59,8 +59,30 @@ export default function Login() {
       if (error instanceof AxiosError) {
         if (error.response) {
           if (error.response.data.error.message)
+            if (error.response.data.error.message === "Your account has been blocked by an administrator") toast.update(id, {
+              render: "Tu cuenta se encuentra bloqueada, Contatate con un Administrador.",
+              type: "error",
+              isLoading: false,
+              autoClose: 3000,
+            });
+        }
+      }
+      if (error instanceof AxiosError) {
+        if (error.response) {
+          if (error.response.data.error.message)
+            if (error.response.data.error.message === "Your account email is not confirmed") toast.update(id, {
+              render: "Aún no has confirmado tu correo electrónico.",
+              type: "error",
+              isLoading: false,
+              autoClose: 3000,
+            });
+        }
+      }
+      if (error instanceof AxiosError) {
+        if (error.response) {
+          if (error.response.data.error.message)
             if (error.response.data.error.message === "Invalid identifier or password") toast.update(id, {
-              render: "Correo o contraseña invalidas",
+              render: "Correo o contraseña invalidas.",
               type: "error",
               isLoading: false,
               autoClose: 3000,

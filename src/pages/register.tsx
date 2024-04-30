@@ -59,17 +59,22 @@ export default function Register() {
         autoClose: 3000,
       });
     } catch (error) {
-      if (error instanceof AxiosError && error.response && error.response.status === 400) {
-        toast.update(id, {
-          render: error.response.data.message || "Error: El email se encuentra en uso",
-          type: "error",
-          isLoading: false,
-          autoClose: 3000,
-        });
-        router.push({ pathname: "/login" });
+      if (error instanceof AxiosError) {
+        if (error.response) {
+          if (error.response.data.error.message)
+            if (error.response.data.error.message === "Email or Username are already taken") toast.update(id, {
+              render: "Error: El correo electronico Ya se encuentra en uso.",
+              type: "error",
+              isLoading: false,
+              autoClose: 3000,
+              
+            })
+            router.push({ pathname: "/login" });
+            
+        }
       } else {
         toast.update(id, {
-          render: "Ocurrió un error al crear la cuenta",
+          render: "Ocurrió un error al crear la cuenta.",
           type: "error",
           isLoading: false,
           autoClose: 3000,

@@ -1,5 +1,5 @@
 import Cookies from "js-cookie";
-import { useRouter } from "next/router";
+import router, { useRouter } from "next/router";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { Cog8ToothIcon } from "@heroicons/react/24/outline";
@@ -238,7 +238,8 @@ export default function CrearCasos() {
   const [creating, setCreating] = useState(false);
   const {bearer,setRole,GetRole,user,isLoading} = useUserStore()
 
-  const { push } = useRouter();
+  const router = useRouter();
+
   const [schoolCase, setSchoolCase] = useState<SchoolCase>({
     establishment: 0,
     who: { values: [] },
@@ -280,7 +281,9 @@ export default function CrearCasos() {
         isLoading: false,
         autoClose: 3000,
       });
-      push("/casos");
+      setTimeout(() => {
+        router.back();
+      }, 3000);
     } catch (error) {
       toast.update(id, {
         render: "Ocurrio un error",

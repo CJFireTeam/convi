@@ -135,7 +135,7 @@ export default function Layout(props: LayoutProps) {
         // { name: "Casos", href: "/casos", icon: UsersIcon, current: false },
         {
           name: "Sugerencias",
-          href: "#",
+          href: "/sugerencia",
           icon: LightBulbIcon,
           current: false,
         },

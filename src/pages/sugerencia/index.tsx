@@ -11,8 +11,10 @@ import { useForm, Controller, FormProvider, useFormContext, FieldErrors } from '
 import { suggestionSchema } from "@/validations/suggestionSchema";
 
 interface Inputs {
-    TextoSugerencia: string;
+    sugerencia: string;
+    creador:string;
     colegio: number;
+    
 }
 interface props {
     errors: FieldErrors<Inputs>
@@ -133,12 +135,12 @@ function SugerenciaText({ errors }: props) {
             <div className="flex items-center justify-center mb-4 ">
                 <div className="mx-4 w-full">
                     <span>¿Cual es su sugerencia?</span>
-                    <textarea {...register('TextoSugerencia', {
+                    <textarea {...register('sugerencia', {
                         setValueAs: (value) => value === "" ? undefined : value
                     })}
-                        className={`${errors.TextoSugerencia ? "border-error focus:ring-error" : "border-primary focus:ring-primary"} border rounded-lg bg-gray-100 focus:outline-none   p-2 resize-y w-full h-full`}
-                        rows={6} id="TextoSugerencia"></textarea>
-                    {errors.TextoSugerencia ? errors.TextoSugerencia.message : ""}
+                        className={`${errors.sugerencia ? "border-error focus:ring-error" : "border-primary focus:ring-primary"} border rounded-lg bg-gray-100 focus:outline-none   p-2 resize-y w-full h-full`}
+                        rows={6} id="sugerencia"></textarea>
+                    {errors.sugerencia ? errors.sugerencia.message : ""}
                 </div>
             </div>
             <div className="flex flex-col md:flex-row items-center justify-center m-2">

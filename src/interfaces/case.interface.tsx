@@ -5,8 +5,12 @@ interface caseInterface {
         createdAt: string;
         updatedAt: string;
         story: string;
-        when: string;
-        where: string;
+        when: {
+            values: string[];
+        };
+        where: {
+            values: string[];
+        };
         who: {
             values: string[];
         };

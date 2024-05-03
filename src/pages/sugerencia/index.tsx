@@ -9,12 +9,17 @@ import stablishmentI from "../../interfaces/establishment.interface";
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm, Controller, FormProvider, useFormContext, FieldErrors } from 'react-hook-form';
 import { suggestionSchema } from "@/validations/suggestionSchema";
+import { toast } from 'react-toastify';
+import router from 'next/router';
+import axios, { AxiosError } from "axios";
+import Cookies from "js-cookie";
+import { useUserStore } from '@/store/userStore';
+
 
 interface Inputs {
-    sugerencia: string;
-    creador:string;
-    colegio: number;
-    
+    suggestion: string;
+    establishment: string;
+    // created: number;
 }
 interface props {
     errors: FieldErrors<Inputs>
@@ -78,6 +83,7 @@ function Colegio({ errors }: props) {
 
     return (
         <div className="grid grid-flow-col justify-stretch animate-fadein">
+        
             <div>
                 <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Región:</label>
                 <select id="region" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-10/12 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
@@ -107,11 +113,11 @@ function Colegio({ errors }: props) {
             </div>
             <div>
                 <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Colegio:</label>
-                <select  {...register('colegio', {
+                <select  {...register('establishment', {
                     setValueAs: (value) => value === "" ? undefined : Number(value)
                 })}
-                    id="colegio" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-10/12 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
-                    <option value="">Seleccione el establecimiento: {getValues("colegio")}</option>
+                    id="establishment" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-10/12 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                    <option value="">Seleccione el establecimiento: {getValues("establishment")}</option>
                     {establecimientoList.map((stablishment: stablishmentI) => (
                         <option value={stablishment.id} key={stablishment.id}>
                             {stablishment.attributes.name}
@@ -119,7 +125,7 @@ function Colegio({ errors }: props) {
                         </option>
                     ))}
                 </select>
-                <p className="text-error text-sm mt-1 text-wei font-semibold">{errors.colegio ? errors.colegio.message : ""}</p>
+                <p className="text-error text-sm mt-1 text-wei font-semibold">{errors.establishment ? errors.establishment.message : ""}</p>
             </div>
         </div>
 
@@ -135,12 +141,12 @@ function SugerenciaText({ errors }: props) {
             <div className="flex items-center justify-center mb-4 ">
                 <div className="mx-4 w-full">
                     <span>¿Cual es su sugerencia?</span>
-                    <textarea {...register('sugerencia', {
+                    <textarea {...register('suggestion', {
                         setValueAs: (value) => value === "" ? undefined : value
                     })}
-                        className={`${errors.sugerencia ? "border-error focus:ring-error" : "border-primary focus:ring-primary"} border rounded-lg bg-gray-100 focus:outline-none   p-2 resize-y w-full h-full`}
+                        className={`${errors.suggestion ? "border-error focus:ring-error" : "border-primary focus:ring-primary"} border rounded-lg bg-gray-100 focus:outline-none   p-2 resize-y w-full h-full`}
                         rows={6} id="sugerencia"></textarea>
-                    {errors.sugerencia ? errors.sugerencia.message : ""}
+                    {errors.suggestion ? errors.suggestion.message : ""}
                 </div>
             </div>
             <div className="flex flex-col md:flex-row items-center justify-center m-2">
@@ -165,10 +171,36 @@ export default function Sugerencia() {
     const methods = useForm<Inputs>({
         resolver: zodResolver(suggestionSchema),
     });
+
+    const {user} = useUserStore()
+
     const onSubmit = async (data: any) => {
         console.log(data)
-        await trigger();
+        console.log(data.seleccion)
+        console.log(user.id)
+        console.log(user.establishment.name)
         
+
+        try {
+            const establishments = data.seleccion === "convi" ? user.establishment.name : data.seleccion ;
+            const response = await axios.post(`${process.env.NEXT_PUBLIC_BACKEND_URL}suggestions`, {
+                data: {
+                    suggestion: data.suggestion,
+                    created: user.id,
+                    establishment: establishments
+                    
+                }
+
+            },
+                { headers: { Authorization: "Bearer " + Cookies.get("bearer") } }
+            );
+            toast.success('Se envio la sugerencia correctamente');
+            setTimeout(() => {
+                router.back();
+            }, 3000);
+        } catch (error) {
+            toast.error('Ocurrió un error al enviar la sugerencia. Por favor, inténtalo de nuevo más tarde.');
+        }
     }
 
     const {
@@ -184,12 +216,16 @@ export default function Sugerencia() {
     } = methods;
 
 
-    const [destinatario, setDestinatario] = useState('');
-    const handleDestinatarioChange = (event: { target: { value: React.SetStateAction<string>; }; }) => {
-        setDestinatario(event.target.value);
+    const [seleccion, setSeleccion] = useState('');
+    const handleSeleccionChange = (event: { target: { value: React.SetStateAction<string>; }; }) => {
+
+            
+        setSeleccion(event.target.value);
     };
 
-
+    useEffect(() => {
+        console.log(errors)
+    }, [errors]);
 
     return (
         <>
@@ -207,23 +243,26 @@ export default function Sugerencia() {
                                     <div className="max-w-sm mb-4">
                                         <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Seleccione a quien va dirigida la sugerencia:</label>
                                         <select
-                                            id="destinatario"
+                                            // {...register('seleccion', { setValueAs: (value) => value === "" ? undefined : value })}
+                                            id="seleccion"
                                             className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                            value={destinatario}
-                                            onChange={handleDestinatarioChange}
+                                            value={seleccion}
+                                            onChange={handleSeleccionChange}
                                         >
                                             <option value="">Escoge una opción:</option>
                                             <option value="convi">Convi</option>
-                                            <option value="colegio">Colegio</option>
+                                            <option value="otro establecimiento">Otro establecimiento</option>
                                         </select>
+                                        {/*                                         <p className="text-error text-sm mt-1 text-wei font-semibold">{errors.establishment ? errors.establishment.message : ""}</p>*/}
                                     </div>
-                                    {destinatario === 'colegio' && (
+                                    {seleccion === 'otro establecimiento' && (
                                         <>
                                             <Colegio errors={errors} />
                                             <SugerenciaText errors={errors} />
                                         </>
                                     )}
-                                    {destinatario == 'convi' && (
+                                    {seleccion == 'convi' && (
+                                        
                                         <SugerenciaText errors={errors} />
                                     )}
 

@@ -71,12 +71,10 @@ export default function Layout(props: LayoutProps) {
     push(e.href);
   }
   useEffect(() => {
-      setActive(pathname)
-  },[pathname])
-  useEffect(() => {
     if (useUserStore.getState().GetRole() === "Authenticated") setMenusAuthenticated()
     if (useUserStore.getState().GetRole() === "Encargado de Convivencia Escolar") setMenusEncargado()
-  }, [useUserStore.getState().GetRole()]);
+    setActive(pathname);
+  }, [useUserStore.getState().GetRole(),pathname]);
 
   useEffect(() => {
     (async () => {})();

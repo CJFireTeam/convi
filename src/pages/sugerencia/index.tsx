@@ -18,8 +18,8 @@ import { useUserStore } from '@/store/userStore';
 
 interface Inputs {
     suggestion: string;
-    establishment: string;
-    // created: number;
+    establishment: string | undefined;
+    created: number;
 }
 interface props {
     errors: FieldErrors<Inputs>
@@ -27,6 +27,7 @@ interface props {
 
 
 function Colegio({ errors }: props) {
+
     const { register, getValues } = useFormContext()
 
     const [regionList, setRegionList] = useState<string[]>([]);
@@ -83,7 +84,7 @@ function Colegio({ errors }: props) {
 
     return (
         <div className="grid grid-flow-col justify-stretch animate-fadein">
-        
+
             <div>
                 <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Región:</label>
                 <select id="region" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-10/12 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
@@ -114,7 +115,7 @@ function Colegio({ errors }: props) {
             <div>
                 <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Colegio:</label>
                 <select  {...register('establishment', {
-                    setValueAs: (value) => value === "" ? undefined : Number(value)
+                    setValueAs: (value) => value === "" ? undefined : value
                 })}
                     id="establishment" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-10/12 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
                     <option value="">Seleccione el establecimiento: {getValues("establishment")}</option>
@@ -172,37 +173,21 @@ export default function Sugerencia() {
         resolver: zodResolver(suggestionSchema),
     });
 
-    const {user} = useUserStore()
+    
+    const { user } = useUserStore()
 
     const onSubmit = async (data: any) => {
-        console.log(data)
-        console.log(data.seleccion)
-        console.log(user.id)
-        console.log(user.establishment.name)
-        
 
         try {
-            const establishments = data.seleccion === "convi" ? user.establishment.name : data.seleccion ;
-            const response = await axios.post(`${process.env.NEXT_PUBLIC_BACKEND_URL}suggestions`, {
-                data: {
-                    suggestion: data.suggestion,
-                    created: user.id,
-                    establishment: establishments
-                    
-                }
-
-            },
+            const response = await axios.post(`${process.env.NEXT_PUBLIC_BACKEND_URL}suggestions`, {data : data},
                 { headers: { Authorization: "Bearer " + Cookies.get("bearer") } }
             );
             toast.success('Se envio la sugerencia correctamente');
-            setTimeout(() => {
-                router.back();
-            }, 3000);
+            reset();
         } catch (error) {
             toast.error('Ocurrió un error al enviar la sugerencia. Por favor, inténtalo de nuevo más tarde.');
         }
     }
-
     const {
         register,
         getValues,
@@ -215,11 +200,20 @@ export default function Sugerencia() {
         formState: { errors },
     } = methods;
 
+    useEffect(() => {
+        console.log(user.id);
+       setValue('created',user.id);
+    }, [user]); 
+
 
     const [seleccion, setSeleccion] = useState('');
     const handleSeleccionChange = (event: { target: { value: React.SetStateAction<string>; }; }) => {
-
-            
+        console.log(event.target.value);
+        if (event.target.value === 'convi') {
+            setValue('establishment', '3')
+        } else {
+            setValue('establishment', undefined);
+        }
         setSeleccion(event.target.value);
     };
 
@@ -262,11 +256,9 @@ export default function Sugerencia() {
                                         </>
                                     )}
                                     {seleccion == 'convi' && (
-                                        
+
                                         <SugerenciaText errors={errors} />
                                     )}
-
-
                                 </div>
                             </form>
                         </FormProvider>

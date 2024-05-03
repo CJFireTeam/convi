@@ -8,6 +8,7 @@ import { Cog8ToothIcon } from "@heroicons/react/24/outline";
 import { ToastContainer, toast } from "react-toastify";
 import { useUserStore } from "../../store/userStore";
 import { SchoolComponent } from "../../components/case/school.component";
+import { useMenuStore } from "../../store/menus.store";
 interface valueInterface {
   title: string;
   value: string | boolean;
@@ -238,7 +239,6 @@ const Form: React.FC<{
 export default function CrearCasos() {
   const [creating, setCreating] = useState(false);
   const {bearer,setRole,GetRole,user,isLoading} = useUserStore()
-
   const { push } = useRouter();
   const [schoolCase, setSchoolCase] = useState<SchoolCase>({
     establishment: 0,

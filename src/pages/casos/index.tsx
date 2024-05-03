@@ -9,6 +9,7 @@ import { capitalizeFirstLetter } from "../../shared/functions";
 import { useUserStore } from "../../store/userStore";
 import { api_cases } from "../../services/axios.services";
 import { EyeIcon, PencilIcon } from "@heroicons/react/24/outline";
+import { useMenuStore } from "../../store/menus.store";
 
 function Table({ data }: { data: caseInterface[] }) {
   const paseDate = (date: string) => {

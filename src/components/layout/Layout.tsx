@@ -22,6 +22,7 @@ import { redirect, usePathname, useRouter } from "next/navigation";
 import Head from "next/head";
 import { useUserStore } from "../../store/userStore";
 import { api_me } from "../../services/axios.services";
+import { useMenuStore } from "../../store/menus.store";
 type LayoutProps = {
   children: ReactNode;
 };
@@ -45,45 +46,14 @@ export default function Layout(props: LayoutProps) {
     setStablishment,
     GetStablishment,
   } = useUserStore();
-  const [navigation, setNavigation] = useState<
-    {
-      name: string;
-      href: string;
-      icon: React.ForwardRefExoticComponent<
-        Omit<React.SVGProps<SVGSVGElement>, "ref"> & {
-          title?: string;
-          titleId?: string;
-        } & React.RefAttributes<SVGSVGElement>
-      >;
-      current: boolean;
-    }[]
-  >([]);
+
   const { Loader, setLoader } = useLoaderContext();
   const [title, setTitle] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { push } = useRouter();
   const pathname = usePathname();
   const [role, setRoleUI] = useState("");
-  useEffect(() => {
-    if (pathname === "/") {
-      const updatedNavigation = navigation.map((element) => ({
-        ...element,
-        current: element.href === "/",
-      }));
-      setNavigation(updatedNavigation);
-      setTitle("Dashboard");
-    } else {
-      const segments = pathname.split("/");
-      const firstSegment = segments[1];
-      const updatedNavigation = navigation.map((element) => ({
-        ...element,
-        current: element.href === "/" + firstSegment,
-      }));
-      setNavigation(updatedNavigation);
-      setTitle(capitalizeFirstLetter(firstSegment));
-    }
-  }, [pathname]);
-
+  const {menus,setMenusAuthenticated,setMenusEncargado,setActive} = useMenuStore()
   function capitalizeFirstLetter(string: string) {
     return string.charAt(0).toUpperCase() + string.slice(1);
   }
@@ -100,6 +70,13 @@ export default function Layout(props: LayoutProps) {
     }
     push(e.href);
   }
+  useEffect(() => {
+      setActive(pathname)
+  },[pathname])
+  useEffect(() => {
+    if (useUserStore.getState().GetRole() === "Authenticated") setMenusAuthenticated()
+    if (useUserStore.getState().GetRole() === "Encargado de Convivencia Escolar") setMenusEncargado()
+  }, [useUserStore.getState().GetRole()]);
 
   useEffect(() => {
     (async () => {})();
@@ -121,51 +98,6 @@ export default function Layout(props: LayoutProps) {
     };
     me();
   }, []);
-
-  useEffect(() => {
-    if (useUserStore.getState().GetRole() === "Authenticated") {
-      setNavigation([
-        { name: "Home", href: "/", icon: HomeIcon, current: true },
-        {
-          name: "Te Escuchamos",
-          href: "/te_escuchamos",
-          icon: UsersIcon,
-          current: false,
-        },
-        // { name: "Casos", href: "/casos", icon: UsersIcon, current: false },
-        {
-          name: "Sugerencias",
-          href: "/sugerencia",
-          icon: LightBulbIcon,
-          current: false,
-        },
-      ]);
-    }
-    if (useUserStore.getState().GetRole() === "Encargado de Convivencia Escolar") {
-      setNavigation([
-        { name: "Home", href: "/", icon: HomeIcon, current: true },
-        {
-          name: "Denuncia",
-          href: "/casos/crear",
-          icon: UsersIcon,
-          current: false,
-        },
-        // { name: "Casos", href: "/casos", icon: UsersIcon, current: false },
-        {
-          name: "Sugerencias",
-          href: "/casos",
-          icon: LightBulbIcon,
-          current: false,
-        },
-        {
-          name: "Lista de casos",
-          href: "/casos",
-          icon: ArchiveBoxIcon,
-          current: false,
-        },
-      ]);
-    }
-  }, [useUserStore.getState().GetRole()]);
 
   return (
     <>
@@ -190,7 +122,7 @@ export default function Layout(props: LayoutProps) {
                   <div className="flex flex-shrink-0 items-center"></div>
                   <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
                     {/* Current: "border-indigo-500 text-gray-900", Default: "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700" */}
-                    {navigation.map((item, index) => (
+                    {useMenuStore.getState().menus.map((item, index) => (
                       <a
                         key={index}
                         className={classNames(
@@ -294,7 +226,7 @@ export default function Layout(props: LayoutProps) {
             <Disclosure.Panel className="sm:hidden">
               <div className="space-y-1 pb-4 pt-2">
                 {/* Current: "bg-indigo-50 border-indigo-500 text-indigo-700", Default: "border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700" */}
-                {navigation.map((item, index) => (
+                {useMenuStore.getState().menus.map((item, index) => (
                   <Disclosure.Button
                     key={index}
                     as="a"

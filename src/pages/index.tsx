@@ -4,6 +4,8 @@ import Layout from "../components/layout/Layout";
 import { useUserStore } from "../store/userStore";
 import CasesAuthenticated from "../components/CasesAuthenticated";
 import Greetings_Authenticated from "../components/greetings/Authenticated";
+import { useMenuStore } from "../store/menus.store";
+import { useEffect } from "react";
 const inter = Inter({ subsets: ["latin"] });
 
 export default function Home() {

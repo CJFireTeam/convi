@@ -254,7 +254,7 @@ export default function CrearCasos() {
     event.preventDefault();
     //VALIDATIONS
     if (schoolCase.directed === 0) {
-      toast.error("Se necesita seleecionar el encargado de la denuncia");
+      toast.error("Se necesita seleccionar el encargado de la denuncia");
       return;
     }
     const requiredProps = ["where", "when", "story", "measures", "who"];

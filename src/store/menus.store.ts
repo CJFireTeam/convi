@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { devtools, persist, createJSONStorage } from 'zustand/middleware';
 import type { } from '@redux-devtools/extension';
-import { ArchiveBoxIcon, HomeIcon, LightBulbIcon, UsersIcon } from '@heroicons/react/20/solid';
+import { ArchiveBoxIcon, Cog6ToothIcon, HomeIcon, LightBulbIcon, UsersIcon } from '@heroicons/react/20/solid';
 interface Imenus {
   name: string;
   href: string;
@@ -34,22 +34,9 @@ const AuthenticatedMenus: Imenus[] = [
 const EncargadoMenus: Imenus[] = [
   { name: "Home", href: "/", icon: HomeIcon, current: false },
   {
-    name: "Denuncia",
-    href: "/casos/crear",
-    icon: UsersIcon,
-    current: false,
-  },
-  // { name: "Casos", href: "/casos", icon: UsersIcon, current: false },
-  {
-    name: "Sugerencias",
-    href: "/casos",
-    icon: LightBulbIcon,
-    current: false,
-  },
-  {
-    name: "Lista de casos",
-    href: "/casos",
-    icon: ArchiveBoxIcon,
+    name: "Gestion De Casos",
+    href: "/gestion",
+    icon: Cog6ToothIcon,
     current: false,
   },
 ];

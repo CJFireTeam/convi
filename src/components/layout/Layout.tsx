@@ -53,7 +53,7 @@ export default function Layout(props: LayoutProps) {
   const { push } = useRouter();
   const pathname = usePathname();
   const [role, setRoleUI] = useState("");
-  const {menus,setMenusAuthenticated,setMenusEncargado,setActive} = useMenuStore()
+  const {menus,setMenusAuthenticated,setMenusEncargado,setMenusProfesor,setActive} = useMenuStore()
   function capitalizeFirstLetter(string: string) {
     return string.charAt(0).toUpperCase() + string.slice(1);
   }
@@ -73,6 +73,7 @@ export default function Layout(props: LayoutProps) {
   useEffect(() => {
     if (useUserStore.getState().GetRole() === "Authenticated") setMenusAuthenticated()
     if (useUserStore.getState().GetRole() === "Encargado de Convivencia Escolar") setMenusEncargado()
+    if (useUserStore.getState().GetRole() === "Profesor") setMenusProfesor()
     setActive(pathname);
   }, [useUserStore.getState().GetRole(),pathname]);
 

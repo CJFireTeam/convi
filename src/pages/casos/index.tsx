@@ -21,6 +21,14 @@ function Table({ data }: { data: caseInterface[] }) {
 
     return `${dia}/${mes}/${año}`;
   };
+
+  const router = useRouter();
+
+  const handleEdit = (id: number) => {
+    sessionStorage.setItem("first_case", id.toString());
+    router.push("/casos/denuncia");
+  };
+
   return (
     <table className="min-w-full divide-y divide-gray-300">
       <thead className="bg-gray-50">
@@ -90,7 +98,7 @@ function Table({ data }: { data: caseInterface[] }) {
               <EyeIcon className="h-6 w-6" aria-hidden="true" />
             </td>
             <td className="py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6  space-x-2 items-center">
-              <PencilIcon className="h-6 w-6" aria-hidden="true" />
+              <PencilIcon className="h-6 w-6" aria-hidden="true" onClick={() => handleEdit(person.id)}/>
             </td>
           </tr>
         ))}

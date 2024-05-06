@@ -5,17 +5,19 @@ import axios from "axios";
 import { FormProvider, useForm } from "react-hook-form";
 import { toast } from "react-toastify";
 import Cookies from "js-cookie";
+import { useEffect } from "react";
 
 
 interface Inputs {
-    firstcomplaint: string;
-    derivative: string;
-    studentName: string;
+    first_case: number;
+    derived: string;
+    created: number;
+    nameSchoolar: string;
     course: string;
-    teacherName: string;
+    teacher: string;
     date: string;
-    description: string;
-    explain: string;
+    details: string;
+    measures: string;
 }
 
 export default function Denuncia() {
@@ -33,10 +35,24 @@ export default function Denuncia() {
     control,
     formState: { errors },
   } = methods;
+  const { user } = useUserStore()
+
+  useEffect(() => {
+   setValue('created',user.id);
+  }, [user]); 
+
+  
+
   const onSubmit = async (data: any) => {
 
     try {
-        // const response = await axios.post(`${process.env.NEXT_PUBLIC_BACKEND_URL}suggestions`, {data : data},
+      const firstCaseId = sessionStorage.getItem("first_case");
+      sessionStorage.clear
+      data.first_case = firstCaseId ? firstCaseId : "";
+      
+      console.log(data.first_case)
+      console.log(data)
+        // const response = await axios.post(`${process.env.NEXT_PUBLIC_BACKEND_URL}denuncias`, {data : data},
         //     { headers: { Authorization: "Bearer " + Cookies.get("bearer") } }
         // );
         toast.success('Se envio la denuncia correctamente');
@@ -61,36 +77,18 @@ export default function Denuncia() {
             <div className="md:flex-1 divide-y md:mx-1 my-1 divide-gray-200 overflow-hidden rounded-lg bg-white shadow animate-fadein">
                 <div className="sm:col-span-4 mx-4 my-4">
                   <label htmlFor="website" className="block text-sm font-medium leading-6 text-gray-900">
-                    Primera Denuncia
-                  </label>
-                  <div className="mt-2">
-                    <div className="flex rounded-md shadow-sm ring-1 ring-inset ring-gray-300 focus-within:ring-2 focus-within:ring-inset focus-within:ring-indigo-600">
-                        <select
-                        {...register('firstcomplaint')}
-                        id="firstcomplaint"
-                        name="firstcomplaint"
-                        className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                        >
-                        <option value="Si">Sí</option>
-                        <option value="No">No</option>
-                        </select>
-                    </div>
-                  </div>
-                </div>
-                <div className="sm:col-span-4 mx-4 my-4">
-                  <label htmlFor="website" className="block text-sm font-medium leading-6 text-gray-900">
                     Derivada
                   </label>
                   <div className="mt-2">
                     <div className="flex rounded-md shadow-sm ring-1 ring-inset ring-gray-300 focus-within:ring-2 focus-within:ring-inset focus-within:ring-indigo-600">
                       <input
-                         {...register('derivative', {setValueAs: (value) => value === "" ? undefined : value})}
+                         {...register('derived', {setValueAs: (value) => value === "" ? undefined : value})}
                         type="text"
-                        name="derivative"
-                        id="derivative"
+                        id="derived"
                         className="block flex-1 border-0 bg-transparent py-1.5 pl-1 text-gray-900 placeholder:text-gray-400 focus:ring-0 sm:text-sm sm:leading-6"
                       />
                     </div>
+                    {errors.derived?.message && (<p className="text-red-600 text-sm mt-1">{errors.derived.message}</p>)}
                   </div>
                 </div>
               </div>
@@ -116,13 +114,13 @@ export default function Denuncia() {
                   <div className="mt-2">
                     <div className="flex rounded-md shadow-sm ring-1 ring-inset ring-gray-300 focus-within:ring-2 focus-within:ring-inset focus-within:ring-indigo-600">
                       <input
-                        {...register('studentName', {setValueAs: (value) => value === "" ? undefined : value})}
+                        {...register('nameSchoolar', {setValueAs: (value) => value === "" ? undefined : value})}
                         type="text"
-                        name="studentName"
-                        id="studentName"
+                        id="nameSchoolar"
                         className="block flex-1 border-0 bg-transparent py-1.5 pl-1 text-gray-900 placeholder:text-gray-400 focus:ring-0 sm:text-sm sm:leading-6"
                       />
                     </div>
+                    {errors.nameSchoolar?.message && (<p className="text-red-600 text-sm mt-1">{errors.nameSchoolar.message}</p>)}
                   </div>
                 </div>
 
@@ -135,11 +133,11 @@ export default function Denuncia() {
                       <input
                         {...register('course', {setValueAs: (value) => value === "" ? undefined : value})}
                         type="text"
-                        name="course"
                         id="course"
                         className="block flex-1 border-0 bg-transparent py-1.5 pl-1 text-gray-900 placeholder:text-gray-400 focus:ring-0 sm:text-sm sm:leading-6"
                       />
                     </div>
+                    {errors.course?.message && (<p className="text-red-600 text-sm mt-1">{errors.course.message}</p>)}
                   </div>
                 </div>
 
@@ -150,13 +148,13 @@ export default function Denuncia() {
                   <div className="mt-2">
                     <div className="flex rounded-md shadow-sm ring-1 ring-inset ring-gray-300 focus-within:ring-2 focus-within:ring-inset focus-within:ring-indigo-600">
                       <input
-                        {...register('teacherName', {setValueAs: (value) => value === "" ? undefined : value})}
+                        {...register('teacher', {setValueAs: (value) => value === "" ? undefined : value})}
                         type="text"
-                        name="teacherName"
-                        id="teacherName"
+                        id="teacher"
                         className="block flex-1 border-0 bg-transparent py-1.5 pl-1 text-gray-900 placeholder:text-gray-400 focus:ring-0 sm:text-sm sm:leading-6"
                       />
                     </div>
+                    {errors.teacher?.message && (<p className="text-red-600 text-sm mt-1">{errors.teacher.message}</p>)}
                   </div>
                 </div>
 
@@ -168,11 +166,12 @@ export default function Denuncia() {
                     <div className="flex rounded-md shadow-sm ring-1 ring-inset ring-gray-300 focus-within:ring-2 focus-within:ring-inset focus-within:ring-indigo-600">
                       <input
                         {...register('date', {setValueAs: (value) => value === "" ? undefined : value})}
-                        type="date"
+                        type="datetime-local"
                         id="date"
                         className="block flex-1 border-0 bg-transparent py-1.5 pl-1 text-gray-900 placeholder:text-gray-400 focus:ring-0 sm:text-sm sm:leading-6"
                       />
                     </div>
+                    {errors.date?.message && (<p className="text-red-600 text-sm mt-1">{errors.date.message}</p>)}
                   </div>
                 </div>
               </div>
@@ -199,12 +198,14 @@ export default function Denuncia() {
                   <div className="flex items-center justify-center">
                     <div className="mx-4 w-full mt-2">
                       <textarea
-                        {...register('description', {setValueAs: (value) => value === "" ? undefined : value})}
-                        id="description"
-                        value=""
+                        {...register('details', {setValueAs: (value) => value === "" ? undefined : value})}
+                        id="details"
                         className="border rounded-lg bg-gray-100 focus:outline-none focus:ring-primary focus:border-primary  p-2 resize-y w-full h-full"
                         rows={5}
                       ></textarea>
+                      <div className="mt-2">
+                        {errors.details?.message && (<p className="text-red-600 text-sm mt-1">{errors.details.message}</p>)}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -219,12 +220,15 @@ export default function Denuncia() {
                   <div className="flex items-center justify-center">
                     <div className="mx-4 w-full mt-2">
                       <textarea
-                        {...register('explain', {setValueAs: (value) => value === "" ? undefined : value})}
-                        id="explain"
-                        value=""
+                        {...register('measures', {setValueAs: (value) => value === "" ? undefined : value})}
+                        id="measures"
                         className="border rounded-lg bg-gray-100 focus:outline-none focus:ring-primary focus:border-primary  p-2 resize-y w-full h-full"
                         rows={5}
                       ></textarea>
+                      <div className="mt-2">
+                        {errors.measures?.message && (<p className="text-red-600 text-sm mt-1">{errors.measures.message}</p>)}
+                      </div>
+
                     </div>
                   </div>
                 </div>

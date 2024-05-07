@@ -5,7 +5,11 @@ import axios from "axios";
 import { FormProvider, useForm } from "react-hook-form";
 import { toast } from "react-toastify";
 import Cookies from "js-cookie";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import UserInterface from "@/interfaces/user.interface";
+import {
+  api_usersByRole,
+} from "../../services/axios.services";
 
 
 interface Inputs {
@@ -41,15 +45,25 @@ export default function Denuncia() {
    setValue('created',user.id);
   }, [user]); 
 
+  const [userList, setUserList] = useState<UserInterface[]>([]);
   
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const data = await api_usersByRole(5, user.establishment.id);
+        setUserList(data.data.data.attributes.users.data);
+      } catch (error) {
+        console.error("Error al obtener la lista de usuarios:", error);
+      }
+    };
+    fetchUsers();
+  }, []);
 
   const onSubmit = async (data: any) => {
 
     try {
       const firstCaseId = sessionStorage.getItem("first_case");
-      sessionStorage.clear
       data.first_case = firstCaseId ? firstCaseId : "";
-      
       console.log(data.first_case)
       console.log(data)
         // const response = await axios.post(`${process.env.NEXT_PUBLIC_BACKEND_URL}denuncias`, {data : data},
@@ -80,14 +94,21 @@ export default function Denuncia() {
                     Derivada
                   </label>
                   <div className="mt-2">
-                    <div className="flex rounded-md shadow-sm ring-1 ring-inset ring-gray-300 focus-within:ring-2 focus-within:ring-inset focus-within:ring-indigo-600">
-                      <input
-                         {...register('derived', {setValueAs: (value) => value === "" ? undefined : value})}
-                        type="text"
-                        id="derived"
-                        className="block flex-1 border-0 bg-transparent py-1.5 pl-1 text-gray-900 placeholder:text-gray-400 focus:ring-0 sm:text-sm sm:leading-6"
-                      />
-                    </div>
+                    
+                  <select
+                    {...methods.register("derived")}
+                    
+                    className="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-primary sm:text-sm sm:leading-6"
+                  >
+                    <option value={0}>Seleccione el usuario</option>
+                    {userList.length > 0 &&
+                      userList.map((user: UserInterface) => (
+                        <option value={user.id} key={user.id}>
+                          {user.attributes.firstname} {user.attributes.first_lastname}
+                        </option>
+                      ))}
+                  </select>
+          
                     {errors.derived?.message && (<p className="text-red-600 text-sm mt-1">{errors.derived.message}</p>)}
                   </div>
                 </div>

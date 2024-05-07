@@ -69,6 +69,7 @@ export default function Layout(props: LayoutProps) {
       return;
     }
     push(e.href);
+    sessionStorage.clear();
   }
   useEffect(() => {
     if (useUserStore.getState().GetRole() === "Authenticated") setMenusAuthenticated()

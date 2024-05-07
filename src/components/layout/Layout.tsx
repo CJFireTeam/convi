@@ -53,7 +53,7 @@ export default function Layout(props: LayoutProps) {
   const { push } = useRouter();
   const pathname = usePathname();
   const [role, setRoleUI] = useState("");
-  const {menus,setMenusAuthenticated,setMenusEncargado,setMenusProfesor,setActive} = useMenuStore()
+  const { menus, setMenusAuthenticated, setMenusEncargado, setMenusProfesor, setActive } = useMenuStore()
   function capitalizeFirstLetter(string: string) {
     return string.charAt(0).toUpperCase() + string.slice(1);
   }
@@ -75,10 +75,10 @@ export default function Layout(props: LayoutProps) {
     if (useUserStore.getState().GetRole() === "Encargado de Convivencia Escolar") setMenusEncargado()
     if (useUserStore.getState().GetRole() === "Profesor") setMenusProfesor()
     setActive(pathname);
-  }, [useUserStore.getState().GetRole(),pathname]);
+  }, [useUserStore.getState().GetRole(), pathname]);
 
   useEffect(() => {
-    (async () => {})();
+    (async () => { })();
     const me = async () => {
       try {
         const data = await api_me();
@@ -100,68 +100,73 @@ export default function Layout(props: LayoutProps) {
 
   return (
     <>
- <Navbar className=" shadow-xl shadow">
-      <Navbar.Start>
-        <Dropdown>
-          <Button tag="label" color="ghost" tabIndex={0} className="lg:hidden">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h8m-8 6h16" />
-            </svg>
-          </Button>
+      <Navbar className=" shadow-xl shadow">
+        <Navbar.Start>
+          <Dropdown>
+            <Button tag="label" color="ghost" tabIndex={0} className="lg:hidden">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h8m-8 6h16" />
+              </svg>
+            </Button>
 
-          <Dropdown.Menu tabIndex={0} className="w-52 menu-sm mt-3 z-[1]">
-            <Dropdown.Item>Item 1</Dropdown.Item>
-            <li>
-              <a>Parent</a>
-              <ul className="p-2">
-                <li>
-                  <a>Submenu 1</a>
-                </li>
-                <li>
-                  <a>Submenu 2</a>
-                </li>
-              </ul>
-            </li>
-            <Dropdown.Item>Item 3</Dropdown.Item>
-          </Dropdown.Menu>
-        </Dropdown>
-        <a className="btn btn-ghost normal-case text-xl">daisyUI</a>
-      </Navbar.Start>
-      <Navbar.Center className="hidden lg:flex">
-        <Menu horizontal className="px-1">
-        {useMenuStore.getState().menus.map((item, index) => (
-          (
-            item.children.length !== 0 ? 
-            <Menu.Item>
-            <details>
-              <summary>{item.name }</summary>
-              <ul className="p-2">
-              {item.children.map((submenu, index) => (
-                <Menu.Item>
-                  <a>{submenu.name}</a>
-                </Menu.Item>
+            <Dropdown.Menu tabIndex={0} className="w-52 menu-sm mt-3 z-[1]">
+              {useMenuStore.getState().menus.map((item, index) => (
+                <Dropdown.Item key={index} onClick={() => redirection(item)}>
+                  {item.name}
+                </Dropdown.Item>
               ))}
-              </ul>
-            </details>
-          </Menu.Item> :
-          <Menu.Item >
-            <a className={item.current ? "active" : ""}>
-            <item.icon
+            </Dropdown.Menu>
+          </Dropdown>
+          <a className="btn btn-ghost normal-case text-xl">Convi</a>
+        </Navbar.Start>
+        <Navbar.Center className="hidden lg:flex">
+          <Menu horizontal className="px-1">
+            {useMenuStore.getState().menus.map((item, index) => (
+              (
+                item.children.length !== 0 ?
+                  <Menu.Item key={index}>
+                    <details>
+                      <summary>{item.name}</summary>
+                      <ul className="p-2">
+                        {item.children.map((submenu, index) => (
+                          <Menu.Item key={index} onClick={() => redirection(submenu)}>
+                            <a>{submenu.name}</a>
+                          </Menu.Item>
+                        ))}
+                      </ul>
+                    </details>
+                  </Menu.Item> :
+                  <Menu.Item key={index}>
+                    <a className={item.current ? "active" : ""} onClick={() => redirection(item)}>
+                      <item.icon
                         className="h-6 w-6 shrink-0 mr-1"
                         aria-hidden="true"
                       />
-              {item.name}</a>
-          </Menu.Item>
-          )
-                      
-          ))}
+                      {item.name}
+                    </a>
+                  </Menu.Item>
+              )
+            ))}
 
-        </Menu>
-      </Navbar.Center>
-      <Navbar.End>
-        <Button tag="a">Button</Button>
-      </Navbar.End>
-    </Navbar>
+          </Menu>
+        </Navbar.Center>
+
+        <Navbar.End>
+          <Dropdown >
+            <Button>
+              <UserIcon className="h-6 w-6 mr-1" aria-hidden="true" />
+              {userNavigation[0].name} {/* Usamos el primer elemento de userNavigation */}
+            </Button>
+            <Dropdown.Menu>
+              {userNavigation.map((item) => (
+                <Dropdown.Item key={item.href} onClick={() => redirection(item)}>
+                  {item.name}
+                </Dropdown.Item>
+              ))}
+            </Dropdown.Menu>
+          </Dropdown>
+        </Navbar.End>
+      </Navbar>
       <main className="py-10">
         <div className="px-4 sm:px-6 lg:px-8">{props.children}</div>
       </main>

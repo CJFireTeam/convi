@@ -1,11 +1,8 @@
 import React from 'react';
-import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { Doughnut } from 'react-chartjs-2';
 
-ChartJS.register(ArcElement, Tooltip, Legend);
-
-export const data = {
-  labels: ['1° ciclo', '2° ciclo', '3° ciclo', '4° ciclo',],
+const data = {
+  labels: ['1° ciclo', '2° ciclo', '3° ciclo', '4° ciclo'],
   datasets: [
     {
       label: '# of Votes',
@@ -27,6 +24,16 @@ export const data = {
   ],
 };
 
-export default function grafico1() {
-  return <Doughnut data={data} />;
-}
+const options = {
+  plugins: {
+    legend: {
+      position: 'bottom' as const,
+    },
+  },
+};
+
+const Grafico1 = () => {
+  return <Doughnut data={data} options={options} />;
+};
+
+export default Grafico1;

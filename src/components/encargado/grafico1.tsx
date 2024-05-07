@@ -30,6 +30,17 @@ export const data = {
   ],
 };
 
-export default function grafico1() {
-  return <Pie data={data} />;
-}
+const options = {
+  plugins: {
+    legend: {
+      position: 'bottom' as const,
+    },
+  },
+};
+
+const Grafico2 = () => {
+  return <Pie data={data} options={options} />;
+};
+
+export default Grafico2;
+

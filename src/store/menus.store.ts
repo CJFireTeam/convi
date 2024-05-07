@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { devtools, persist, createJSONStorage } from 'zustand/middleware';
 import type { } from '@redux-devtools/extension';
 import { ArchiveBoxIcon, Cog6ToothIcon, HomeIcon, LightBulbIcon, UsersIcon } from '@heroicons/react/20/solid';
-interface Imenus {
+export interface Imenus {
   name: string;
   href: string;
   current: boolean;
@@ -14,10 +14,16 @@ interface Imenus {
   >
 }
 
-const AuthenticatedMenus: Imenus[] = [
-  { name: "Home", href: "/", icon: HomeIcon, current: false },
+interface IMenuChildren extends Imenus{
+  children:Imenus[];
+}
+
+const AuthenticatedMenus: IMenuChildren[] = [
+  { name: "Home", href: "/", icon: HomeIcon, current: false,children:[] },
   {
     name: "Te Escuchamos",
+    
+    children:[],
     href: "/te_escuchamos",
     icon: UsersIcon,
     current: false,
@@ -28,31 +34,37 @@ const AuthenticatedMenus: Imenus[] = [
     href: "/sugerencia",
     icon: LightBulbIcon,
     current: false,
+    children:[]
   },
 ]
 
-const EncargadoMenus: Imenus[] = [
-  { name: "Home", href: "/", icon: HomeIcon, current: false },
+const EncargadoMenus: IMenuChildren[] = [
+  { name: "Home", href: "/", icon: HomeIcon,children:[], current: false },
   {
     name: "Gestion De Casos",
     href: "/gestion",
+    children:[
+      {name:"Denuncias",current:false,href:"/",icon:Cog6ToothIcon}
+    ],
     icon: Cog6ToothIcon,
     current: false,
   },
 ];
 
-const ProfesorMenus: Imenus[] = [
-  { name: "Home", href: "/", icon: HomeIcon, current: false },
+const ProfesorMenus: IMenuChildren[] = [
+  { name: "Home", href: "/", icon: HomeIcon, current: false,children:[] },
   {
     name: "Denuncia",
     href: "/casos/denuncia",
     icon: UsersIcon,
+    children:[],
     current: false,
   },
   {
     name: "Lista de casos",
     href: "/casos",
     icon: ArchiveBoxIcon,
+    children:[],
     current: false,
   },
 ];
@@ -64,7 +76,7 @@ type Actions = {
   setActive(href: string): void;
 };
 type State = {
-  menus: Imenus[];
+  menus: IMenuChildren[];
 };
 
 

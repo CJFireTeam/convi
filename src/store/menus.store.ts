@@ -44,7 +44,7 @@ const EncargadoMenus: IMenuChildren[] = [
     name: "Gestion De Casos",
     href: "/gestion",
     children:[
-      {name:"Denuncias",current:false,href:"/",icon:Cog6ToothIcon}
+      {name:"Denuncias",current:false,href:"/gestion",icon:Cog6ToothIcon}
     ],
     icon: Cog6ToothIcon,
     current: false,

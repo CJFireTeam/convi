@@ -83,7 +83,7 @@ export default function Denuncia() {
     <FormProvider {...methods}>
      <form onSubmit={methods.handleSubmit(onSubmit)}>
       <div className="space-y-10 divide-y divide-gray-900/10">
-      <div className="grid grid-cols-1 gap-x-8 gap-y-8 md:grid-cols-3 bg-slate-50">
+      <div className="grid grid-cols-1 gap-x-8 gap-y-8 pt-10 pb-10 pr-10 pl-10 md:grid-cols-3 bg-slate-50">
         <div className="px-4 sm:px-0">
           <h2 className="text-base font-semibold leading-7 text-gray-900">Origen de la denuncia</h2>
         </div>
@@ -123,7 +123,7 @@ export default function Denuncia() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-x-8 gap-y-8 pt-10 md:grid-cols-3  bg-slate-50">
+      <div className="grid grid-cols-1 gap-x-8 gap-y-8 pt-10 pb-10 pr-10 pl-10 md:grid-cols-3 bg-slate-50">
         <div className="px-4 sm:px-0">
           <h2 className="text-base font-semibold leading-7 text-gray-900">Antecedentes</h2>
         </div>
@@ -205,7 +205,7 @@ export default function Denuncia() {
           </div>
         </div>
       </div>
-      <div className="grid grid-cols-1 gap-x-8 gap-y-8 pt-10 md:grid-cols-3 bg-slate-50">
+      <div className="grid grid-cols-1 gap-x-8 gap-y-8 pt-10 pb-10 pr-10 pl-10 md:grid-cols-3 bg-slate-50">
         <div className="px-4 sm:px-0">
           <h2 className="text-base font-semibold leading-7 text-gray-900">Descripción de la situación</h2>
         </div>

@@ -2,7 +2,7 @@ import { api_changePassword } from "@/services/axios.services";
 import { useUserStore } from "@/store/userStore";
 import { changepassswordSchema } from "@/validations/changepasswordSchema";
 import { zodResolver } from "@hookform/resolvers/zod";
-import axios from "axios";
+import axios, { AxiosError, isAxiosError } from "axios";
 import router from "next/router";
 import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
@@ -35,7 +35,7 @@ export default function CambiarContrasena() {
             }, 3000);
         } catch (error) {
             console.log(error);
-            if (error.response.data.error.message === 'The provided current password is invalid') {
+            if (isAxiosError(error) && error.response?.data?.error?.message === 'The provided current password is invalid') {
                 toast.error('Contraseña anterior invalida')
             } else {
                 toast.error('Ocurrió un error al procesar tu solicitud. Por favor, inténtalo de nuevo más tarde.');

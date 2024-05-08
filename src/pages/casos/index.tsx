@@ -25,6 +25,7 @@ function Table({ data }: { data: caseInterface[] }) {
   const router = useRouter();
 
   const handleEdit = (id: number) => {
+    console.log(id);
     sessionStorage.setItem("first_case", id.toString());
     router.push("/casos/denuncia");
   };

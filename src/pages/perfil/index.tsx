@@ -1,24 +1,45 @@
+import { useUserStore } from "@/store/userStore";
 import {
-    ChevronDownIcon,
-    MagnifyingGlassIcon,
-    UserIcon,
+    UserIcon
 } from "@heroicons/react/20/solid";
+import { useEffect } from "react";
 
 export default function Perfil() {
+
+    const { user, role } = useUserStore()
+
     return (
-        <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm ">
-        <div className="flex justify-center items-center flex-col">
-            <UserIcon className="h-16 w-16 rounded-full bg-gray-50"></UserIcon>
-            <span> Leonardo Retamal</span>
-            <span> Correo: Leonardo.Retamal.morales</span>
+        <>
+            <div className="flex flex-col items-center">
+                <div className="flex flex-row rounded-lg border border-gray-400 animate-fadein mb-4 p-2">
 
-            <button className={`flex w-full justify-center rounded-md bg-indigo-600 hover:bg-indigo-500 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600`}
-              >
-              Cambiar Contraseña
-              </button>
-        </div>
-        </div>
-        
+                    <div className="flex flex-col">
+                        <span className="text-base font-semibold leading-6 text-gray-900">Rol:</span>
+                        <span className="mb-2">{role.name}</span>
+                        {role.name !== "Authenticated" && (<>
+                            <span className="text-base font-semibold leading-6 text-gray-900">Establecimiento:</span>
+                            <span className="mb-2">{user.establishment.name}</span>
+                        </>)}
+                        <span className="text-base font-semibold leading-6 text-gray-900">Nombre:</span>
+                        <span className="mb-2">{user.firstname} {user.first_lastname}</span>
+                        <span className="text-base font-semibold leading-6 text-gray-900">Correo:</span>
+                        <span className="mb-2">{user.email}</span>
+                    </div>
 
-    )
+                    <div className="flex flex-col ml-20 items-center">
+                        <UserIcon className="h-16 w-16 rounded-full bg-gray-50 mb-12"></UserIcon>
+                        <button className={`flex w-full justify-center rounded-md bg-indigo-600 hover:bg-indigo-500 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600`}
+                        >
+                            Cambiar Contraseña
+                        </button>
+                        <button className={`flex w-full justify-center rounded-md bg-indigo-600 hover:bg-indigo-500 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 mt-2`}
+                        >
+                            Editar Perfil
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+        </>
+    );
 }

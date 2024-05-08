@@ -7,15 +7,15 @@ import Greetings_Authenticated from "../components/greetings/Authenticated";
 import { useMenuStore } from "../store/menus.store";
 import { useEffect } from "react";
 import Grafico from "@/components/encargado/graficos";
+import { routeModule } from "next/dist/build/templates/app-page";
 const inter = Inter({ subsets: ["latin"] });
 
 export default function Home() {
-  const { bearer, setRole, GetRole, user, isLoading } = useUserStore();
+  const { bearer, setRole, user, isLoading, role } = useUserStore();
   return (
     <>
-      {GetRole() === "Authenticated" && <><Greetings_Authenticated /><CasesAuthenticated /></>}
-      {GetRole() === "Encargado de Convivencia Escolar" && <><Grafico/></>}
-
+      {role.name === "Authenticated" && <><Greetings_Authenticated /><CasesAuthenticated /></>}
+      {role.name === "Encargado de Convivencia Escolar" && <><Grafico /></>}
     </>
   );
 }

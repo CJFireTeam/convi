@@ -37,8 +37,8 @@ type State = {
 };
 
 
-
 type Actions = {
+  desconectar(): void;
   setUser(user: User): void;
   setBearer(bearer: string): void;
   setRole(role: role): void;
@@ -47,6 +47,8 @@ type Actions = {
   GetStablishment() : {name:string,id:number} 
 };
 
+const baseRole = { createdAt: '', description: '', id: 0, name: '', type: '', updatedAt: '', }
+const baseUser = {blocked:false,confirmed:false,email: '',first_lastname: '',firstname: '',id: 0,second_lastname: '',secondname: '',username: '',createdAt :'',provider:'local',establishment: {id:0,name:''}}
 export const useUserStore = create<State & Actions>()(
   devtools(
       (set, get) => ({
@@ -64,6 +66,7 @@ export const useUserStore = create<State & Actions>()(
         },
         setRole: (role: role) => set((state) => ({ ...state, role })),
         setBearer: (bearer: string) => set((state) => ({ ...state, bearer })),
+        desconectar: () => set((state) => ({ ...state, user: baseUser, role: baseRole })),
         setUser: (user: User) => set((state) => ({ ...state, user })),
         setStablishment: ({ name, id }: { name: string, id: number }) => set((state) => ({ ...state, user: { ...state.user, establishment: { id, name } } })),
       }))

@@ -45,6 +45,7 @@ export default function Layout(props: LayoutProps) {
     isLoading,
     setStablishment,
     GetStablishment,
+    desconectar
   } = useUserStore();
 
   const { Loader, setLoader } = useLoaderContext();
@@ -57,10 +58,11 @@ export default function Layout(props: LayoutProps) {
   function capitalizeFirstLetter(string: string) {
     return string.charAt(0).toUpperCase() + string.slice(1);
   }
-  function desconectar() {
+  function logout() {
     Cookies.remove("bearer");
     Cookies.remove("establishment");
     Cookies.remove("role");
+    desconectar();
     push("/login");
   }
   function redirection(e: any) {
@@ -159,11 +161,12 @@ export default function Layout(props: LayoutProps) {
               {userNavigation[0].name} {/* Usamos el primer elemento de userNavigation */}
             </Button>
             <Dropdown.Menu>
-              {userNavigation.map((item) => (
-                <Dropdown.Item key={item.href} onClick={() => redirection(item)}>
-                  {item.name}
+            <Dropdown.Item  onClick={() => redirection("/perfil")}>
+                  Mi Perfil
                 </Dropdown.Item>
-              ))}
+            <Dropdown.Item  onClick={logout}>
+                  Desconectar
+            </Dropdown.Item>
             </Dropdown.Menu>
           </Dropdown>
         </Navbar.End>

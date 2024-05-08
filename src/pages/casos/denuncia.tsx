@@ -59,6 +59,7 @@ export default function Denuncia() {
         console.error("Error al obtener la lista de usuarios:", error);
       }
     };
+    if(user.establishment.id === 0)return;
     fetchUsers();
   }, [user]);
 
@@ -66,11 +67,27 @@ export default function Denuncia() {
 
     try {
       const firstCaseId = sessionStorage.getItem("first_case");
+      const selectedUserId = methods.getValues("derived");
       data.first_case = firstCaseId ? firstCaseId : undefined;
-      console.log(data)
       const response = await axios.post(`${process.env.NEXT_PUBLIC_BACKEND_URL}complaints`, {data : data},
             { headers: { Authorization: "Bearer " + Cookies.get("bearer") } }
       );
+      
+      if (response.status === 200) {
+        if(firstCaseId){
+          const response2 = await axios.put(`${process.env.NEXT_PUBLIC_BACKEND_URL}cases/${firstCaseId}`, {
+            data:{
+              directed: selectedUserId,
+              derived: true
+            }
+    
+          }, {
+            headers: {
+              Authorization: "Bearer " + Cookies.get("bearer")
+            }
+          });
+        }
+      }
       toast.success('Se envio la denuncia correctamente');
       reset();
       push("/casos");
@@ -105,15 +122,14 @@ export default function Denuncia() {
                     
                     className="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-primary sm:text-sm sm:leading-6"
                   >
-                    <option value="">No derivar</option>
+                    <option value="">Seleccione una opción</option>
                     {userList.length > 0 &&
                       userList.map((user: UserInterface) => (
                         <option value={user.id} key={user.id}>
-                          Derivar a {user.attributes.firstname} {user.attributes.first_lastname}
+                          Derivar a {user.attributes.firstname} {user.attributes.first_lastname} {user.id}
                         </option>
                       ))}
                   </select>
-          
                     {errors.derived?.message && (<p className="text-red-600 text-sm mt-1">{errors.derived.message}</p>)}
                   </div>
                 </div>

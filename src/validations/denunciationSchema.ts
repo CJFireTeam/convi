@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 export const denunciationSchema = z.object({
     first_case: z.number().optional(),
-    derived: z.number().optional(),
+    derived: z.number({ required_error: "Campo Requerido", invalid_type_error: "Campo Requerido" }),
     created: z.number(),
     nameSchoolar: z.string({ required_error: "Campo Requerido", invalid_type_error: "Campo Requerido" }).min(5, { message: 'Debe tener almenos 5 caracteres.' }),
     course: z.string({ required_error: "Campo Requerido", invalid_type_error: "Campo Requerido" }),

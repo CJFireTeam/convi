@@ -30,7 +30,7 @@ const AuthenticatedMenus: IMenuChildren[] = [
   },
   // { name: "Casos", href: "/casos", icon: UsersIcon, current: false },
   {
-    name: "Sugerencias",
+    name: "Consulta y sugerencia",
     href: "/sugerencia",
     icon: LightBulbIcon,
     current: false,

@@ -86,8 +86,8 @@ function Colegio({ errors }: props) {
         <div className="grid grid-flow-col justify-stretch animate-fadein">
 
             <div>
-                <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Región:</label>
-                <select id="region" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-10/12 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                <label className="block mb-2 text-sm font-medium text-gray-900 ">Región:</label>
+                <select id="region" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-10/12 p-2.5"
                     value={regionSelected}
                     onChange={handleChangeRegion}>
                     <option value={0}>Seleccione la region:</option>
@@ -102,7 +102,7 @@ function Colegio({ errors }: props) {
                 <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Comuna:</label>
                 <select value={comunaSelected}
                     onChange={handleChangeComuna}
-                    id="comuna" className="bg-gray-50 border border-gregisterray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-10/12 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                    id="comuna" className="bg-gray-50 border border-gregisterray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-10/12 p-2.5">
                     <option value={""}>Seleccione la comuna: </option>
                     {comunaList.map((comuna: string) => (
                         <option value={comuna} key={comuna}>
@@ -113,11 +113,11 @@ function Colegio({ errors }: props) {
                 </select>
             </div>
             <div>
-                <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Colegio:</label>
+                <label className="block mb-2 text-sm font-medium text-gray-900 ">Colegio:</label>
                 <select  {...register('establishment', {
                     setValueAs: (value) => value === "" ? undefined : value
                 })}
-                    id="establishment" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-10/12 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                    id="establishment" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-10/12 p-2.5">
                     <option value="">Seleccione el establecimiento: {getValues("establishment")}</option>
                     {establecimientoList.map((stablishment: stablishmentI) => (
                         <option value={stablishment.id} key={stablishment.id}>
@@ -141,7 +141,7 @@ function SugerenciaText({ errors }: props) {
         <>
             <div className="flex items-center justify-center mb-4 ">
                 <div className="mx-4 w-full">
-                    <span>¿Cual es su sugerencia?</span>
+                    <span>Escriba su consulta o sugerencia en el siguiente cuadro de texto</span>
                     <textarea {...register('suggestion', {
                         setValueAs: (value) => value === "" ? undefined : value
                     })}
@@ -159,7 +159,7 @@ function SugerenciaText({ errors }: props) {
                     </span>
                 </div>
                 <button
-                    className="flex rounded-full bg-indigo-600 px-10 py-1 text-sm md:text-lg font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                    className="flex rounded-full bg-primary px-10 py-1 text-sm md:text-lg font-semibold text-white shadow-sm hover:bg-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
                     type="submit"
                 ><span>Enviar</span></button>
             </div>
@@ -226,7 +226,7 @@ export default function Sugerencia() {
             <div className="divide-y divide-gray-200 overflow-hidden rounded-lg bg-white shadow">
                 <div className="px-4 py-3 sm:px-6">
                     <h6 className="font-bold md:text-lg text-sm">
-                        Rellene los siguientes campos para hacer la sugerencia.
+                        Rellene los siguientes campos para hacer la consulta o sugerencia.
                     </h6>
                 </div>
                 <div className="px-4 py-5 sm:p-6 bg-slate-50">
@@ -235,11 +235,11 @@ export default function Sugerencia() {
                             <form onSubmit={methods.handleSubmit(onSubmit)}>
                                 <div className="px-4 py-5 sm:px-6 text-left ">
                                     <div className="max-w-sm mb-4">
-                                        <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Seleccione a quien va dirigida la sugerencia:</label>
+                                        <label className="block mb-2 text-sm font-medium text-gray-900">Seleccione a quien va dirigida la sugerencia:</label>
                                         <select
                                             // {...register('seleccion', { setValueAs: (value) => value === "" ? undefined : value })}
                                             id="seleccion"
-                                            className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                            className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
                                             value={seleccion}
                                             onChange={handleSeleccionChange}
                                         >

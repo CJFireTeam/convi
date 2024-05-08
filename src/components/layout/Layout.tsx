@@ -161,7 +161,7 @@ export default function Layout(props: LayoutProps) {
               {userNavigation[0].name} {/* Usamos el primer elemento de userNavigation */}
             </Button>
             <Dropdown.Menu>
-            <Dropdown.Item  onClick={() => redirection("/perfil")}>
+            <Dropdown.Item  onClick={() => push("/perfil")}>
                   Mi Perfil
                 </Dropdown.Item>
             <Dropdown.Item  onClick={logout}>

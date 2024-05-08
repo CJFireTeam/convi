@@ -10,21 +10,24 @@ import UserInterface from "@/interfaces/user.interface";
 import {
   api_usersByRole,
 } from "../../services/axios.services";
+import { useRouter } from "next/router";
+
 
 
 interface Inputs {
-    first_case: number;
-    derived: string;
-    created: number;
+    first_case: number | undefined;
+    derived: number | undefined;
+    created: number | undefined;
     nameSchoolar: string;
     course: string;
-    teacher: string;
+    Teacher: string;
     date: string;
     details: string;
     measures: string;
 }
 
 export default function Denuncia() {
+  const { push } = useRouter();
   const methods = useForm<Inputs>({
         resolver: zodResolver(denunciationSchema),
   });
@@ -42,7 +45,7 @@ export default function Denuncia() {
   const { user } = useUserStore()
 
   useEffect(() => {
-   setValue('created',user.id);
+    user && user.id ? setValue('created', user.id) : setValue('created', undefined);
   }, [user]); 
 
   const [userList, setUserList] = useState<UserInterface[]>([]);
@@ -57,20 +60,20 @@ export default function Denuncia() {
       }
     };
     fetchUsers();
-  }, []);
+  }, [user]);
 
   const onSubmit = async (data: any) => {
 
     try {
       const firstCaseId = sessionStorage.getItem("first_case");
-      data.first_case = firstCaseId ? firstCaseId : "";
-      console.log(data.first_case)
+      data.first_case = firstCaseId ? firstCaseId : undefined;
       console.log(data)
-        // const response = await axios.post(`${process.env.NEXT_PUBLIC_BACKEND_URL}denuncias`, {data : data},
-        //     { headers: { Authorization: "Bearer " + Cookies.get("bearer") } }
-        // );
-        toast.success('Se envio la denuncia correctamente');
-        reset();
+      const response = await axios.post(`${process.env.NEXT_PUBLIC_BACKEND_URL}complaints`, {data : data},
+            { headers: { Authorization: "Bearer " + Cookies.get("bearer") } }
+      );
+      toast.success('Se envio la denuncia correctamente');
+      reset();
+      push("/casos");
     } catch (error) {
         toast.error('Ocurrió un error al enviar la denuncia. Por favor, inténtalo de nuevo más tarde.');
     }
@@ -91,20 +94,22 @@ export default function Denuncia() {
             <div className="md:flex-1 divide-y md:mx-1 my-1 divide-gray-200 overflow-hidden rounded-lg bg-white shadow animate-fadein">
                 <div className="sm:col-span-4 mx-4 my-4">
                   <label htmlFor="website" className="block text-sm font-medium leading-6 text-gray-900">
-                    Derivada
+                    Derivar
                   </label>
                   <div className="mt-2">
                     
                   <select
-                    {...methods.register("derived")}
+                    {...methods.register("derived", {
+                      setValueAs: (value) => value === "" ? undefined : Number(value)
+                    })}
                     
                     className="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-primary sm:text-sm sm:leading-6"
                   >
-                    <option value={0}>Seleccione el usuario</option>
+                    <option value="">No derivar</option>
                     {userList.length > 0 &&
                       userList.map((user: UserInterface) => (
                         <option value={user.id} key={user.id}>
-                          {user.attributes.firstname} {user.attributes.first_lastname}
+                          Derivar a {user.attributes.firstname} {user.attributes.first_lastname}
                         </option>
                       ))}
                   </select>
@@ -169,13 +174,13 @@ export default function Denuncia() {
                   <div className="mt-2">
                     <div className="flex rounded-md shadow-sm ring-1 ring-inset ring-gray-300 focus-within:ring-2 focus-within:ring-inset focus-within:ring-indigo-600">
                       <input
-                        {...register('teacher', {setValueAs: (value) => value === "" ? undefined : value})}
+                        {...register('Teacher', {setValueAs: (value) => value === "" ? undefined : value})}
                         type="text"
-                        id="teacher"
+                        id="Teacher"
                         className="block flex-1 border-0 bg-transparent py-1.5 pl-1 text-gray-900 placeholder:text-gray-400 focus:ring-0 sm:text-sm sm:leading-6"
                       />
                     </div>
-                    {errors.teacher?.message && (<p className="text-red-600 text-sm mt-1">{errors.teacher.message}</p>)}
+                    {errors.Teacher?.message && (<p className="text-red-600 text-sm mt-1">{errors.Teacher.message}</p>)}
                   </div>
                 </div>
 

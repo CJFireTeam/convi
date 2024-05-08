@@ -31,6 +31,8 @@ api.interceptors.response.use(
   }
 );
 
+
+
 export function api_me() {
   return api.get('users/me?populate=*');
 }
@@ -52,4 +54,7 @@ export function api_cases({createdBy,userId}:{createdBy: number,userId?:number})
 
 export function api_casesRoles() {
   return api.get(`role-lists?filters[forCases][$eq]=true`)
+}
+export function api_changePassword(data:any) {
+  return api.post(`auth/change-password`,data)
 }

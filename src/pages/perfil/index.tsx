@@ -2,10 +2,17 @@ import { useUserStore } from "@/store/userStore";
 import {
     UserIcon
 } from "@heroicons/react/20/solid";
+import { useRouter } from "next/router";
 
 export default function Perfil() {
 
     const { user, role } = useUserStore()
+
+    const { push } = useRouter();
+
+    function cambiarContraseñaClick() {
+        push("/perfil/cambiarContrasena");
+    }
 
     return (
         <div className="flex flex-col items-center">
@@ -29,6 +36,7 @@ export default function Perfil() {
                 <div className="flex flex-col sm:w-1/2 sm:ml-20 items-center">
                     <UserIcon className="h-16 w-16 rounded-full bg-gray-50 mb-12 mt-3"></UserIcon>
                     <button className="flex w-full justify-center rounded-md bg-indigo-600 hover:bg-indigo-500 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 mb-2 sm:mb-0"
+                    onClick={cambiarContraseñaClick}
                     >
                         Cambiar Contraseña
                     </button>

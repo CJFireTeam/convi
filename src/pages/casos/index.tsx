@@ -95,15 +95,15 @@ function Table({ data }: { data: caseInterface[] }) {
             <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
               {paseDate(person.attributes.createdAt)}
             </td>
-            <td className="py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6  space-x-2 items-center">
+            <td className="py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6 hover:text-primary space-x-2 items-center">
               <EyeIcon className="h-6 w-6" aria-hidden="true" />
             </td>
-            <td className="py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6  space-x-2 items-center">
+            <td className="py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6 hover:text-primary space-x-2 items-center">
               <button onClick={() => handleEdit(person.id)}>
               <PencilIcon className="h-6 w-6" aria-hidden="true"  />
               </button>
             </td>
-            <td className="py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6  space-x-2 items-center">
+            <td className="py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6 hover:text-primary space-x-2 items-center">
               <FolderIcon className="h-6 w-6" aria-hidden="true"  />
             </td>
           </tr>
@@ -112,87 +112,63 @@ function Table({ data }: { data: caseInterface[] }) {
     </table>
   );
 }
-function Paginator() {
-  return (
+
+function Paginator({metadata,setMetaData}:{metadata:metaI,setMetaData: (numero:number) => void }) {
+  console.log(metadata)
+  const changePage = async (number:number) => {
+    if (number  > metadata.pageCount) return;
+    if (number <= 0) return;
+    setMetaData(number);
+  }
+    return (
     <div className="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6">
       <div className="flex flex-1 justify-between sm:hidden">
         <a
-          href="#"
+          onClick={() => changePage(metadata.page -1)}
           className="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
         >
           Previous
         </a>
         <a
-          href="#"
+          onClick={() => changePage(metadata.page +1)}
           className="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
         >
           Next
         </a>
       </div>
       <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
-        <div>
-          <p className="text-sm text-gray-700">
-            Mostrando <span className="font-medium">1</span> to{" "}
-            <span className="font-medium">10</span> of{" "}
-            <span className="font-medium">10</span> results
-          </p>
+      <div>
+        <p className="text-sm text-gray-700">
+  Mostrando <span className="font-medium">{Math.min(Number(metadata.pageSize) * metadata.page, metadata.total)}</span> de{" "}
+  <span className="font-medium">{metadata.total}</span> resultados
+</p>
         </div>
         <div>
-          <nav
+        <nav
             className="isolate inline-flex -space-x-px rounded-md shadow-sm"
             aria-label="Pagination"
           >
             <a
-              href="#"
-              className="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0"
+              onClick={() => changePage(metadata.page -1)}
+              className="cursor-pointer  relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0"
             >
               <span className="sr-only">Previous</span>
               <ChevronLeftIcon className="h-5 w-5" aria-hidden="true" />
             </a>
             {/* Current: "z-10 bg-indigo-600 text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600", Default: "text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:outline-offset-0" */}
-            <a
-              href="#"
+            {[...Array.from(Array(metadata.pageCount).keys())].map((num, i) => (
+              <a
+              key={i}
+              onClick={() => changePage(num + 1)}
               aria-current="page"
-              className="relative z-10 inline-flex items-center bg-primary px-4 py-2 text-sm font-semibold text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-            >
-              1
+              className={` cursor-pointer relative hidden items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300  focus:z-20 focus:outline-offset-0 md:inline-flex ${(num +1) === metadata.page ? 'hover:brightness-90 bg-primary text-white shadow' : ''}`}
+              >
+              {num + 1}
             </a>
+            ))}
             <a
-              href="#"
-              className="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0"
-            >
-              2
-            </a>
-            <a
-              href="#"
-              className="relative hidden items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 md:inline-flex"
-            >
-              3
-            </a>
-            <span className="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-700 ring-1 ring-inset ring-gray-300 focus:outline-offset-0">
-              ...
-            </span>
-            <a
-              href="#"
-              className="relative hidden items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 md:inline-flex"
-            >
-              8
-            </a>
-            <a
-              href="#"
-              className="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0"
-            >
-              9
-            </a>
-            <a
-              href="#"
-              className="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0"
-            >
-              10
-            </a>
-            <a
-              href="#"
-              className="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0"
+              onClick={() => changePage(metadata.page +1)}
+              className="cursor-pointer relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0"
             >
               <span className="sr-only">Next</span>
               <ChevronRightIcon className="h-5 w-5" aria-hidden="true" />
@@ -206,31 +182,39 @@ function Paginator() {
 
 export default function Casos() {
   const { user, GetRole, role } = useUserStore();
-  const [metaData, setMetada] = useState<metaI>();
+  const [metaData, setMetaData] = useState<metaI>({page:1,pageCount:0,pageSize:0,total:0});
   const [data, setData] = useState<caseInterface[]>([]);
   const { push } = useRouter();
-  useEffect(() => {
-    const getData = async () => {
-      let assigned: number | undefined = undefined;
-      try {
-        if (GetRole() !== "Authenticated") {
-          assigned = user?.id
-        }
-        const data = await api_cases({ createdBy: user?.id, userId: assigned });
-        setData(data.data.data);
-        setMetada(data.data.meta);
-      } catch (error) {
-        console.log(error);
+  const getData = async () => {
+    let assigned: number | undefined = undefined;
+    try {
+      if (GetRole() !== "Authenticated") {
+        assigned = user?.id
       }
-    };
+      const data = await api_cases({ createdBy: user?.id, userId: assigned,page:metaData.page });
+      setData(data.data.data);
+      setMetaData(data.data.meta.pagination);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  useEffect(() => {
     if (user?.id === 0) return;
-
     getData();
   }, [user]);
+
   const redirect = () => {
     push("/casos/crear");
   };
 
+  const updatePage = (number:number) => {
+    metaData.page = number;
+    metaData.pageCount = metaData.pageCount
+    metaData.pageSize = metaData.pageSize
+    metaData.total = metaData.total
+    setMetaData(metaData);
+    getData()
+  }
   return (
     <>
       {role.name !== "Authenticated" && (
@@ -257,7 +241,7 @@ export default function Casos() {
               <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
                 <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
                   <Table data={data} />
-                  <Paginator />
+                  <Paginator metadata={metaData} setMetaData={updatePage} />
                 </div>
               </div>
             </div>

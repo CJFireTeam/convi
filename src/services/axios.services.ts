@@ -44,17 +44,23 @@ export function api_usersByRole(role: number, establishment: number) {
 export function api_establishmentByComuna(comuna: string) {
   return api.get("establishments?fields[0]=name&filters[Comuna][$eq]=" + comuna)
 }
-  //FALTA AGREGAR EL LUGAR
-export function api_cases({createdBy,userId}:{createdBy: number,userId?:number}) {
+//FALTA AGREGAR EL LUGAR
+export function api_cases({ createdBy, userId, page = 1 }: { createdBy: number, userId?: number, page?: number }) {
   let query = `?populate[created][populate][0]=role&populate[directed][populate][0]=role`
   query = query + `&filters[$or][0][created]=${createdBy}`
   if (userId) query = query + `&filters[$or][1][directed]=${userId}`
+
+
+  //PAGINACION
+
+  // query = query + `&pagination[page]=1&pagination[pageSize]=10`
+  query = query + `&pagination[page]=${page}&pagination[pageSize]=10`
   return api.get(`cases${query}`)
 }
 
 export function api_casesRoles() {
   return api.get(`role-lists?filters[forCases][$eq]=true`)
 }
-export function api_changePassword(data:any) {
-  return api.post(`auth/change-password`,data)
+export function api_changePassword(data: any) {
+  return api.post(`auth/change-password`, data)
 }

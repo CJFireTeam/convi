@@ -6,7 +6,7 @@ import axios, { AxiosError, isAxiosError } from "axios";
 import router from "next/router";
 import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
-
+import { ArrowLeftIcon } from "@heroicons/react/20/solid";
 
 type Inputs = {
     currentPassword: string;
@@ -43,46 +43,61 @@ export default function CambiarContrasena() {
         }
     }
 
+    function atrasBoton() {
+        router.push("/perfil");
+    }
+
 
     return (<>
 
-        <div className="flex flex-col items-center ">
-            <div className="flex flex-col sm:flex-col rounded-lg shadow-2xl animate-fadein p-2 mb-4">
+        <div className="flex flex-col items-center">
+            <div className="flex flex-col rounded-lg border shadow-2xl animate-fadein mb-4 p-10">
+                <div className="mb-4">
+                    <button onClick={atrasBoton}>
+                        <ArrowLeftIcon className="h-8 w-8 text-primary "></ArrowLeftIcon>
+                    </button>
+                </div>
                 <form onSubmit={handleSubmit(onSubmit)} >
 
-                    <div className="flex flex-row mb-4" >
-                        <span className="text-base font-semibold leading-6 text-gray-900 mr-3">Ingrese contraseña actual: </span>
+                    <div className="grid grid-cols-subgrid md:grid-cols-2 lg:grid-cols-2 gap-2 mb-4">
+                        <div className="text-left ">
+                            <span className="text-base font-semibold leading-6 text-gray-900">Ingrese contraseña actual:</span>
+                        </div>
                         <input
                             type="text"
                             id="currentPassword"
                             {...register('currentPassword')}
-                            className="flexbg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                            className="col-start-1 md:col-span-1 lg:col-span-1 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                             placeholder="Contraseña actual" required />
                     </div>
                     {errors.currentPassword?.message && (<p className="text-error text-sm mb-4">{errors.currentPassword.message}</p>)}
 
-                    <div className="flex flex-row mb-4" >
-                        <span className="text-base font-semibold leading-6 text-gray-900 mr-3">Ingrese nueva contraseña: </span>
+                    <div className="grid grid-cols-subgrid md:grid-cols-2 lg:grid-cols-2 gap-2 mb-4">
+                        <div className="text-left ">
+                            <span className="text-base font-semibold leading-6 text-gray-900">Ingrese nueva contraseña:</span>
+                        </div>
                         <input type="password"
                             id="password"
                             {...register('password')}
-                            className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                            className="col-start-1 md:col-span-1 lg:col-span-1 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                             placeholder="Nueva contraseña" required />
                     </div>
                     {errors.password?.message && (<p className="text-error text-sm mb-4">{errors.password.message}</p>)}
 
-                    <div className="flex flex-row mb-4" >
-                        <span className="text-base font-semibold leading-6 text-gray-900 mr-2">Confirmar nueva contraseña: </span>
+                    <div className="grid grid-cols-subgrid md:grid-cols-2 lg:grid-cols-2 gap-2 mb-4">
+                        <div className="text-left">
+                            <span className="text-base font-semibold leading-6 text-gray-900">Confirmar nueva contraseña:</span>
+                        </div>
                         <input type="password"
                             id="passwordConfirmation"
                             {...register('passwordConfirmation')}
-                            className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500  dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                            className="col-start-1 md:col-span-1 lg:col-span-1 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                             placeholder="Repita la contraseña" required />
                     </div>
                     {errors.passwordConfirmation?.message && (<p className="text-error text-sm mb-4">{errors.passwordConfirmation.message}</p>)}
 
-                    <div className=" flex flex-col item-center">
-                        <button className="flex w-full justify-center rounded-md bg-indigo-600 hover:bg-indigo-500 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 mb-2 sm:mb-0"
+                    <div className="flex flex-col item-center">
+                        <button className="flex w-full justify-center text-white hover:bg-info rounded-md px-3 py-1.5 text-sm font-semibold bg-primary"
                             type="submit"
                         >
                             Cambiar Contraseña
@@ -91,5 +106,6 @@ export default function CambiarContrasena() {
                 </form>
             </div>
         </div>
+
     </>);
 }

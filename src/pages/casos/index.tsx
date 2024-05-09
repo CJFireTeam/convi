@@ -4,7 +4,7 @@ import axios from "axios";
 import Layout from "../../components/layout/Layout";
 import { useEffect, useState } from "react";
 import metaI from "../../interfaces/meta.interface";
-import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/20/solid";
+import { ChevronLeftIcon, ChevronRightIcon, FolderIcon } from "@heroicons/react/20/solid";
 import { capitalizeFirstLetter } from "../../shared/functions";
 import { useUserStore } from "../../store/userStore";
 import { api_cases } from "../../services/axios.services";
@@ -99,7 +99,12 @@ function Table({ data }: { data: caseInterface[] }) {
               <EyeIcon className="h-6 w-6" aria-hidden="true" />
             </td>
             <td className="py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6  space-x-2 items-center">
-              <PencilIcon className="h-6 w-6" aria-hidden="true" onClick={() => handleEdit(person.id)}/>
+              <button onClick={() => handleEdit(person.id)}>
+              <PencilIcon className="h-6 w-6" aria-hidden="true"  />
+              </button>
+            </td>
+            <td className="py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6  space-x-2 items-center">
+              <FolderIcon className="h-6 w-6" aria-hidden="true"  />
             </td>
           </tr>
         ))}
@@ -148,7 +153,7 @@ function Paginator() {
             <a
               href="#"
               aria-current="page"
-              className="relative z-10 inline-flex items-center bg-indigo-600 px-4 py-2 text-sm font-semibold text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+              className="relative z-10 inline-flex items-center bg-primary px-4 py-2 text-sm font-semibold text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
             >
               1
             </a>
@@ -200,18 +205,18 @@ function Paginator() {
 }
 
 export default function Casos() {
-  const { user, GetRole } = useUserStore();
+  const { user, GetRole, role } = useUserStore();
   const [metaData, setMetada] = useState<metaI>();
   const [data, setData] = useState<caseInterface[]>([]);
   const { push } = useRouter();
   useEffect(() => {
     const getData = async () => {
-      let assigned : number | undefined= undefined;
+      let assigned: number | undefined = undefined;
       try {
         if (GetRole() !== "Authenticated") {
           assigned = user?.id
         }
-        const data = await api_cases({createdBy:user?.id,userId:assigned});
+        const data = await api_cases({ createdBy: user?.id, userId: assigned });
         setData(data.data.data);
         setMetada(data.data.meta);
       } catch (error) {
@@ -227,34 +232,38 @@ export default function Casos() {
   };
 
   return (
-    <div className="px-4 sm:px-6 lg:px-8">
-      <div className="flex items-center justify-between ">
-        <div className="sm:flex-auto">
-          <h1 className="text-base font-semibold leading-6 text-gray-900">
-            Mis Casos
-          </h1>
-          <p className="mt-2 text-sm text-gray-700"></p>
-        </div>
-        <div className=" sm:ml-16 sm:mt-0 sm:flex-none">
-          <button
-            type="button"
-            className="block rounded-md bg-indigo-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-            onClick={redirect}
-          >
-            Crear nuevo caso
-          </button>
-        </div>
-      </div>
-      <div className="mt-8 flow-root">
-        <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-          <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
-            <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
-              <Table data={data} />
-              <Paginator />
+    <>
+      {role.name !== "Authenticated" && (
+        <div className="px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between ">
+            <div className="sm:flex-auto">
+              <h1 className="text-base font-semibold leading-6 text-gray-900">
+                Mis Casos
+              </h1>
+              <p className="mt-2 text-sm text-gray-700"></p>
+            </div>
+            <div className=" sm:ml-16 sm:mt-0 sm:flex-none">
+              <button
+                type="button"
+                className="block rounded-md bg-primary px-3 py-2 text-center text-sm font-semibold text-white hover:brightness-90"
+                onClick={redirect}
+              >
+                Crear nuevo caso
+              </button>
+            </div>
+          </div>
+          <div className="mt-8 flow-root">
+            <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+              <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
+                <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
+                  <Table data={data} />
+                  <Paginator />
+                </div>
+              </div>
             </div>
           </div>
         </div>
-      </div>
-    </div>
+      )}
+    </>
   );
 }

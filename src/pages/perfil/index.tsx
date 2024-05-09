@@ -16,7 +16,7 @@ export default function Perfil() {
 
     return (
         <div className="flex flex-col items-center">
-            <div className="flex flex-col sm:flex-row rounded-lg border border-gray-400 animate-fadein p-2">
+            <div className="flex flex-col sm:flex-row rounded-lg border border-primary shadow-lg animate-fadein p-4 md:p-10 lg:p-10">
 
                 <div className="flex flex-col sm:w-1/2">
                     <span className="text-base font-semibold leading-6 text-gray-900">Rol:</span>
@@ -34,13 +34,13 @@ export default function Perfil() {
                 </div>
 
                 <div className="flex flex-col sm:w-1/2 sm:ml-20 items-center">
-                    <UserIcon className="h-16 w-16 rounded-full bg-gray-50 mb-12 mt-3"></UserIcon>
-                    <button className="flex w-full justify-center rounded-md bg-indigo-600 hover:bg-indigo-500 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 mb-2 sm:mb-0"
+                    <UserIcon className="h-16 w-16 rounded-full bg-primary text-white mb-12 mt-3"></UserIcon>
+                    <button className="flex w-full justify-center rounded-md px-3 py-1.5 text-sm font-semibold leading-6 bg-primary text-white hover:bg-info mb-2 sm:mb-0"
                     onClick={cambiarContraseñaClick}
                     >
                         Cambiar Contraseña
                     </button>
-                    <button className="flex w-full justify-center rounded-md bg-indigo-600 hover:bg-indigo-500 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 mt-2"
+                    <button className="flex w-full justify-center rounded-md px-3 py-1.5 text-sm font-semibold leading-6 bg-primary text-white hover:bg-info mb-2 sm:mb-0 mt-2"
                     >
                         Editar Perfil
                     </button>

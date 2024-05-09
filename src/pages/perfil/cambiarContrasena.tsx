@@ -97,7 +97,7 @@ export default function CambiarContrasena() {
                     {errors.passwordConfirmation?.message && (<p className="text-error text-sm mb-4">{errors.passwordConfirmation.message}</p>)}
 
                     <div className="flex flex-col item-center">
-                        <button className="flex w-full justify-center text-white hover:bg-info rounded-md px-3 py-1.5 text-sm font-semibold bg-primary"
+                        <button className="flex w-full justify-center text-white hover:brightness-90 rounded-md px-3 py-1.5 text-sm font-semibold bg-primary"
                             type="submit"
                         >
                             Cambiar Contraseña

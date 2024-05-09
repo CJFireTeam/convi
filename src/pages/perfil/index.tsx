@@ -16,7 +16,7 @@ export default function Perfil() {
 
     return (
         <div className="flex flex-col items-center">
-            <div className="flex flex-col sm:flex-row rounded-lg border border-primary shadow-lg animate-fadein p-4 md:p-10 lg:p-10">
+            <div className="flex flex-col sm:flex-row rounded-lg border shadow-lg animate-fadein p-4 md:p-10 lg:p-10">
 
                 <div className="flex flex-col sm:w-1/2">
                     <span className="text-base font-semibold leading-6 text-gray-900">Rol:</span>
@@ -34,13 +34,13 @@ export default function Perfil() {
                 </div>
 
                 <div className="flex flex-col sm:w-1/2 sm:ml-20 items-center">
-                    <UserIcon className="h-16 w-16 rounded-full bg-primary text-white mb-12 mt-3"></UserIcon>
-                    <button className="flex w-full justify-center rounded-md px-3 py-1.5 text-sm font-semibold leading-6 bg-primary text-white hover:bg-info mb-2 sm:mb-0"
+                    <UserIcon className="h-16 w-16 rounded-full  text-primary mb-12 mt-3"></UserIcon>
+                    <button className="flex w-full justify-center rounded-md px-3 py-1.5 text-sm font-semibold leading-6 bg-primary text-white hover:brightness-90 mb-2 sm:mb-0"
                     onClick={cambiarContraseñaClick}
                     >
                         Cambiar Contraseña
                     </button>
-                    <button className="flex w-full justify-center rounded-md px-3 py-1.5 text-sm font-semibold leading-6 bg-primary text-white hover:bg-info mb-2 sm:mb-0 mt-2"
+                    <button className="flex w-full justify-center rounded-md px-3 py-1.5 text-sm font-semibold leading-6 bg-primary text-white hover:brightness-90 mb-2 sm:mb-0 mt-2"
                     >
                         Editar Perfil
                     </button>

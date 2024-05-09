@@ -282,7 +282,7 @@ export default function CrearCasos() {
         autoClose: 3000,
       });
       setTimeout(() => {
-        router.back();
+        router.push("/");
       }, 3000);
     } catch (error) {
       toast.update(id, {

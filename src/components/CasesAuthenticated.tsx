@@ -285,7 +285,7 @@ export default function CasosAuthenticated() {
     getData();
   }, [user]);
   const redirect = () => {
-    push("/casos/crear");
+    push("/te_escuchamos");
   };
 
   return (

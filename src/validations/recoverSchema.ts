@@ -1,4 +1,4 @@
-import {z} from 'zod'
+import { z } from 'zod'
 
 
 export const recoverSchema = z.object({
@@ -8,48 +8,32 @@ export const recoverSchema = z.object({
 });
 
 export const recoverPasswordSchema = z.object({
-    newPassword: z.string().min(6,{
+    newPassword: z.string().min(6, {
         message: "La nueva contraseña debe tener al menos 6 caracteres."
     }),
-    confirmNewPassword: z.string().min(6,{
+    confirmNewPassword: z.string().min(6, {
         message: "La confirmación debe tener al menos 6 caracteres."
     }),
 
-}).refine(data => data.newPassword === data.confirmNewPassword,{
+}).refine(data => data.newPassword === data.confirmNewPassword, {
     message: "Las contraseñas no coinciden",
     path: ["confirmNewPassword"]
 })
 
 export const registerSchema = z.object({
-    email: z.string().email({
+    email: z.string({ required_error: "Campo Requerido", invalid_type_error: "Campo Requerido" }).email({
         message: "Porfavor ingresa un email valido",
     }),
-    password: z.string().min(6,{
+    password: z.string({ required_error: "Campo Requerido", invalid_type_error: "Campo Requerido" }).min(6, {
         message: "Su contraseña necesita tener un largo minimo de 6."
     }),
-    first_lastname: z.string().min(6,{
-        message: "La nueva contraseña debe tener al menos 6 caracteres."
-    }),
-    second_lastname: z.string().min(6,{
-        message: "La nueva contraseña debe tener al menos 6 caracteres."
-    }),
-    firstname: z.string().min(6,{
-        message: "La nueva contraseña debe tener al menos 6 caracteres."
-    }),
-    secondname: z.string().min(6,{
-        message: "La nueva contraseña debe tener al menos 6 caracteres."
-    }),
-    tipo: z.string().min(6,{
-        message: "La nueva contraseña debe tener al menos 6 caracteres."
-    }),
-    region: z.string().min(3,{
-        message: "La nueva contraseña debe tener al menos 6 caracteres."
-    }).default(""),
-    comuna: z.string().min(2,{
-        message: "La nueva contraseña debe tener al menos 6 caracteres."
-    }).default(""),
-    direccion: z.string().min(6,{
-        message: "La nueva contraseña debe tener al menos 6 caracteres."
-    }),
-    establishment_authenticateds: z.number().array()
+    first_lastname: z.string({ required_error: "Campo Requerido", invalid_type_error: "Campo Requerido" }),
+    second_lastname: z.string({ required_error: "Campo Requerido", invalid_type_error: "Campo Requerido" }),
+    firstname: z.string({ required_error: "Campo Requerido", invalid_type_error: "Campo Requerido" }),
+    secondname: z.string({ required_error: "Campo Requerido", invalid_type_error: "Campo Requerido" }),
+    // tipo: z.string({ required_error: "Campo Requerido", invalid_type_error: "Campo Requerido" }),
+    region: z.string({ required_error: "Campo Requerido", invalid_type_error: "Campo Requerido" }).min(3, { message: "Campo Requerido" }).default(""),
+    comuna: z.string({ required_error: "Campo Requerido", invalid_type_error: "Campo Requerido" }).min(3, { message: "Campo Requerido" }).default(""),
+    direccion: z.string({ required_error: "Campo Requerido", invalid_type_error: "Campo Requerido" }),
+    // establishment_authenticateds: z.number().array()
 })

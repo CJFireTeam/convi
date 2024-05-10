@@ -131,18 +131,18 @@ export default function Layout(props: LayoutProps) {
           <Menu className="p-4 w-60 md:w-80 h-full bg-white">
             {useMenuStore.getState().menus.map((item, index) =>
               item.children.length !== 0 ? (
-                <Menu.Item>
-                  <Menu.Title>{item.name}</Menu.Title>
-                  <Menu>
-                    {item.children.map((subitem, index) => (
-                      <Menu.Item>
+                <Menu.Item key={index}>
+                  <Menu.Details open={true} label={item.name}>
+
+                    {item.children.map((subitem, indexsub) => (
+                      <Menu.Item key={indexsub}>
                         <a onClick={() => push(subitem.href)}>{subitem.name}</a>
                       </Menu.Item>
                     ))}
-                  </Menu>
+                  </Menu.Details>
                 </Menu.Item>
               ) : (
-                <Menu.Item>
+                <Menu.Item key={index}>
                   <a onClick={() => push(item.href)}>{item.name}</a>
                 </Menu.Item>
               )
@@ -180,12 +180,12 @@ export default function Layout(props: LayoutProps) {
             <Menu horizontal className="px-1">
               {useMenuStore.getState().menus.map((item, index) =>
                 item.children.length !== 0 ? (
-                  <Menu.Item>
+                  <Menu.Item key={index}>
                     <details>
                       <summary>{item.name}</summary>
                       <ul className="p-2">
-                        {item.children.map((subitem, index) => (
-                          <Menu.Item>
+                        {item.children.map((subitem, subindex) => (
+                          <Menu.Item key={subindex}>
                             <a onClick={() => push(subitem.href)}>
                               {subitem.name}
                             </a>
@@ -195,7 +195,7 @@ export default function Layout(props: LayoutProps) {
                     </details>
                   </Menu.Item>
                 ) : (
-                  <Menu.Item>
+                  <Menu.Item key={index}>
                     <a onClick={() => push(item.href)}>{item.name}</a>
                   </Menu.Item>
                 )
@@ -215,27 +215,10 @@ export default function Layout(props: LayoutProps) {
                   <UserIcon className="h-10 w-10 mr-1" aria-hidden="true" />
                 </div>
               </Button>
-              <Dropdown.Menu className="w-52 menu-sm mt-3 z-[1] p-2">
-                <Menu>
-                  <Menu.Item>
-                    <Menu.Title></Menu.Title>
-                    <Menu>
-                      <Menu.Item>
-                      <a
-                    className="justify-between"
-                    onClick={() => push("/perfil")}
-                  >
-                    Mi Perfil
-                  </a>
-                      </Menu.Item>
-                      <Menu.Item>
-                        <a onClick={logout}>Desconectar</a>
-                      </Menu.Item>
-
-                    </Menu>
-                  </Menu.Item>
-                </Menu>
-              </Dropdown.Menu>
+              <Dropdown.Menu className="mt-3 z-[1] w-52 menu-sm">
+            <Dropdown.Item onClick={() => push("/perfil")}>Mi perfil</Dropdown.Item>
+            <Dropdown.Item onClick={() => logout()}> Desconectar</Dropdown.Item>
+          </Dropdown.Menu>
             </Dropdown>{" "}
           </Navbar.End>
         </Navbar>

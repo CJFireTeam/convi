@@ -11,7 +11,7 @@ export default function Perfil() {
     const { push } = useRouter();
 
     function cambiarContraseñaClick() {
-        push("/perfil/cambiarContrasena");
+        push("/perfil/cambiarcontrasena");
     }
 
     return (

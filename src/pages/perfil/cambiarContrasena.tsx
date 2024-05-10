@@ -67,7 +67,7 @@ export default function CambiarContrasena() {
                             type="text"
                             id="currentPassword"
                             {...register('currentPassword')}
-                            className="col-start-1 md:col-span-1 lg:col-span-1 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                            className="col-start-1 md:col-span-1 lg:col-span-1 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary focus:border-primary "
                             placeholder="Contraseña actual" required />
                     </div>
                     {errors.currentPassword?.message && (<p className="text-error text-sm mb-4">{errors.currentPassword.message}</p>)}
@@ -79,7 +79,7 @@ export default function CambiarContrasena() {
                         <input type="password"
                             id="password"
                             {...register('password')}
-                            className="col-start-1 md:col-span-1 lg:col-span-1 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                            className="col-start-1 md:col-span-1 lg:col-span-1 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary focus:border-primary "
                             placeholder="Nueva contraseña" required />
                     </div>
                     {errors.password?.message && (<p className="text-error text-sm mb-4">{errors.password.message}</p>)}
@@ -91,7 +91,7 @@ export default function CambiarContrasena() {
                         <input type="password"
                             id="passwordConfirmation"
                             {...register('passwordConfirmation')}
-                            className="col-start-1 md:col-span-1 lg:col-span-1 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                            className="col-start-1 md:col-span-1 lg:col-span-1 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary focus:border-primary "
                             placeholder="Repita la contraseña" required />
                     </div>
                     {errors.passwordConfirmation?.message && (<p className="text-error text-sm mb-4">{errors.passwordConfirmation.message}</p>)}

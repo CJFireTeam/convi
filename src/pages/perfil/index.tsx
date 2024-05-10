@@ -20,7 +20,9 @@ export default function Perfil() {
 
                 <div className="flex flex-col sm:w-1/2">
                     <span className="text-base font-semibold leading-6 text-gray-900">Rol:</span>
-                    <span className="mb-2">{role.name}</span>
+                    <span className="mb-2">
+                    { role.name === "Authenticated" ? user.tipo : role.name
+                    }</span>
                     {role.name !== "Authenticated" && (
                         <>
                             <span className="text-base font-semibold leading-6 text-gray-900">Establecimiento:</span>

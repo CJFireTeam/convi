@@ -18,6 +18,7 @@ interface User {
     name: string
   };
   provider: string;
+  tipo?: string;
 }
 interface role {
   id: number;
@@ -32,7 +33,6 @@ type State = {
   user: User;
   bearer: string;
   role: role
-
   isLoading: Boolean
 };
 
@@ -44,7 +44,9 @@ type Actions = {
   setRole(role: role): void;
   setStablishment({name,id}:{name:string,id:number}) : void;
   GetRole(): string;
-  GetStablishment() : {name:string,id:number} 
+  GetStablishment() : {name:string,id:number}
+  updateUser(userUpdates: Partial<User>): void;
+
 };
 
 const baseRole = { createdAt: '', description: '', id: 0, name: '', type: '', updatedAt: '', }
@@ -69,5 +71,7 @@ export const useUserStore = create<State & Actions>()(
         desconectar: () => set((state) => ({ ...state, user: baseUser, role: baseRole })),
         setUser: (user: User) => set((state) => ({ ...state, user })),
         setStablishment: ({ name, id }: { name: string, id: number }) => set((state) => ({ ...state, user: { ...state.user, establishment: { id, name } } })),
+        updateUser: (userUpdates: Partial<User>) => set((state) => ({ ...state, user: { ...state.user, ...userUpdates } })),
+
       }))
 );

@@ -66,3 +66,7 @@ export function api_casesRoles() {
 export function api_changePassword(data: any) {
   return api.post(`auth/change-password`, data)
 }
+
+export function api_updateUser(id:number,data: any) {
+  return api.put(`users/${id}`, data)
+}

@@ -1,4 +1,11 @@
-import { Children, Fragment, ReactNode, useEffect, useState } from "react";
+import {
+  Children,
+  Fragment,
+  ReactNode,
+  useCallback,
+  useEffect,
+  useState,
+} from "react";
 import { jwtDecode } from "jwt-decode";
 import Cookies from "js-cookie";
 import {
@@ -13,7 +20,7 @@ import {
   UsersIcon,
   XMarkIcon,
   LightBulbIcon,
-  ArchiveBoxIcon
+  ArchiveBoxIcon,
 } from "@heroicons/react/24/outline";
 import { useLoaderContext } from "../../context/loader";
 import axios from "axios";
@@ -22,7 +29,7 @@ import Head from "next/head";
 import { useUserStore } from "../../store/userStore";
 import { api_me } from "../../services/axios.services";
 import { Imenus, useMenuStore } from "../../store/menus.store";
-import { Button, Dropdown, Menu, Navbar } from "react-daisyui";
+import { Badge, Button, Drawer, Dropdown, Menu, Navbar } from "react-daisyui";
 type LayoutProps = {
   children: ReactNode;
 };
@@ -45,7 +52,7 @@ export default function Layout(props: LayoutProps) {
     isLoading,
     setStablishment,
     GetStablishment,
-    desconectar
+    desconectar,
   } = useUserStore();
 
   const { Loader, setLoader } = useLoaderContext();
@@ -54,7 +61,13 @@ export default function Layout(props: LayoutProps) {
   const { push } = useRouter();
   const pathname = usePathname();
   const [role, setRoleUI] = useState("");
-  const { menus, setMenusAuthenticated, setMenusEncargado, setMenusProfesor, setActive } = useMenuStore()
+  const {
+    menus,
+    setMenusAuthenticated,
+    setMenusEncargado,
+    setMenusProfesor,
+    setActive,
+  } = useMenuStore();
   function capitalizeFirstLetter(string: string) {
     return string.charAt(0).toUpperCase() + string.slice(1);
   }
@@ -74,14 +87,18 @@ export default function Layout(props: LayoutProps) {
     sessionStorage.clear();
   }
   useEffect(() => {
-    if (useUserStore.getState().GetRole() === "Authenticated") setMenusAuthenticated()
-    if (useUserStore.getState().GetRole() === "Encargado de Convivencia Escolar") setMenusEncargado()
-    if (useUserStore.getState().GetRole() === "Profesor") setMenusProfesor()
+    if (useUserStore.getState().GetRole() === "Authenticated")
+      setMenusAuthenticated();
+    if (
+      useUserStore.getState().GetRole() === "Encargado de Convivencia Escolar"
+    )
+      setMenusEncargado();
+    if (useUserStore.getState().GetRole() === "Profesor") setMenusProfesor();
     setActive(pathname);
   }, [useUserStore.getState().GetRole(), pathname]);
 
   useEffect(() => {
-    (async () => { })();
+    (async () => {})();
     const me = async () => {
       try {
         const data = await api_me();
@@ -101,80 +118,131 @@ export default function Layout(props: LayoutProps) {
     me();
   }, []);
 
+  const [visible, setVisible] = useState(false);
+  const toggleVisible = useCallback(() => {
+    setVisible((visible) => !visible);
+  }, []);
   return (
     <>
-      <Navbar className=" shadow-xl shadow">
-        <Navbar.Start>
-          <Dropdown>
-            <Button tag="label" color="ghost" tabIndex={0} className="lg:hidden">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h8m-8 6h16" />
-              </svg>
-            </Button>
-
-            <Dropdown.Menu tabIndex={0} className="w-52 menu-sm mt-3 z-[1]">
-              {useMenuStore.getState().menus.map((item, index) => (
-                <Dropdown.Item key={index} onClick={() => redirection(item)}>
-                  {item.name}
-                </Dropdown.Item>
-              ))}
-            </Dropdown.Menu>
-          </Dropdown>
-          <a className="btn btn-ghost normal-case text-xl">Convi</a>
-        </Navbar.Start>
-        <Navbar.Center className="hidden lg:flex">
-          <Menu horizontal className="px-1">
-            {useMenuStore.getState().menus.map((item, index) => (
-              (
-                item.children.length !== 0 ?
-                  <Menu.Item key={index}>
+      <Drawer
+        open={visible}
+        onClickOverlay={toggleVisible}
+        side={
+          <Menu className="p-4 w-60 md:w-80 h-full bg-white">
+            {useMenuStore.getState().menus.map((item, index) =>
+              item.children.length !== 0 ? (
+                <Menu.Item>
+                  <Menu.Title>{item.name}</Menu.Title>
+                  <Menu>
+                    {item.children.map((subitem, index) => (
+                      <Menu.Item>
+                        <a onClick={() => push(subitem.href)}>{subitem.name}</a>
+                      </Menu.Item>
+                    ))}
+                  </Menu>
+                </Menu.Item>
+              ) : (
+                <Menu.Item>
+                  <a onClick={() => push(item.href)}>{item.name}</a>
+                </Menu.Item>
+              )
+            )}
+          </Menu>
+        }
+      >
+        <Navbar className=" shadow-lg">
+          <Navbar.Start>
+            <div className="flex-none lg:hidden">
+              <Button shape="square" color="ghost" onClick={toggleVisible}>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  className="inline-block w-6 h-6 stroke-current"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M4 6h16M4 12h16M4 18h16"
+                  ></path>
+                </svg>
+              </Button>
+            </div>
+            <a
+              onClick={() => push("/")}
+              className="btn btn-ghost normal-case text-xl"
+            >
+              Convi
+            </a>
+          </Navbar.Start>
+          <Navbar.Center className="hidden lg:flex">
+            <Menu horizontal className="px-1">
+              {useMenuStore.getState().menus.map((item, index) =>
+                item.children.length !== 0 ? (
+                  <Menu.Item>
                     <details>
                       <summary>{item.name}</summary>
                       <ul className="p-2">
-                        {item.children.map((submenu, index) => (
-                          <Menu.Item key={index} onClick={() => redirection(submenu)}>
-                            <a>{submenu.name}</a>
+                        {item.children.map((subitem, index) => (
+                          <Menu.Item>
+                            <a onClick={() => push(subitem.href)}>
+                              {subitem.name}
+                            </a>
                           </Menu.Item>
                         ))}
                       </ul>
                     </details>
-                  </Menu.Item> :
-                  <Menu.Item key={index}>
-                    <a className={item.current ? "active" : ""} onClick={() => redirection(item)}>
-                      <item.icon
-                        className="h-6 w-6 shrink-0 mr-1"
-                        aria-hidden="true"
-                      />
-                      {item.name}
-                    </a>
                   </Menu.Item>
-              )
-            ))}
+                ) : (
+                  <Menu.Item>
+                    <a onClick={() => push(item.href)}>{item.name}</a>
+                  </Menu.Item>
+                )
+              )}
+            </Menu>
+          </Navbar.Center>
+          <Navbar.End>
+            <Dropdown end>
+              <Button
+                tag="label"
+                tabIndex={0}
+                color="ghost"
+                className="avatar"
+                shape="circle"
+              >
+                <div className="w-10 rounded-full">
+                  <UserIcon className="h-10 w-10 mr-1" aria-hidden="true" />
+                </div>
+              </Button>
+              <Dropdown.Menu className="w-52 menu-sm mt-3 z-[1] p-2">
+                <Menu>
+                  <Menu.Item>
+                    <Menu.Title></Menu.Title>
+                    <Menu>
+                      <Menu.Item>
+                      <a
+                    className="justify-between"
+                    onClick={() => push("/perfil")}
+                  >
+                    Mi Perfil
+                  </a>
+                      </Menu.Item>
+                      <Menu.Item>
+                        <a onClick={logout}>Desconectar</a>
+                      </Menu.Item>
 
-          </Menu>
-        </Navbar.Center>
-
-        <Navbar.End>
-          <Dropdown >
-            <Button>
-              <UserIcon className="h-6 w-6 mr-1" aria-hidden="true" />
-              {userNavigation[0].name} {/* Usamos el primer elemento de userNavigation */}
-            </Button>
-            <Dropdown.Menu>
-            <Dropdown.Item  onClick={() => push("/perfil")}>
-                  Mi Perfil
-                </Dropdown.Item>
-            <Dropdown.Item  onClick={logout}>
-                  Desconectar
-            </Dropdown.Item>
-            </Dropdown.Menu>
-          </Dropdown>
-        </Navbar.End>
-      </Navbar>
+                    </Menu>
+                  </Menu.Item>
+                </Menu>
+              </Dropdown.Menu>
+            </Dropdown>{" "}
+          </Navbar.End>
+        </Navbar>
+      </Drawer>
       <main className="py-10">
         <div className="px-4 sm:px-6 lg:px-8">{props.children}</div>
       </main>
     </>
   );
 }
-

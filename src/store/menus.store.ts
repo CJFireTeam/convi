@@ -13,13 +13,12 @@ export interface Imenus {
     } & React.RefAttributes<SVGSVGElement>
   >
 }
-
 interface IMenuChildren extends Imenus{
   children:Imenus[];
 }
 
 const AuthenticatedMenus: IMenuChildren[] = [
-  { name: "Home", href: "/", icon: HomeIcon, current: false,children:[] },
+  { name: "Dashboard", href: "/", icon: HomeIcon, current: false,children:[] },
   {
     name: "Te Escuchamos",
     
@@ -44,7 +43,7 @@ const EncargadoMenus: IMenuChildren[] = [
     name: "Gestion De Casos",
     href: "/gestion",
     children:[
-      {name:"Denuncias",current:false,href:"/gestion",icon:Cog6ToothIcon}
+      {name:"Denuncias",current:false,href:"/casos",icon:Cog6ToothIcon}
     ],
     icon: Cog6ToothIcon,
     current: false,

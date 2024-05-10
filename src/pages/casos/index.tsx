@@ -2,7 +2,7 @@ import Cookies from "js-cookie";
 import { useRouter } from "next/router";
 import axios from "axios";
 import Layout from "../../components/layout/Layout";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import metaI from "../../interfaces/meta.interface";
 import { ChevronLeftIcon, ChevronRightIcon, FolderIcon } from "@heroicons/react/20/solid";
 import { capitalizeFirstLetter } from "../../shared/functions";
@@ -10,8 +10,23 @@ import { useUserStore } from "../../store/userStore";
 import { api_cases } from "../../services/axios.services";
 import { EyeIcon, PencilIcon } from "@heroicons/react/24/outline";
 import { useMenuStore } from "../../store/menus.store";
+import { Button, Divider, Modal } from "react-daisyui";
 
 function Table({ data }: { data: caseInterface[] }) {
+
+  const [selectedPerson, setSelectedPerson] = useState<caseInterface | null>(null);
+
+  const creationRef = useRef<HTMLDialogElement>(null);
+
+  const handleShowModal = useCallback((person: caseInterface) => {
+    setSelectedPerson(person);
+    creationRef.current?.showModal();
+  }, [creationRef]);
+
+  const handleCloseModal = useCallback(() => {
+    creationRef.current?.close();
+  }, [creationRef]);
+  const { role } = useUserStore();
   const paseDate = (date: string) => {
     const fecha = new Date(date);
 
@@ -30,6 +45,7 @@ function Table({ data }: { data: caseInterface[] }) {
   };
 
   return (
+    <>
     <table className="min-w-full divide-y divide-gray-300">
       <thead className="bg-gray-50">
         <tr>
@@ -57,6 +73,8 @@ function Table({ data }: { data: caseInterface[] }) {
           >
             Fecha de creacion
           </th>
+          {role.name !== "Encargado de Convivencia Escolar" && ( 
+          <> 
           <th
             scope="col"
             className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
@@ -69,6 +87,24 @@ function Table({ data }: { data: caseInterface[] }) {
           >
             Derivar
           </th>
+          </>
+          )}
+          {role.name === "Encargado de Convivencia Escolar" && (  
+          <>
+          <th
+            scope="col"
+            className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+          >
+            Derivar/<br/>Gestionar
+          </th>
+          <th
+            scope="col"
+            className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+          >
+            Ver
+          </th>
+          </>
+          )}
         </tr>
       </thead>
       <tbody className="divide-y divide-gray-200 bg-white">
@@ -79,8 +115,7 @@ function Table({ data }: { data: caseInterface[] }) {
             </td>
             <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
               {
-                person.attributes.directed.data.attributes.role.data.attributes
-                  .name
+                person.attributes.directed.data.attributes.role.data.attributes.name
               }
             </td>
             <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
@@ -94,21 +129,106 @@ function Table({ data }: { data: caseInterface[] }) {
             <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
               {paseDate(person.attributes.createdAt)}
             </td>
+            {role.name !== "Encargado de Convivencia Escolar" && (  
+            <>
             <td className="py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6 hover:text-primary space-x-2 items-center">
-              <EyeIcon className="h-6 w-6" aria-hidden="true" />
+              <button onClick={() => { handleShowModal(person) }}>
+                  <EyeIcon className="h-6 w-6" aria-hidden="true" />
+                </button>
             </td>
+            
             <td className="py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6 hover:text-primary space-x-2 items-center">
               <button onClick={() => handleEdit(person.id)}>
-              <PencilIcon className="h-6 w-6" aria-hidden="true"  />
+                <PencilIcon className="h-6 w-6" aria-hidden="true"  />
               </button>
             </td>
-            <td className="py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6 hover:text-primary space-x-2 items-center">
-              <FolderIcon className="h-6 w-6" aria-hidden="true"  />
-            </td>
+            </>
+            )}
+            {role.name === "Encargado de Convivencia Escolar" && (   
+              <>
+              <td className="py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6 hover:text-primary space-x-2 items-center">
+                {person.attributes.derived !== true &&(
+                  <button onClick={() => handleEdit(person.id)}>
+                    <h1>{person.attributes.derived}</h1>
+                    <PencilIcon className="h-6 w-6" aria-hidden="true"  />
+                  </button>
+                 )}
+                {person.attributes.derived === true &&(
+                  <button>
+                    <FolderIcon className="h-6 w-6" aria-hidden="true"  />
+                  </button>
+                )}
+              </td>
+              <td className="py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6 hover:text-primary space-x-2 items-center">
+                <button onClick={() => { handleShowModal(person) }}>
+                    <EyeIcon className="h-6 w-6" aria-hidden="true" />
+                  </button>
+              </td>
+              </>
+            )}
+
           </tr>
         ))}
       </tbody>
     </table>
+      <Modal backdrop responsive ref={creationRef} className="bg-white">
+        <Modal.Header className="font-bold">
+          Informacion del caso:
+        </Modal.Header>
+        <Divider />
+        <Modal.Body>
+          <ul>
+          </ul>
+          <div className="my-2">
+            <div className="flex flex-wrap">
+              <div className="flex flex-col w-full">
+                <label className="label">
+                  <span className="label-text">¿Quiénes participaron?</span>
+                </label>
+                <textarea value={selectedPerson ? selectedPerson.attributes.who.values.join(" , ") : ''} readOnly rows={1}></textarea>
+              </div>
+            </div>
+            <div className="flex flex-wrap">
+              <div className="flex flex-col w-full">
+                <label className="label">
+                  <span className="label-text">¿Dónde ocurrió?</span>
+                </label>
+                <textarea value={selectedPerson ? selectedPerson.attributes.where.values.join(" , ") : ''} readOnly rows={1}></textarea>
+              </div>
+            </div>
+            <div className="flex flex-wrap">
+              <div className="flex flex-col w-full">
+                <label className="label">
+                  <span className="label-text">¿Cuándo ocurrió?</span>
+                </label>
+                <textarea value={selectedPerson ? selectedPerson.attributes.when.values.join(" , ") : ''} readOnly rows={1}></textarea>
+              </div>
+            </div>
+            <div className="flex flex-wrap">
+              <div className="flex flex-col w-full">
+                <label className="label">
+                  <span className="label-text">Relato de los hechos</span>
+                </label>
+                <textarea value={selectedPerson ? selectedPerson.attributes.story : ''} readOnly rows={1}></textarea>
+              </div>
+            </div>
+            <div className="flex flex-wrap">
+              <div className="flex flex-col w-full">
+                <label className="label">
+                  <span className="label-text">¿Se tomaron medidas?:</span>
+                </label>
+                <textarea value={selectedPerson ? selectedPerson.attributes.measures : ''} readOnly rows={1}></textarea>
+              </div>
+            </div>
+            <div className="my-2">
+              <div className="flex items-center justify-center">
+                <Button color="neutral" onClick={() => { handleCloseModal() }}>Cerrar</Button>
+              </div>
+            </div>
+          </div>
+        </Modal.Body>
+      </Modal>
+      </>
   );
 }
 

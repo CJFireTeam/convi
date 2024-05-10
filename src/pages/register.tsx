@@ -18,18 +18,18 @@ Modal.setAppElement('#__next');
 //
 
 interface Inputs {
+  username: string;
   email: string;
   password: string;
-
   first_lastname: string;
   second_lastname: string;
   firstname: string;
   secondname: string;
-  tipo: string;
+  // tipo: string;
   region: string;
   comuna: string;
   direccion: string;
-  establishment_authenticateds: number[];
+  // establishment_authenticateds: number[];
 }
 
 
@@ -43,7 +43,7 @@ export default function Register() {
   const [establecimientoList, setEstablecimientoList] = useState<stablishmentI[]>([]);
   const [comunaSelected, setComunaSelected] = useState<string>("");
   const [regionList, setRegionList] = useState<string[]>([]);
-  const {register, handleSubmit,watch,setValue, formState: {errors} } = useForm<Inputs>({
+  const {register, handleSubmit, watch, setValue, formState: {errors} } = useForm<Inputs>({
     resolver: zodResolver(registerSchema),
   });
 
@@ -74,6 +74,7 @@ export default function Register() {
   }
   const Submit = async (data: Inputs) => {
     const id = toast.loading("Creando...");
+    data.username = data.email
     try {  
       await axios.post(
         process.env.NEXT_PUBLIC_BACKEND_URL + "auth/local/register",
@@ -86,7 +87,6 @@ export default function Register() {
         isLoading: false,
         autoClose: 3000,
       });
-      router.push({ pathname: "/login" });
     } catch (error) {
       if (error instanceof AxiosError) {
         if (error.response) {
@@ -144,7 +144,7 @@ export default function Register() {
   }, [regionWatch])
   
 
-  const onSubmit = handleSubmit((data) => Submit(data))
+  const onSubmits = handleSubmit((data) => Submit(data))
 
   return (
     <>
@@ -199,7 +199,7 @@ export default function Register() {
         </div>
 
         <div className="mt-3 sm:mx-auto sm:w-full sm:max-w-sm">
-          <form className="space-y-6" method="POST"  onSubmit={onSubmit}>
+          <form className="space-y-6" method="POST" onSubmit={onSubmits}>
             <div className="space-y-12">
               <div className="border-b border-gray-900/10 pb-12">
                 <h2 className="text-base font-semibold leading-7 text-gray-900">
@@ -337,7 +337,7 @@ export default function Register() {
                   </div>
                   <div className="sm:col-span-3">
                     <label
-                      htmlFor="second_lastname"
+                      htmlFor="region"
                       className="block text-sm font-medium leading-6 text-gray-900"
                     >
                       Region de residencia
@@ -357,7 +357,7 @@ export default function Register() {
                   </div>
                   <div className="sm:col-span-3">
                     <label
-                      htmlFor="second_lastname"
+                      htmlFor="comuna"
                       className="block text-sm font-medium leading-6 text-gray-900"
                     >
                      Comuna de residencia
@@ -376,7 +376,7 @@ export default function Register() {
                   </div>
                   <div className="sm:col-span-6">
                     <label
-                      htmlFor="second_lastname"
+                      htmlFor="direccion"
                       className="block text-sm font-medium leading-6 text-gray-900"
                     >
                       Direccion
@@ -385,9 +385,9 @@ export default function Register() {
                       <input
                         type="text"
                         {...register("direccion", {setValueAs: (value) => value === "" ? undefined : value})}
-                        id="second_lastname"
+                        id="direccion"
                         onInput={handleInputString}
-                        autoComplete="second_lastname"
+                        autoComplete="direccion"
                         className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-primary sm:text-sm sm:leading-6"
                       />
                     </div>

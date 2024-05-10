@@ -25,7 +25,6 @@ function Table({ data }: { data: caseInterface[] }) {
   const router = useRouter();
 
   const handleEdit = (id: number) => {
-    console.log(id);
     sessionStorage.setItem("first_case", id.toString());
     router.push("/casos/denuncia");
   };
@@ -114,7 +113,6 @@ function Table({ data }: { data: caseInterface[] }) {
 }
 
 function Paginator({metadata,setMetaData}:{metadata:metaI,setMetaData: (numero:number) => void }) {
-  console.log(metadata)
   const changePage = async (number:number) => {
     if (number  > metadata.pageCount) return;
     if (number <= 0) return;
@@ -138,10 +136,9 @@ function Paginator({metadata,setMetaData}:{metadata:metaI,setMetaData: (numero:n
       </div>
       <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
       <div>
-        <p className="text-sm text-gray-700">
-  Mostrando <span className="font-medium">{Math.min(Number(metadata.pageSize) * metadata.page, metadata.total)}</span> de{" "}
-  <span className="font-medium">{metadata.total}</span> resultados
-</p>
+        <p className="text-sm text-gray-700">Mostrando <span className="font-medium">{Math.min(Number(metadata.pageSize) * metadata.page, metadata.total)}</span> de{" "}
+          <span className="font-medium">{metadata.total}</span> resultados
+        </p>
         </div>
         <div>
         <nav

@@ -5,6 +5,7 @@ interface caseInterface {
         createdAt: string;
         updatedAt: string;
         story: string;
+        derived: boolean;
         when: {
             values: string[];
         };

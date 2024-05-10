@@ -7,21 +7,59 @@ import Image from "next/image";
 import { CheckIcon } from "@heroicons/react/20/solid";
 import { toast } from "react-toastify";
 import Modal from "react-modal";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { registerSchema } from "../validations/recoverSchema";
+import { getComunas, getRegiones } from "../services/local.services";
+import stablishmentI from "../interfaces/establishment.interface";
+import { api_establishmentByComuna } from "../services/axios.services";
+
 Modal.setAppElement('#__next');
-// 
+//
+
+interface Inputs {
+  email: string;
+  password: string;
+
+  first_lastname: string;
+  second_lastname: string;
+  firstname: string;
+  secondname: string;
+  tipo: string;
+  region: string;
+  comuna: string;
+  direccion: string;
+  establishment_authenticateds: number[];
+}
+
+
 export default function Register() {
   const router = useRouter();
   const [isVisible, setIsVisible] = useState(true);
   const [modalIsOpen, setIsOpen] = useState(false);
   const [modalOut, setModalOut] = useState(false);
   const [email, setemail] = useState("");
+  const [comunaList, setComunaList] = useState<string[]>([]);
+  const [establecimientoList, setEstablecimientoList] = useState<stablishmentI[]>([]);
+  const [comunaSelected, setComunaSelected] = useState<string>("");
+  const [regionList, setRegionList] = useState<string[]>([]);
+  const {register, handleSubmit,watch,setValue, formState: {errors} } = useForm<Inputs>({
+    resolver: zodResolver(registerSchema),
+  });
 
   const handleInputString = (event: React.ChangeEvent<HTMLInputElement>) => {
     let inputValue = event.target.value;
       inputValue = inputValue.replace(/[^a-zA-Z\s]/g, "");
       event.target.value = inputValue;
   };
-
+  useEffect(() => {
+    const Regiones = async () => {
+      const data = await getRegiones();
+      setRegionList(data.data.data);
+    };
+    Regiones();
+  }, []);
+  
   function openModal() {
     setModalOut(true)
     setIsOpen(true);
@@ -34,22 +72,12 @@ export default function Register() {
       router.push({ pathname: "/login" });
     }, 500);
   }
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+  const Submit = async (data: Inputs) => {
     const id = toast.loading("Creando...");
-    try {
-      const data = new FormData(event.currentTarget);
-      const jsonData: { [key: string]: string } = {};
-  
-      data.forEach((value, key) => {
-        jsonData[key] = value.toString();
-      });
-      jsonData["username"] = jsonData["email"];
-      setemail(jsonData["username"]);
-  
+    try {  
       await axios.post(
         process.env.NEXT_PUBLIC_BACKEND_URL + "auth/local/register",
-        jsonData
+        data
       );
       openModal();
       toast.update(id, {
@@ -58,6 +86,7 @@ export default function Register() {
         isLoading: false,
         autoClose: 3000,
       });
+      router.push({ pathname: "/login" });
     } catch (error) {
       if (error instanceof AxiosError) {
         if (error.response) {
@@ -100,6 +129,23 @@ export default function Register() {
       router.push({ pathname: "/login" });
     }, 500);
   };
+
+  const regionWatch =watch("region")
+  const handleChangeRegion = async (
+    region:string
+  ) => {
+    setValue("comuna","")
+    const comunas = await getComunas(region);
+    setComunaList(comunas.data.data);
+  };
+  useEffect( () => {
+    if (!regionWatch || regionWatch.length === 0) return;
+    handleChangeRegion(regionWatch)
+  }, [regionWatch])
+  
+
+  const onSubmit = handleSubmit((data) => Submit(data))
+
   return (
     <>
       <Modal
@@ -153,7 +199,7 @@ export default function Register() {
         </div>
 
         <div className="mt-3 sm:mx-auto sm:w-full sm:max-w-sm">
-          <form className="space-y-6" method="POST" onSubmit={handleSubmit}>
+          <form className="space-y-6" method="POST"  onSubmit={onSubmit}>
             <div className="space-y-12">
               <div className="border-b border-gray-900/10 pb-12">
                 <h2 className="text-base font-semibold leading-7 text-gray-900">
@@ -167,20 +213,19 @@ export default function Register() {
                       htmlFor="Email"
                       className="block text-sm font-medium leading-6 text-gray-900"
                     >
-                      Email
+                      email
                     </label>
                     <div className="mt-2">
-                      <div className="flex rounded-md shadow-sm ring-1 ring-inset ring-gray-300 focus-within:ring-2 focus-within:ring-inset focus-within:ring-indigo-600 sm:max-w-md">
+                      <div className="flex rounded-md shadow-sm ring-1 ring-inset ring-gray-300 focus-within:ring-2 focus-within:ring-inset focus-within:ring-primary sm:max-w-md">
                         <input
                           type="email"
-                          name="email"
                           id="email"
                           autoComplete="email"
-                          required
+                          {...register("email", {setValueAs: (value) => value === "" ? undefined : value})}
                           className="block flex-1 border-0 bg-transparent py-1.5 pl-1 text-gray-900 placeholder:text-gray-400 focus:ring-0 sm:text-sm sm:leading-6"
-                          placeholder="Convi@servicio.cl"
                         />
                       </div>
+                      <span className="text-error text-weight-600">{errors.email?.message ? errors.email?.message : ""}</span>
                     </div>
                   </div>
 
@@ -191,16 +236,17 @@ export default function Register() {
                     >
                       Contraseña
                     </label>
-                    <div className="flex rounded-md shadow-sm ring-1 ring-inset ring-gray-300 focus-within:ring-2 focus-within:ring-inset focus-within:ring-indigo-600 sm:max-w-md">
+                    <div className="flex rounded-md shadow-sm ring-1 ring-inset ring-gray-300 focus-within:ring-2 focus-within:ring-inset focus-within:ring-primary sm:max-w-md">
                       <input
-                        required
+                        
                         minLength={6}
                         type="password"
-                        name="password"
                         id="password"
+                        {...register("password", {setValueAs: (value) => value === "" ? undefined : value})}
                         className="block flex-1 border-0 bg-transparent py-1.5 pl-1 text-gray-900 placeholder:text-gray-400 focus:ring-0 sm:text-sm sm:leading-6"
                       />
                     </div>
+                    <span className="text-error text-weight-600">{errors.password?.message ? errors.password?.message : ""}</span>
                   </div>
                 </div>
               </div>
@@ -220,14 +266,14 @@ export default function Register() {
                     <div className="mt-2">
                       <input
                         type="text"
-                        name="firstname"
                         id="firstname"
-                        required
+                        {...register("firstname", {setValueAs: (value) => value === "" ? undefined : value})}
                         autoComplete="firstname"
                         onInput={handleInputString}
-                        className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                        className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-primary sm:text-sm sm:leading-6"
                       />
                     </div>
+                    <span className="text-error text-weight-600">{errors.firstname?.message ? errors.firstname?.message : ""}</span>
                   </div>
 
                   <div className="sm:col-span-3">
@@ -240,14 +286,14 @@ export default function Register() {
                     <div className="mt-2">
                       <input
                         type="text"
-                        name="secondname"
                         id="secondname"
-                        required
+                        {...register("secondname", {setValueAs: (value) => value === "" ? undefined : value})}
                         onInput={handleInputString}
                         autoComplete="secondname"
-                        className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                        className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-primary sm:text-sm sm:leading-6"
                       />
                     </div>
+                    <span className="text-error text-weight-600">{errors.secondname?.message ? errors.secondname?.message : ""}</span>
                   </div>
 
                   <div className="sm:col-span-3">
@@ -260,14 +306,14 @@ export default function Register() {
                     <div className="mt-2">
                       <input
                         type="text"
-                        required
-                        name="first_lastname"
+                        {...register("first_lastname", {setValueAs: (value) => value === "" ? undefined : value})}
                         id="first_lastname"
                         onInput={handleInputString}
                         autoComplete="first_lastname"
-                        className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                        className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-primary sm:text-sm sm:leading-6"
                       />
                     </div>
+                    <span className="text-error text-weight-600">{errors.first_lastname?.message ? errors.first_lastname?.message : ""}</span>
                   </div>
 
                   <div className="sm:col-span-3">
@@ -280,14 +326,72 @@ export default function Register() {
                     <div className="mt-2">
                       <input
                         type="text"
-                        required
-                        name="second_lastname"
+                        {...register("second_lastname", {setValueAs: (value) => value === "" ? undefined : value})}
                         id="second_lastname"
                         onInput={handleInputString}
                         autoComplete="second_lastname"
-                        className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                        className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-primary sm:text-sm sm:leading-6"
                       />
                     </div>
+                    <span className="text-error text-weight-600">{errors.second_lastname?.message ? errors.second_lastname?.message : ""}</span>
+                  </div>
+                  <div className="sm:col-span-3">
+                    <label
+                      htmlFor="second_lastname"
+                      className="block text-sm font-medium leading-6 text-gray-900"
+                    >
+                      Region de residencia
+                    </label>
+                    <div className="mt-2">
+                    <select {...register("region")} className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-primary sm:text-sm sm:leading-6">
+                      <option  value={""}>Seleccione su region de residencia</option>
+                      {regionList.map((region: string) => (
+                        <option value={region} key={region}>
+                          {region}
+                        </option>
+                      ))}
+                    </select>
+                    </div>
+                    <span className="text-error text-weight-600">{errors.region?.message ? errors.region?.message : ""}</span>
+
+                  </div>
+                  <div className="sm:col-span-3">
+                    <label
+                      htmlFor="second_lastname"
+                      className="block text-sm font-medium leading-6 text-gray-900"
+                    >
+                     Comuna de residencia
+                    </label>
+                    <div className="mt-2">
+                    <select {...register("comuna")} className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-primary sm:text-sm sm:leading-6">
+                      <option value={""}>Seleccione su Comuna de residencia</option>
+                      {comunaList.map((comuna: string) => (
+                        <option value={comuna} key={comuna}>
+                          {comuna}
+                        </option>
+                      ))}
+                    </select>
+                    </div>
+                    <span className="text-error text-weight-600">{errors.comuna?.message ? errors.comuna?.message : ""}</span>
+                  </div>
+                  <div className="sm:col-span-6">
+                    <label
+                      htmlFor="second_lastname"
+                      className="block text-sm font-medium leading-6 text-gray-900"
+                    >
+                      Direccion
+                    </label>
+                    <div className="mt-2">
+                      <input
+                        type="text"
+                        {...register("direccion", {setValueAs: (value) => value === "" ? undefined : value})}
+                        id="second_lastname"
+                        onInput={handleInputString}
+                        autoComplete="second_lastname"
+                        className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-primary sm:text-sm sm:leading-6"
+                      />
+                    </div>
+                    <span className="text-error text-weight-600">{errors.direccion?.message ? errors.direccion?.message : ""}</span>
                   </div>
                 </div>
               </div>
@@ -303,7 +407,7 @@ export default function Register() {
               </button>
               <button
                 type="submit"
-                className="rounded-md bg-primary px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                className="rounded-md bg-primary px-3 py-2 text-sm font-semibold text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
               >
                 Registrarme
               </button>

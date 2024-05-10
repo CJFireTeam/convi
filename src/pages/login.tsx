@@ -200,7 +200,7 @@ export default function Login() {
           <div className="flex justify-center m-1">
             <button
               onClick={register}
-              className="font-semibold text-info hover:text-primary"
+              className="font-semibold hover:text-secondary"
             >
               Registrate
             </button>

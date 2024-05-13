@@ -13,12 +13,16 @@ interface User {
   secondname: string;
   username: string;
   createdAt: string;
+  establishment_authenticateds:{
+    id: number,
+    name: string
+  }[],
   establishment: {
     id: number,
     name: string
   };
   provider: string;
-  tipo?: string;
+  tipo?: null | "alumno" | "apoderado" | "otro";
 }
 interface role {
   id: number;
@@ -46,15 +50,15 @@ type Actions = {
   GetRole(): string;
   GetStablishment() : {name:string,id:number}
   updateUser(userUpdates: Partial<User>): void;
-
+  addSchool(id:number,name: string) : void;
 };
 
 const baseRole = { createdAt: '', description: '', id: 0, name: '', type: '', updatedAt: '', }
-const baseUser = {blocked:false,confirmed:false,email: '',first_lastname: '',firstname: '',id: 0,second_lastname: '',secondname: '',username: '',createdAt :'',provider:'local',establishment: {id:0,name:''}}
+const baseUser = {establishment_authenticateds:[], blocked:false,confirmed:false,email: '',first_lastname: '',firstname: '',id: 0,second_lastname: '',secondname: '',username: '',createdAt :'',provider:'local',establishment: {id:0,name:''}}
 export const useUserStore = create<State & Actions>()(
   devtools(
       (set, get) => ({
-        user: {blocked:false,confirmed:false,email: '',first_lastname: '',firstname: '',id: 0,second_lastname: '',secondname: '',username: '',createdAt :'',provider:'local',establishment: {id:0,name:''}},
+        user: {establishment_authenticateds:[],blocked:false,confirmed:false,email: '',first_lastname: '',firstname: '',id: 0,second_lastname: '',secondname: '',username: '',createdAt :'',provider:'local',establishment: {id:0,name:''}},
         bearer: '',
         isLoading: true,
         role: { createdAt: '', description: '', id: 0, name: '', type: '', updatedAt: '', },
@@ -72,6 +76,16 @@ export const useUserStore = create<State & Actions>()(
         setUser: (user: User) => set((state) => ({ ...state, user })),
         setStablishment: ({ name, id }: { name: string, id: number }) => set((state) => ({ ...state, user: { ...state.user, establishment: { id, name } } })),
         updateUser: (userUpdates: Partial<User>) => set((state) => ({ ...state, user: { ...state.user, ...userUpdates } })),
-
+        addSchool: (id: number, name: string) =>
+          set((state) => ({
+            ...state,
+            user: {
+              ...state.user,
+              establishment_authenticateds: [
+                ...state.user.establishment_authenticateds,
+                { id, name },
+              ],
+            },
+          })),
       }))
 );

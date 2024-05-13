@@ -25,6 +25,7 @@
     "react-dom": "^18",
     "react-hook-form": "^7.51.2",
     "react-modal": "^3.16.1",
+    "react-search-autocomplete": "^8.5.2",
     "react-select": "^5.8.0",
     "react-toastify": "^10.0.4",
     "swr": "^2.2.5",

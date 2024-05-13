@@ -47,6 +47,11 @@ function Table({ data }: { data: caseInterface[] }) {
     sessionStorage.setItem("first_case", id.toString());
     router.push("/casos/denuncia");
   };
+  const handleDerivedEdit = (id: number, derived: boolean ) => {
+    localStorage.setItem("case", id.toString());
+    localStorage.setItem("derivado", derived.toString());
+    router.push("/casos/categorizar");
+  };
 
   return (
     <>
@@ -183,7 +188,7 @@ function Table({ data }: { data: caseInterface[] }) {
                   </button>
                  )}
                 {person.attributes.derived === true &&(
-                  <button>
+                  <button onClick={() => handleDerivedEdit(person.id,person.attributes.derived)}>
                     <FolderIcon className="h-6 w-6" aria-hidden="true"  />
                   </button>
                 )}

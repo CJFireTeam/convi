@@ -20,6 +20,8 @@ interface caseInterface {
             data: {
                 id: number;
                 attributes: {
+                    comuna: string;
+                    direccion: string;
                     username: string;
                     email: string;
                     provider: string;

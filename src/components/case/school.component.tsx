@@ -41,7 +41,7 @@ export const SchoolComponent: React.FC<{
   setSite: (newElement: string | number, element: string) => void;
   OwnerSite: string;
 }> = ({ form, setOwner, OwnerString, setSite, OwnerSite }) => {
-  const { GetRole, role, GetStablishment } = useUserStore();
+  const { user, GetRole, role, GetStablishment } = useUserStore();
   const [roleList, setRoleList] = useState([]);
   const [selectedRole, setSelectedRole] = useState<number>(0);
   const [userList, setUserList] = useState<UserInterface[]>([]);
@@ -95,6 +95,8 @@ export const SchoolComponent: React.FC<{
   };
 
   return (
+    <>
+
     <div className="md:flex-1 divide-y md:mx-1 my-1 divide-gray-200 overflow-hidden shadow-xl rounded-lg bg-white shadow animate-fadein">
       <div className="px-4 py-5 sm:px-6 text-left">
         <h6 className="font-bold md:text-base text-sm">{form.title}</h6>
@@ -144,6 +146,8 @@ export const SchoolComponent: React.FC<{
         </label>
       </div>
     </div>
+    
+    </>
   );
 };
 
@@ -151,55 +155,24 @@ export const DetailedSchoolComponent: React.FC<{
   establecimiento: number;
   setEstablecimiento: (number: string) => void;
 }> = ({ establecimiento, setEstablecimiento }) => {
-  const [regionList, setRegionList] = useState<string[]>([]);
-  const [regionSelected, setRegionSelected] = useState<string>("");
+  const {bearer,setRole,GetRole,user,role} = useUserStore()
+
   const [meta, setMeta] = useState<metaI>({
     page: 0,
     pageCount: 1,
     pageSize: 1,
     total: 1,
   });
-  const [comunaList, setComunaList] = useState<string[]>([]);
-  const [comunaSelected, setComunaSelected] = useState<string>("");
   const [query, setQuery] = useState("");
 
-  const [establecimientoList, setEstablecimientoList] = useState<
-    stablishmentI[]
-  >([]);
+  const [establecimientoList, setEstablecimientoList] = useState<{id: number,name: string}[]>([]);
   const [establecimientoSelected, setEstablecimientoSelected] =
     useState<number>(0);
   const [isLoading, setIsLoading] = useState(false);
 
-  useEffect(() => {
-    const Regiones = async () => {
-      const data = await getRegiones();
-      setRegionList(data.data.data);
-    };
-    Regiones();
-  }, []);
-
-  const handleChangeRegion = async (
-    event: React.ChangeEvent<HTMLSelectElement>
-  ) => {
-    setRegionSelected(event.target.value);
-    if (event.target.value === "0") {
-      return;
-    }
-    const comunas = await getComunas(event.target.value);
-    setComunaList(comunas.data.data);
-  };
-  const handleChangeComuna = async (
-    event: React.ChangeEvent<HTMLSelectElement>
-  ) => {
-    setComunaSelected(event.target.value);
-    if (Number(event.target.value) === 0) {
-      return;
-    }
-
-    const data = await api_establishmentByComuna(event.target.value);
-    setEstablecimientoList(data.data.data);
-    setMeta(data.data.meta);
-  };
+  useEffect(()=> {
+    setEstablecimientoList(user.establishment_authenticateds)
+  },[user])
 
   const handleChangeEstablecimiento = async (
     event: React.ChangeEvent<HTMLSelectElement>
@@ -207,47 +180,11 @@ export const DetailedSchoolComponent: React.FC<{
     setEstablecimientoSelected(Number(event.target.value));
     setEstablecimiento(event.target.value);
   };
-  return (
-    <>
-      <div className="flex flex-col md:flex-row m-2">
-        <label className="md:flex-1 mr-4">
-          <h6 className="text-sm leading-6 text-gray-900 font-bold">
-            Región del establecimiento
-          </h6>
-          <select
-            className="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-primary sm:text-sm sm:leading-6"
-            value={regionSelected}
-            onChange={handleChangeRegion}
-          >
-            <option value={0}>Seleccione La región</option>
-            {regionList.map((region: string) => (
-              <option value={region} key={region}>
-                {region}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className="md:flex-1">
-          <span className="text-sm font-bold leading-6 text-gray-900">
-            Comuna del establecimiento
-          </span>
-          <select
-            value={comunaSelected}
-            onChange={handleChangeComuna}
-            className="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-primary sm:text-sm sm:leading-6"
-          >
-            <option value={""}>Seleccione la comuna</option>
-            {comunaList.map((comuna: string) => (
-              <option value={comuna} key={comuna}>
-                {comuna}
-              </option>
-            ))}
-          </select>
-        </label>
-      </div>
 
+  if (role.name === "Authenticated" && user.tipo === "apoderado") {
+    return (
       <div className="flex flex-col md:flex-row m-2">
-        <label className="md:flex-1 mr-4">
+        <label className="md:flex-1">
           <h6 className="text-sm leading-6 text-gray-900 font-bold">
             Establecimiento
           </h6>
@@ -258,14 +195,15 @@ export const DetailedSchoolComponent: React.FC<{
             className="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-primary sm:text-sm sm:leading-6"
           >
             <option value={""}>Seleccione el establecimiento</option>
-            {establecimientoList.map((stablishment: stablishmentI) => (
+            {establecimientoList.map((stablishment: {id: number,name: string}) => (
               <option value={stablishment.id} key={stablishment.id}>
-                {stablishment.attributes.name}
+                {stablishment.name}
               </option>
             ))}
           </select>
         </label>
       </div>
-    </>
   );
+  }
+
 };

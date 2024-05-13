@@ -11,7 +11,11 @@ import { api_cases } from "../../services/axios.services";
 import { EyeIcon, PencilIcon } from "@heroicons/react/24/outline";
 import { useMenuStore } from "../../store/menus.store";
 import { Button, Divider, Modal } from "react-daisyui";
-
+enum UserTypes {
+  "apoderado" = "Apoderado",
+  "alumno" = "Alumno",
+  "otro" = "No configurado",
+}
 function Table({ data }: { data: caseInterface[] }) {
 
   const [selectedPerson, setSelectedPerson] = useState<caseInterface | null>(null);
@@ -65,8 +69,14 @@ function Table({ data }: { data: caseInterface[] }) {
             scope="col"
             className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
           >
-            Nombre
+            Creado por
           </th>
+          {/* <th
+            scope="col"
+            className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+          >
+            Nombre
+          </th> */}
           <th
             scope="col"
             className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
@@ -120,12 +130,31 @@ function Table({ data }: { data: caseInterface[] }) {
             </td>
             <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
               {capitalizeFirstLetter(
+                person.attributes.created.data.attributes.firstname
+              )}{" "}
+              {capitalizeFirstLetter(
+                person.attributes.created.data.attributes.first_lastname
+              )}
+              <br />
+              {
+               person.attributes.created.data.attributes.role.data.attributes.name === "Authenticated" && 
+               person.attributes.created.data.attributes.tipo
+              }
+              {
+               person.attributes.created.data.attributes.role.data.attributes.name !== "Authenticated" && person.attributes.created.data.attributes.role.data.attributes.name 
+              }
+              {/* {person.attributes.created.data.attributes.role.data.attributes.name} */}
+            </td>
+            {/* <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
+              {capitalizeFirstLetter(
                 person.attributes.directed.data.attributes.firstname
               )}{" "}
               {capitalizeFirstLetter(
                 person.attributes.directed.data.attributes.first_lastname
               )}
-            </td>
+              <br />
+              {person.attributes.directed.data.attributes.role.data.attributes.name}
+            </td> */}
             <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
               {paseDate(person.attributes.createdAt)}
             </td>

@@ -16,6 +16,37 @@ interface caseInterface {
             values: string[];
         };
         publishedAt: string;
+        created: {
+            data: {
+                id: number;
+                attributes: {
+                    username: string;
+                    email: string;
+                    provider: string;
+                    confirmed: boolean;
+                    blocked: boolean;
+                    createdAt: string;
+                    updatedAt: string;
+                    second_lastname: string;
+                    first_lastname: string;
+                    firstname: string;
+                    secondname: string;
+                    tipo: string,
+                    role: {
+                        data: {
+                            id:number,
+                            attributes: {
+                                createdAt: string;
+                                updatedAt: string;
+                                description: string;
+                                name: string;
+                                type: string;
+                            }
+                        }
+                    }
+                };
+            };
+        };
         directed: {
             data: {
                 id: number;

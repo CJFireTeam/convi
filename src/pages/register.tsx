@@ -25,10 +25,11 @@ interface Inputs {
   second_lastname: string;
   firstname: string;
   secondname: string;
-  // tipo: string;
   region: string;
   comuna: string;
   direccion: string;
+  phone: string;
+  // tipo: string;
   // establishment_authenticateds: number[];
 }
 
@@ -208,7 +209,7 @@ export default function Register() {
                 <p className="mt-1 text-sm leading-6 text-gray-600"></p>
 
                 <div className="mt-3 grid grid-cols-1 gap-x-6 gap-y-3 sm:grid-cols-6">
-                  <div className="sm:col-span-4">
+                  <div className="col-span-full">
                     <label
                       htmlFor="Email"
                       className="block text-sm font-medium leading-6 text-gray-900"
@@ -374,7 +375,7 @@ export default function Register() {
                     </div>
                     <span className="text-error text-weight-600">{errors.comuna?.message ? errors.comuna?.message : ""}</span>
                   </div>
-                  <div className="sm:col-span-6">
+                  <div className="sm:col-span-3">
                     <label
                       htmlFor="direccion"
                       className="block text-sm font-medium leading-6 text-gray-900"
@@ -386,12 +387,29 @@ export default function Register() {
                         type="text"
                         {...register("direccion", {setValueAs: (value) => value === "" ? undefined : value})}
                         id="direccion"
-                        onInput={handleInputString}
                         autoComplete="direccion"
                         className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-primary sm:text-sm sm:leading-6"
                       />
                     </div>
                     <span className="text-error text-weight-600">{errors.direccion?.message ? errors.direccion?.message : ""}</span>
+                  </div>
+                  <div className="sm:col-span-3">
+                    <label
+                      htmlFor="phone"
+                      className="block text-sm font-medium leading-6 text-gray-900"
+                    >
+                      Telefono
+                    </label>
+                    <div className="mt-2">
+                      <input
+                        type="text"
+                        {...register("phone", {setValueAs: (value) => value === "" ? undefined : value})}
+                        id="phone"
+                        autoComplete="phone"
+                        className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-primary sm:text-sm sm:leading-6"
+                      />
+                    </div>
+                    <span className="text-error text-weight-600">{errors.phone?.message ? errors.phone?.message : ""}</span>
                   </div>
                 </div>
               </div>

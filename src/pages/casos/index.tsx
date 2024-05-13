@@ -30,7 +30,7 @@ function Table({ data }: { data: caseInterface[] }) {
   const handleCloseModal = useCallback(() => {
     creationRef.current?.close();
   }, [creationRef]);
-  const { role } = useUserStore();
+  const { user, GetRole, role } = useUserStore();
   const paseDate = (date: string) => {
     const fecha = new Date(date);
 
@@ -165,12 +165,14 @@ function Table({ data }: { data: caseInterface[] }) {
                   <EyeIcon className="h-6 w-6" aria-hidden="true" />
                 </button>
             </td>
-            
-            <td className="py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6 hover:text-primary space-x-2 items-center">
+            { person.attributes.directed.data.id === user.id &&(
+              <td className="py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6 hover:text-primary space-x-2 items-center">
               <button onClick={() => handleEdit(person.id)}>
                 <PencilIcon className="h-6 w-6" aria-hidden="true"  />
               </button>
             </td>
+             )}
+            
             </>
             )}
             {role.name === "Encargado de Convivencia Escolar" && (   

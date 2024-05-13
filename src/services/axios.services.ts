@@ -53,6 +53,11 @@ export function api_cases({ createdBy, userId, page = 1 }: { createdBy: number, 
   return api.get(`cases${query}`)
 }
 
+export function api_casesOne(id:string) {
+  let query = `?populate[created][populate][0]=role&populate[directed][populate][0]=role`
+  return api.get(`cases/${id}${query}`)
+}
+
 export function api_casesByFase({ createdBy, userId,fase }: { createdBy: number, userId?: number, fase:number }) {
   let query = `?populate[created][populate][0]=role&populate[directed][populate][0]=role`
   query = query + `&filters[$or][0][created]=${createdBy}`

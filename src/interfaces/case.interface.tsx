@@ -32,6 +32,7 @@ interface caseInterface {
                     second_lastname: string;
                     first_lastname: string;
                     firstname: string;
+                    phone: string;
                     secondname: string;
                     tipo: string,
                     role: {

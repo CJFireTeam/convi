@@ -31,9 +31,10 @@ export const registerSchema = z.object({
     second_lastname: z.string({ required_error: "Campo Requerido", invalid_type_error: "Campo Requerido" }),
     firstname: z.string({ required_error: "Campo Requerido", invalid_type_error: "Campo Requerido" }),
     secondname: z.string({ required_error: "Campo Requerido", invalid_type_error: "Campo Requerido" }),
-    // tipo: z.string({ required_error: "Campo Requerido", invalid_type_error: "Campo Requerido" }),
     region: z.string({ required_error: "Campo Requerido", invalid_type_error: "Campo Requerido" }).min(3, { message: "Campo Requerido" }).default(""),
     comuna: z.string({ required_error: "Campo Requerido", invalid_type_error: "Campo Requerido" }).min(3, { message: "Campo Requerido" }).default(""),
     direccion: z.string({ required_error: "Campo Requerido", invalid_type_error: "Campo Requerido" }),
+    phone: z.string({ required_error: "Campo Requerido", invalid_type_error: "Campo Requerido" }),
+    // tipo: z.string({ required_error: "Campo Requerido", invalid_type_error: "Campo Requerido" }),
     // establishment_authenticateds: z.number().array()
 })

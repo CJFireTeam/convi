@@ -172,6 +172,7 @@ export const DetailedSchoolComponent: React.FC<{
 
   useEffect(()=> {
     setEstablecimientoList(user.establishment_authenticateds)
+    if (GetRole() === "Authenticated" && user.tipo === "alumno") setEstablecimiento(String(user.establishment_authenticateds[0].id));
   },[user])
 
   const handleChangeEstablecimiento = async (

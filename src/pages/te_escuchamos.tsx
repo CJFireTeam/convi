@@ -207,7 +207,7 @@ const Form: React.FC<{
       />
     </div>
     <div className="flex flex-col md:flex-row">
-        <SchoolComponent
+         <SchoolComponent
           form={fields[5]}
           setOwner={setElement}
           OwnerString="directed"
@@ -236,7 +236,15 @@ const Form: React.FC<{
 
 export default function CrearCasos() {
   const [creating, setCreating] = useState(false);
-  const {bearer,setRole,GetRole,user,isLoading} = useUserStore()
+  const {bearer,setRole,GetRole,user,isLoading,role} = useUserStore()
+
+  useEffect(() => {
+    if (user.id === 0) return ;
+    if (GetRole() !== "Authenticated") schoolCase.establishment = user.establishment.id;
+    if (GetRole() === "Authenticated" && user.tipo === "alumno") schoolCase.establishment = user.establishment_authenticateds[0].id
+    schoolCase.created = user.id;
+    
+  },[user])
 
   const router = useRouter();
 
@@ -266,8 +274,7 @@ export default function CrearCasos() {
       return;
     }
     const id = toast.loading("Guardando...");
-    schoolCase.created = user.id;
-    if (GetRole() !== "Authenticated") schoolCase.establishment = user.establishment.id;
+    
     setCreating(true);
     try {
       const data = await axios.post(

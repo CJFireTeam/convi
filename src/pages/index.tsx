@@ -15,7 +15,7 @@ export default function Home() {
   const { bearer, setRole, user, isLoading, role } = useUserStore();
   return (
     <>
-      {role.name === "Authenticated" && <><Greetings_Authenticated /><ModalWhoIS /><CasesAuthenticated /></>}
+      {role.name === "Authenticated" && <><Greetings_Authenticated /><CasesAuthenticated /></>}
       {role.name === "Encargado de Convivencia Escolar" && <><Grafico /></>}
     </>
   );

@@ -4,6 +4,11 @@ import {
 } from "@heroicons/react/20/solid";
 import { useRouter } from "next/router";
 
+enum UserTypes {
+    "apoderado" = "Apoderado",
+    "alumno" = "Alumno",
+    "otro" = "",
+}
 export default function Perfil() {
 
     const { user, role } = useUserStore()
@@ -21,7 +26,7 @@ export default function Perfil() {
                 <div className="flex flex-col sm:w-1/2">
                     <span className="text-base font-semibold leading-6 text-gray-900">Rol:</span>
                     <span className="mb-2">
-                    { role.name === "Authenticated" ? user.tipo : role.name
+                    { role.name === "Authenticated" && user.tipo ? UserTypes[user.tipo] : role.name
                     }</span>
                     {role.name !== "Authenticated" && (
                         <>
@@ -33,6 +38,16 @@ export default function Perfil() {
                     <span className="mb-2">{user.firstname} {user.first_lastname}</span>
                     <span className="text-base font-semibold leading-6 text-gray-900">Correo:</span>
                     <span className="mb-2">{user.email}</span>
+                    {role.name === "Authenticated" && <>                    
+                        { user.tipo === "apoderado"  && <span className="mb-2"><button className="rounded-md  py-1.5 text-sm font-semibold  hover:brightness-90 mb-2 sm:mb-0">Mis establecimientos</button></span>}
+                        { user.tipo === "alumno"  && 
+                        <>
+                            <span className="text-base font-semibold leading-6 text-gray-900">Establecimiento</span>
+                            <span className="mb-2">{user.establishment_authenticateds[0].name}</span>
+
+                        </>}
+                        </>
+                    }
                 </div>
 
                 <div className="flex flex-col sm:w-1/2 sm:ml-20 items-center">

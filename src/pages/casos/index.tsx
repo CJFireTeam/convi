@@ -4,7 +4,7 @@ import axios from "axios";
 import Layout from "../../components/layout/Layout";
 import { useCallback, useEffect, useRef, useState } from "react";
 import metaI from "../../interfaces/meta.interface";
-import { ChevronLeftIcon, ChevronRightIcon, FolderIcon } from "@heroicons/react/20/solid";
+import { ChevronLeftIcon, ChevronRightIcon, EnvelopeIcon, EnvelopeOpenIcon, FolderIcon } from "@heroicons/react/20/solid";
 import { capitalizeFirstLetter } from "../../shared/functions";
 import { useUserStore } from "../../store/userStore";
 import { api_cases } from "../../services/axios.services";
@@ -52,6 +52,10 @@ function Table({ data }: { data: caseInterface[] }) {
     localStorage.setItem("derivado", derived.toString());
     router.push("/casos/categorizar");
   };
+
+  const handleClickGestionar = ()=>{
+    router.push("/casos/gestionar")
+  }
 
   const colorsBG = (colors: number) => {
     console.log(colors)
@@ -210,9 +214,14 @@ function Table({ data }: { data: caseInterface[] }) {
                     <PencilIcon className="h-6 w-6" aria-hidden="true"  />
                   </button>
                  )}
-                {person.attributes.derived === true &&(
+                {person.attributes.derived === true && person.attributes.fase === 1 &&(
                   <button onClick={() => handleDerivedEdit(person.id,person.attributes.derived)}>
                     <FolderIcon className="h-6 w-6" aria-hidden="true"  />
+                  </button>
+                )}
+                {person.attributes.derived === true && person.attributes.fase === 2 &&(
+                  <button onClick={handleClickGestionar}>
+                    <EnvelopeOpenIcon className="h-6 w-6" aria-hidden="true"  />
                   </button>
                 )}
               </td>

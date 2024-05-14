@@ -201,7 +201,7 @@ export default function Categorizar() {
                                     <tr>
                                         <td className="px-3 py-3.5">
                                             <textarea
-                                                className="block mx-auto text-center rounded-md py-2 px-4 w-full text-sm font-semibold text-gray-900 resize-none"
+                                                className="ring-primary block mx-auto text-left rounded-md py-2 px-4 w-full text-sm font-semibold text-gray-900 resize-none"
                                                 value={data.attributes.story}
                                                 readOnly
                                             />
@@ -210,7 +210,7 @@ export default function Categorizar() {
 
 
                                     <tr>
-                                        <td className="px-3 py-3.5 w-full font-semibold text-gray-900">
+                                        <td className="px-3 py-3.5 w-full flex justify-center font-semibold text-gray-900">
                                             <form onSubmit={handleSubmit(onSubmit)}>
                                                 <div className='grid grid-cols-4 gap-4'>
                                                     <div className="col-span-2">
@@ -218,7 +218,7 @@ export default function Categorizar() {
                                                         <select {...register("category", {
                                                             setValueAs: (value) =>
                                                                 value === "" ? undefined : value,
-                                                        })} name="categorizar" className='w-full bg-gray-100 border border-gray-300 rounded-md py-2 px-4 text-sm text-gray-900'>
+                                                        })}  className='w-full bg-gray-100 border border-gray-300 rounded-md py-2 px-4 text-sm text-gray-900'>
                                                             <option value="Aula Segura">Aula Segura</option>
                                                             <option value="Prácticas abusivas sexuales">Prácticas abusivas sexuales</option>
                                                             <option value="Maltrato físico y psicológico entre pares">Maltrato físico y psicológico entre pares</option>
@@ -230,7 +230,7 @@ export default function Categorizar() {
                                                             <option value="Otros">Otros</option>
                                                         </select>
                                                     </div>
-                                                    <button type="submit" className="col-start-4 block rounded-md bg-primary px-3 py-2 text-center text-sm font-semibold text-white hover:brightness-90">
+                                                    <button type="submit" className="col-start-4  block rounded-md bg-primary my-5 px-2 py-2 text-center text-sm font-semibold text-white hover:brightness-90">
                                                         Enviar
                                                     </button>
                                                 </div>

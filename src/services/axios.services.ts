@@ -77,5 +77,5 @@ export function api_updateUser(id:number,data: any) {
 }
 
 export function api_updateCases(id:number,data: any) {
-  return api.put(`cases/${id}`, data)
+  return api.put(`cases/${id}`, {data:data})
 }

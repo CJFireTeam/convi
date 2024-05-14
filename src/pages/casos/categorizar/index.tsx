@@ -1,7 +1,17 @@
-import { api_cases, api_casesOne } from '@/services/axios.services';
+import { api_cases, api_casesOne, api_updateCases } from '@/services/axios.services';
 import { useUserStore } from '@/store/userStore';
+import { categorizarSchema } from '@/validations/categorizarSchema';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'next/router';
 import React, { useEffect, useState } from 'react';
+import { SubmitHandler, useForm } from 'react-hook-form';
+import { toast } from 'react-toastify';
+
+
+interface CategorizarI {
+    category: string;
+    fase:number;
+}
 
 function Tabla({ data, caseId, derived }: { data: caseInterface, caseId: string | null, derived: boolean }) {
     const paseDate = (date: string) => {
@@ -142,10 +152,34 @@ export default function Categorizar() {
     }, [user]);
     const [data, setData] = useState<caseInterface>();
 
+    const {
+        register,
+        handleSubmit,
+        setValue,
+        formState: { errors },
+    } = useForm<CategorizarI>({
+        resolver: zodResolver(categorizarSchema),
+    });
 
+    const Submit = async (dataZod: CategorizarI) => {
+        try {
+            if (!data) return;
+            await api_updateCases(data.id,dataZod);
+            toast.success('Se categorizo correctamente');
+            localStorage.removeItem("case")
+            localStorage.removeItem("derivado")
+            back();
+
+        } catch (error) {
+            console.log(error);
+            toast.error('ha ocurrido un error')
+        }
+    };
+    const onSubmit: SubmitHandler<CategorizarI> = (data) => Submit(data)
     useEffect(() => {
         if (!data?.id) return;
         if (!data?.attributes.derived) back();
+        setValue("fase",2);
     }, [data])
 
     return (
@@ -177,25 +211,30 @@ export default function Categorizar() {
 
                                     <tr>
                                         <td className="px-3 py-3.5 w-full font-semibold text-gray-900">
-                                            <div className='grid grid-cols-4 gap-4'>
-                                                <div className="col-span-2">
-                                                    <label className='block'>Categorizar: </label>
-                                                    <select name="categorizar" className='w-full bg-gray-100 border border-gray-300 rounded-md py-2 px-4 text-sm text-gray-900'>
-                                                        <option value="Aula Segura">Aula Segura</option>
-                                                        <option value="Prácticas abusivas sexuales">Prácticas abusivas sexuales</option>
-                                                        <option value="Maltrato físico y psicológico entre pares">Maltrato físico y psicológico entre pares</option>
-                                                        <option value="Embarazo y paternidad adolescente">Embarazo y paternidad adolescente</option>
-                                                        <option value="Vulneración de derechos">Vulneración de derechos</option>
-                                                        <option value="Consumo de drogas y alcohol">Consumo de drogas y alcohol</option>
-                                                        <option value="Tendencia o actos suicidas">Tendencia o actos suicidas</option>
-                                                        <option value="Bullying">Bullying</option>
-                                                        <option value="Otros">Otros</option>
-                                                    </select>
+                                            <form onSubmit={handleSubmit(onSubmit)}>
+                                                <div className='grid grid-cols-4 gap-4'>
+                                                    <div className="col-span-2">
+                                                        <label className='block'>Categorizar: </label>
+                                                        <select {...register("category", {
+                                                            setValueAs: (value) =>
+                                                                value === "" ? undefined : value,
+                                                        })} name="categorizar" className='w-full bg-gray-100 border border-gray-300 rounded-md py-2 px-4 text-sm text-gray-900'>
+                                                            <option value="Aula Segura">Aula Segura</option>
+                                                            <option value="Prácticas abusivas sexuales">Prácticas abusivas sexuales</option>
+                                                            <option value="Maltrato físico y psicológico entre pares">Maltrato físico y psicológico entre pares</option>
+                                                            <option value="Embarazo y paternidad adolescente">Embarazo y paternidad adolescente</option>
+                                                            <option value="Vulneración de derechos">Vulneración de derechos</option>
+                                                            <option value="Consumo de drogas y alcohol">Consumo de drogas y alcohol</option>
+                                                            <option value="Tendencia o actos suicidas">Tendencia o actos suicidas</option>
+                                                            <option value="Bullying">Bullying</option>
+                                                            <option value="Otros">Otros</option>
+                                                        </select>
+                                                    </div>
+                                                    <button type="submit" className="col-start-4 block rounded-md bg-primary px-3 py-2 text-center text-sm font-semibold text-white hover:brightness-90">
+                                                        Enviar
+                                                    </button>
                                                 </div>
-                                                <button type="submit" className="col-start-4 block rounded-md bg-primary px-3 py-2 text-center text-sm font-semibold text-white hover:brightness-90">
-                                                    Submit
-                                                </button>
-                                            </div>
+                                            </form>
                                         </td>
                                     </tr>
                                 </tbody>

@@ -1,6 +1,8 @@
 interface caseInterface {
     id: number;
     attributes: {
+        fase:number;
+        category:string;
         measures: string;
         createdAt: string;
         updatedAt: string;

@@ -129,7 +129,7 @@ export default function Layout(props: LayoutProps) {
         open={visible}
         onClickOverlay={toggleVisible}
         side={
-          <Menu className="p-4 w-60 md:w-80 h-full bg-white">
+          <Menu className="p-4 w-60 md:w-80 h-full bg-white z-999">
             {useMenuStore.getState().menus.map((item, index) =>
               item.children.length !== 0 ? (
                 <Menu.Item key={index}>

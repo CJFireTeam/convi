@@ -300,15 +300,15 @@ function Paginator({metadata,setMetaData}:{metadata:metaI,setMetaData: (numero:n
       <div className="flex flex-1 justify-between sm:hidden">
         <a
           onClick={() => changePage(metadata.page -1)}
-          className="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+          className=" inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
         >
-          Previous
+          Pagina Anterior
         </a>
         <a
           onClick={() => changePage(metadata.page +1)}
-          className="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+          className="ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
         >
-          Next
+          Proxima Pagina
         </a>
       </div>
       <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
@@ -324,7 +324,7 @@ function Paginator({metadata,setMetaData}:{metadata:metaI,setMetaData: (numero:n
           >
             <a
               onClick={() => changePage(metadata.page -1)}
-              className="cursor-pointer  relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0"
+              className="cursor-pointer inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:outline-offset-0"
             >
               <span className="sr-only">Previous</span>
               <ChevronLeftIcon className="h-5 w-5" aria-hidden="true" />

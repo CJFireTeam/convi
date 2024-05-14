@@ -218,7 +218,7 @@ export default function Categorizar() {
                                                         <select {...register("category", {
                                                             setValueAs: (value) =>
                                                                 value === "" ? undefined : value,
-                                                        })} name="categorizar" className='w-full bg-gray-100 border border-gray-300 rounded-md py-2 px-4 text-sm text-gray-900'>
+                                                        })}  className='w-full bg-gray-100 border border-gray-300 rounded-md py-2 px-4 text-sm text-gray-900'>
                                                             <option value="Aula Segura">Aula Segura</option>
                                                             <option value="Prácticas abusivas sexuales">Prácticas abusivas sexuales</option>
                                                             <option value="Maltrato físico y psicológico entre pares">Maltrato físico y psicológico entre pares</option>

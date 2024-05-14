@@ -48,6 +48,7 @@ const EncargadoMenus: IMenuChildren[] = [
     icon: Cog6ToothIcon,
     current: false,
   },
+  { name: "Configuracion", href: "/configuracion", icon: Cog6ToothIcon,children:[], current: false },
 ];
 
 const ProfesorMenus: IMenuChildren[] = [

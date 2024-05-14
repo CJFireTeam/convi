@@ -53,6 +53,27 @@ function Table({ data }: { data: caseInterface[] }) {
     router.push("/casos/categorizar");
   };
 
+  const colorsBG = (colors: number) => {
+    console.log(colors)
+    switch (colors) {
+      case 1:
+          return "bg-white"
+        break;
+        case 2:
+          return "bg-emerald-100"
+        break;
+        case 3:
+          return "bg-emerald-200"
+        break;
+        case 4:
+          return "bg-emerald-300"
+        break;    
+      default:
+        return "bg-white"
+        break;
+    }
+    ;
+  }
   return (
     <>
     <table className="min-w-full divide-y divide-gray-300">
@@ -110,7 +131,7 @@ function Table({ data }: { data: caseInterface[] }) {
             scope="col"
             className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
           >
-            Derivar/<br/>Gestionar
+            Gestionar
           </th>
           <th
             scope="col"
@@ -124,7 +145,7 @@ function Table({ data }: { data: caseInterface[] }) {
       </thead>
       <tbody className="divide-y divide-gray-200 bg-white">
         {data.map((person, index) => (
-          <tr key={index}>
+          <tr key={index} className={`${colorsBG(person.attributes.fase)}`}>
             <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
               {index + 1}
             </td>

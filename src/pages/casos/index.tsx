@@ -221,7 +221,7 @@ function Table({ data }: { data: caseInterface[] }) {
                 )}
                 {person.attributes.derived === true && person.attributes.fase === 2 &&(
                   <button onClick={handleClickGestionar}>
-                    <EnvelopeOpenIcon className="h-6 w-6" aria-hidden="true"  />
+                    <EnvelopeIcon className="h-6 w-6" aria-hidden="true"  />
                   </button>
                 )}
               </td>

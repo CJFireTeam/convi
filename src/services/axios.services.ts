@@ -79,3 +79,15 @@ export function api_updateUser(id:number,data: any) {
 export function api_updateCases(id:number,data: any) {
   return api.put(`cases/${id}`, {data:data})
 }
+
+export function api_getPositions({Stablishment,page}:{Stablishment:number,page:number}) {
+  let query = `?establishment[$eq]=${Stablishment}`
+  query = query + `&pagination[page]=${page}&pagination[pageSize]=2`
+  return api.get(`positions${query}`)
+}
+export function api_postPositions(data:any) {
+  return api.post(`positions`,{data:data})
+}
+export function api_putPositions(id:number,data:any) {
+  return api.put(`positions/${id}`,{data:data})
+}

@@ -98,3 +98,6 @@ export function api_getProfessionals({position,Stablishment,page}:{position:numb
   query = query + `&sort[0]=id:asc`
   return api.get(`professionals${query}`)
 }
+export function api_postProfessionals(data:any) {
+  return api.post(`professional`,{data:data})
+}

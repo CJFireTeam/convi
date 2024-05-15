@@ -9,10 +9,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "react-toastify";
 import { ArrowDownCircleIcon } from "@heroicons/react/24/outline";
-interface professional {
-  name: string;
-  surname: string;
-  position: string;
+interface ProfessionalI {
+  names: string;
+  surnames: string;
+  position: number;
   establishment: number;
   status: boolean;
 }
@@ -32,6 +32,13 @@ function Cargos() {
     establishment: z.number(),
     status: z.boolean().default(true)
   });
+  const SchemaProfessional = z.object({
+    names:z.string({ required_error: "Campo Requerido", invalid_type_error: "Campo Requerido" }),
+    surnames:z.string({ required_error: "Campo Requerido", invalid_type_error: "Campo Requerido" }),
+    establishment: z.number(),
+    status: z.boolean().default(true),
+    position:z.number(),
+  })
   const {
     register,
     handleSubmit,
@@ -41,10 +48,13 @@ function Cargos() {
   } = useForm<CargosI>({
     resolver: zodResolver(Schema),
   });
+  const { register: registerProfessional, handleSubmit: handleSubmitProfessional, setValue: setValueProfessional, reset: resetProfessional, formState: { errors: errorsProfessional } } = useForm<ProfessionalI>({
+    resolver: zodResolver(SchemaProfessional),
+  });
   const { bearer, setRole, GetRole, user, GetStablishment } = useUserStore()
   const [metaData, setMetaData] = useState<metaI>({ page: 1, pageCount: 0, pageSize: 0, total: 0 });
   const [data, setData] = useState<TableCargosI[]>([])
-  const [professional, setProfessional] = useState<professional[]>([])
+  const [professional, setProfessional] = useState<ProfessionalI[]>([])
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const ref = useRef<HTMLDialogElement>(null);
@@ -70,6 +80,20 @@ function Cargos() {
     getPositions(GetStablishment().id)
   }, [])
 
+  const SubmitProfessional = async (dataZod: ProfessionalI) => {
+    try {
+      await api_postProfessionals(dataZod);
+      hadleCloseProfesional()
+      resetProfessional();
+      toast.success('Se agrego al profesional correctamente');
+    } catch (error) {
+      console.log(error);
+      setIsLoading(false)
+      toast.error('ha ocurrido un error')
+    }
+  };
+
+  const onSubmitProfessional: SubmitHandler<ProfessionalI> = (data) => SubmitProfessional(data)
 
   const updatePage = (number: number) => {
     if (number < 1) return;
@@ -115,7 +139,17 @@ function Cargos() {
     return classes.filter(Boolean).join(' ')
   }
 
-  
+  const refProfesional = useRef<HTMLDialogElement>(null);
+  const handleShowProfesional = useCallback((id:number) => {
+    setValueProfessional("establishment",GetStablishment().id);
+    setValueProfessional("position",id);
+    refProfesional.current?.showModal();
+  }, [refProfesional]);
+
+  const hadleCloseProfesional = useCallback(() => {
+    refProfesional.current?.close();
+  }, [refProfesional]);
+
   return (<>
     <div>
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -140,7 +174,7 @@ function Cargos() {
               <tbody>
                 {data.map((element, index) => (
                   <Fragment key={index}>
-                    <Profesional id={element.id} name={element.attributes.name} />
+                    <Profesional handleShow={handleShowProfesional} id={element.id} name={element.attributes.name} />
 
                     {/* {day.transactions.map((transaction) => (
                         <tr key={transaction.id}>
@@ -224,27 +258,27 @@ function Cargos() {
 
     <Modal ref={refProfesional}>
         <Modal.Header className="font-bold">Creacion de profesional
-          <Button onClick={hadleClose} size="sm" color="ghost" shape="circle" className="absolute right-2 top-2">
+          <Button onClick={hadleCloseProfesional} size="sm" color="ghost" shape="circle" className="absolute right-2 top-2">
             x
           </Button>
         </Modal.Header>
         <Modal.Body>
-          <form className="flex flex-col" onSubmit={handleSubmit(onSubmit)}>
+          <form className="flex flex-col" onSubmit={handleSubmitProfessional(onSubmitProfessional)}>
             <div className="mt-2 flex rounded-md shadow-sm">
               <span className="inline-flex items-center rounded-l-md border border-r-0 border-gray-300 px-3  sm:text-sm">
-                Nombre
+                Nombres
               </span>
               <input
                 type="text"
-                {...register("name")}
+                {...registerProfessional("names")}
                 className="block w-full min-w-0 flex-1 rounded-none rounded-r-md border-0 py-1.5 text-gray-900 ring-1 ring-inset ring-primary placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-primary sm:text-sm sm:leading-6"
               />
               <span className="inline-flex items-center rounded-l-md border border-r-0 border-gray-300 px-3  sm:text-sm">
-                Apellido
+                Apellidos
               </span>
               <input
                 type="text"
-                {...register("surname")}
+                {...registerProfessional("surnames")}
                 className="block w-full min-w-0 flex-1 rounded-none rounded-r-md border-0 py-1.5 text-gray-900 ring-1 ring-inset ring-primary placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-primary sm:text-sm sm:leading-6"
               />
             </div>
@@ -255,25 +289,18 @@ function Cargos() {
   </>
   )
 }
-function Profesional({ id, name }: { id: number, name: string }) {
+function Profesional({ id, name,handleShow }: { id: number, name: string,handleShow:(id:number) => void; }) {
   
 
   const { bearer, setRole, GetRole, user, GetStablishment } = useUserStore()
   const [metaData, setMetaData] = useState<metaI>({ page: 1, pageCount: 0, pageSize: 0, total: 0 });
-  const [data, setData] = useState<professional[]>([])
+  const [data, setData] = useState<ProfessionalI[]>([])
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const ref = useRef<HTMLDialogElement>(null);
-  const handleShow = useCallback(() => {
-    ref.current?.showModal();
-  }, [ref]);
-  const hadleClose = useCallback(() => {
-    ref.current?.close();
-  }, [ref]);
 
   const getProfessionals = async (stablishment: number) => {
     try {
-      const dataPos = await api_getProfessionals({ position: id, Stablishment: stablishment, page: metaData.page });
+      const dataPos = await api_getProfessionals({ position: name, Stablishment: stablishment, page: metaData.page });
       setData(dataPos.data.data);
       setMetaData(dataPos.data.meta.pagination);
 
@@ -285,25 +312,6 @@ function Profesional({ id, name }: { id: number, name: string }) {
     getProfessionals(GetStablishment().id)
   }, [])
 
-  const Submit = async (dataZod: professional) => {
-    setIsLoading(true)
-    try {
-      await api_postProfessionals(dataZod);
-      getProfessionals(GetStablishment().id,);
-      setIsLoading(false);
-      hadleClose()
-      reset();
-      setValue("establishment", GetStablishment().id);
-      setValue("position", id.toString());
-      toast.success('Se Agrego el profesional correctamente');
-    } catch (error) {
-      console.log(error);
-      setIsLoading(false)
-      toast.error('ha ocurrido un error')
-    }
-  };
-
-  const onSubmit: SubmitHandler<professional> = (data) => Submit(data)
 
 
   return (
@@ -312,11 +320,10 @@ function Profesional({ id, name }: { id: number, name: string }) {
         <th className="flex flex-row justify-between">
           <span>{name}</span>
           <button className="m-2 mr-5">
-            <PlusIcon onClick={handleShow} className="h-6 w-6 text-primary " />
+            <PlusIcon onClick={() => handleShow(id)} className="h-6 w-6 text-primary " />
           </button>
         </th>
       </tr>
-      
     </>
   );
 }

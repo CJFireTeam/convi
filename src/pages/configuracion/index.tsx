@@ -1,14 +1,22 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { Fragment, useCallback, useEffect, useRef, useState } from "react";
 import { Button, Modal, Pagination, Table } from "react-daisyui";
 import { useUserStore } from "../../store/userStore";
-import { api_getPositions, api_postPositions, api_putPositions } from "../../services/axios.services";
+import { api_getPositions, api_getProfessionals, api_postPositions, api_putPositions } from "../../services/axios.services";
 import metaI from "../../interfaces/meta.interface";
-import { PlusIcon,LockClosedIcon,LockOpenIcon } from '@heroicons/react/20/solid';
+import { PlusIcon,LockClosedIcon,LockOpenIcon, ArrowLongRightIcon, ArrowLongLeftIcon, ArrowPathIcon, ArrowUpCircleIcon } from '@heroicons/react/20/solid';
 import { SubmitHandler, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "react-toastify";
-
+import { ArrowDownCircleIcon } from "@heroicons/react/24/outline";
+interface professional {
+    name: string;
+    surname: string;
+    position:string;
+    establishment:number;
+    status:boolean;
+}
+  
 function Cargos() {
     interface TableCargosI {
             id: number;
@@ -36,6 +44,8 @@ function Cargos() {
     const {bearer,setRole,GetRole,user,GetStablishment} = useUserStore()
     const [metaData, setMetaData] = useState<metaI>({page:1,pageCount:0,pageSize:0,total:0});
     const [data,setData] = useState<TableCargosI[]>([])
+    const [professional,setProfessional] = useState<professional[]>([])
+
     const [isLoading,setIsLoading] = useState<boolean>(false);
     const ref = useRef<HTMLDialogElement>(null);
     const handleShow = useCallback(() => {
@@ -44,6 +54,8 @@ function Cargos() {
     const hadleClose = useCallback(() => {
         ref.current?.close();
     },[ref]);
+
+      
       const getPositions = async (stablishment:number) => {
         try {
             const dataPos = await api_getPositions({Stablishment:stablishment,page:metaData.page});
@@ -55,10 +67,9 @@ function Cargos() {
         }
     }
     useEffect(() => {
-        if (GetStablishment().id === 0) return;
         getPositions(GetStablishment().id)
-        setValue("establishment",GetStablishment().id)
-    },[GetStablishment().id])
+    },[])
+
     
     const updatePage = (number:number) => {
         if (number < 1) return;
@@ -99,38 +110,92 @@ function Cargos() {
         }
     };
     const onSubmit: SubmitHandler<CargosI> = (data) => Submit(data)
-
-    return (
-        <div className="overflow-x-auto border rounded flex flex-col justify-center items-center">
-        <div className="flex flex-row bg-gray-100 w-full justify-around items-center">
-            <span className="font-semibold ">Cargos</span>
+    function classNames(...classes:string[]) {
+        return classes.filter(Boolean).join(' ')
+      }
+    return (<>
+        <div>
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-row justify-between mx-auto max-w-2xl text-base font-semibold leading-6 text-gray-900 lg:mx-0 lg:max-w-none">
+            <h2>Cargos</h2>
             <button onClick={handleShow} className="m-2 ">
                 <PlusIcon className="h-6 w-6 text-primary"/>
             </button>
-            </div>
-        <Table size="md" className="border rounded">
-          <Table.Head>
-            <span>Nombre</span>
-            <span></span>
-          </Table.Head>
-  
-          <Table.Body>
-          {data.map((element, index) => (
-            <Table.Row key={index}>
-              <span>{index + 1} - {element.attributes.name}</span>
-              <span>
-                {element.attributes.status ? <button onClick={() =>changeStatus(element.id,!element.attributes.status)}><LockOpenIcon className="h-6 w-6 text-primary"></LockOpenIcon></button> : <button onClick={() =>changeStatus(element.id,!element.attributes.status)}><LockClosedIcon className="h-6 w-6 text-error"></LockClosedIcon></button>}
-              </span>
-            </Table.Row>
+        </div>
+        </div>
+        <div className="mt-6 overflow-hidden border-t border-gray-100">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="mx-auto max-w-2xl lg:mx-0 lg:max-w-none">
+              <table className="w-full text-left">
+                <thead className="sr-only">
+                  <tr>
+                    <th>Amount</th>
+                    <th className="hidden sm:table-cell">Client</th>
+                    <th>More details</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.map((element,index) => (
+                    <Fragment key={index}>
+                        <Profesional id={element.id} name={element.attributes.name}/>
 
-          ))}
-          </Table.Body>
-        </Table>
-          <Pagination className="mt-2">
-      <Button onClick={() => updatePage(metaData.page -1 )} className="join-item">«</Button>
-      <Button className="join-item">Pagina {metaData.page}</Button>
-      <Button onClick={() => updatePage(metaData.page +1 )} className="join-item">»</Button>
-    </Pagination>
+                      {/* {day.transactions.map((transaction) => (
+                        <tr key={transaction.id}>
+                          <td className="relative py-5 pr-6">
+                            <div className="flex gap-x-6">
+                              <transaction.icon
+                                className="hidden h-6 w-5 flex-none text-gray-400 sm:block"
+                                aria-hidden="true"
+                              />
+                              <div className="flex-auto">
+                                <div className="flex items-start gap-x-3">
+                                  <div className="text-sm font-medium leading-6 text-gray-900">{transaction.amount}</div>
+                                  <div
+                                    className={classNames(
+                                      'rounded-md py-1 px-2 text-xs font-medium ring-1 ring-inset'
+                                    )}
+                                  >
+                                    {transaction.status}
+                                  </div>
+                                </div>
+                                {transaction.tax ? (
+                                  <div className="mt-1 text-xs leading-5 text-gray-500">{transaction.tax} tax</div>
+                                ) : null}
+                              </div>
+                            </div>
+                            <div className="absolute bottom-0 right-full h-px w-screen bg-gray-100" />
+                            <div className="absolute bottom-0 left-0 h-px w-screen bg-gray-100" />
+                          </td>
+                          <td className="hidden py-5 pr-6 sm:table-cell">
+                            <div className="text-sm leading-6 text-gray-900">{transaction.client}</div>
+                            <div className="mt-1 text-xs leading-5 text-gray-500">{transaction.description}</div>
+                          </td>
+                          <td className="py-5 text-right">
+                            <div className="flex justify-end">
+                              <a
+                                href={transaction.href}
+                                className="text-sm font-medium leading-6 text-indigo-600 hover:text-indigo-500"
+                              >
+                                View<span className="hidden sm:inline"> transaction</span>
+                                <span className="sr-only">
+                                  , invoice #{transaction.invoiceNumber}, {transaction.client}
+                                </span>
+                              </a>
+                            </div>
+                            <div className="mt-1 text-xs leading-5 text-gray-500">
+                              Invoice <span className="text-gray-900">#{transaction.invoiceNumber}</span>
+                            </div>
+                          </td>
+                        </tr>
+                      ))} */}
+                    </Fragment>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
     <Modal  ref={ref}>
         <Modal.Header className="font-bold">Creacion de cargo
         <Button  onClick={hadleClose} size="sm" color="ghost" shape="circle" className="absolute right-2 top-2">
@@ -153,14 +218,49 @@ function Cargos() {
             </form>
         </Modal.Body>
       </Modal>
-      </div>
+      </>
     )
 }
+function Profesional({id,name}:{id:number,name:string}) {
+    const {bearer,setRole,GetRole,user,GetStablishment} = useUserStore()
+    const [metaData, setMetaData] = useState<metaI>({page:1,pageCount:0,pageSize:0,total:0});
+    const [data,setData] = useState<professional[]>([])
+   
+    const getProfessionals = async (stablishment:number) => {
+        try {
+            const dataPos = await api_getProfessionals({position:id,Stablishment:stablishment,page:metaData.page});
+            setData(dataPos.data.data);
+            setMetaData(dataPos.data.meta.pagination);
 
+        } catch (error) {
+            console.log(error)
+        }
+    }
+    useEffect(() => {
+        getProfessionals(GetStablishment().id)
+    },[])
+
+    return (
+        <tr className="border-gray-200 bg-gray-50 text-sm border-b  leading-6 text-gray-900">
+        <th className="flex flex-row justify-between">
+        <span>{name}</span>
+        <button className="m-2 mr-5">
+            <PlusIcon className="h-6 w-6 text-primary "/>
+        </button>
+        </th>
+      </tr>
+    );
+}
 export default function Configuracion() {
+    const {bearer,setRole,GetRole,user,GetStablishment} = useUserStore()
+
     return (
         <>
+            {GetStablishment().id !== 0 && (
+            <>
             <Cargos/>
+            <br />
+            </>)}
         </>
     );
 

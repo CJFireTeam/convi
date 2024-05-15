@@ -53,12 +53,12 @@ export function api_cases({ createdBy, userId, page = 1 }: { createdBy: number, 
   return api.get(`cases${query}`)
 }
 
-export function api_casesOne(id:string) {
+export function api_casesOne(id: string) {
   let query = `?populate[created][populate][0]=role&populate[directed][populate][0]=role`
   return api.get(`cases/${id}${query}`)
 }
 
-export function api_casesByFase({ createdBy, userId,fase }: { createdBy: number, userId?: number, fase:number }) {
+export function api_casesByFase({ createdBy, userId, fase }: { createdBy: number, userId?: number, fase: number }) {
   let query = `?populate[created][populate][0]=role&populate[directed][populate][0]=role`
   query = query + `&filters[$or][0][created]=${createdBy}`
   if (userId) query = query + `&filters[$or][1][directed]=${userId}`
@@ -72,32 +72,33 @@ export function api_changePassword(data: any) {
   return api.post(`auth/change-password`, data)
 }
 
-export function api_updateUser(id:number,data: any) {
+export function api_updateUser(id: number, data: any) {
   return api.put(`users/${id}`, data)
 }
 
-export function api_updateCases(id:number,data: any) {
-  return api.put(`cases/${id}`, {data:data})
+export function api_updateCases(id: number, data: any) {
+  return api.put(`cases/${id}`, { data: data })
 }
 
-export function api_getPositions({Stablishment,page}:{Stablishment:number,page:number}) {
-  let query = `?establishment[$eq]=${Stablishment}`
+export function api_getPositions({ Stablishment, page }: { Stablishment: string, page: number }) {
+  let query = `?filters[$and][0][establishment][name][$eq]=${Stablishment}`
   query = query + `&pagination[page]=${page}&pagination[pageSize]=5`
   query = query + `&sort[0]=id:asc`
   return api.get(`positions${query}`)
 }
-export function api_postPositions(data:any) {
-  return api.post(`positions`,{data:data})
+export function api_postPositions(data: any) {
+  return api.post(`positions`, { data: data })
 }
-export function api_putPositions(id:number,data:any) {
-  return api.put(`positions/${id}`,{data:data})
+export function api_putPositions(id: number, data: any) {
+  return api.put(`positions/${id}`, { data: data })
 }
-export function api_getProfessionals({position,Stablishment,page}:{position:string,Stablishment:number,page:number}) {
-  let query = `?filters[$and][0][position][name][$eq]=${position}`
+export function api_getProfessionals({ position, Stablishment, page }: { position: string, Stablishment: string, page: number }) {
+  let query = `?filters[$and][0][establishment][name][$eq]=${Stablishment}`  
   // query = query + `&pagination[page]=${page}&pagination[pageSize]=5`
+  query = query + `?filters[$and][0][position][name][$eq]={position}`
   // query = query + `&sort[0]=id:asc`
   return api.get(`professionals${query}`)
 }
-export function api_postProfessionals(data:any) {
-  return api.post(`professionals`,{data:data})
+export function api_postProfessionals(data: any) {
+  return api.post(`professionals`, { data: data })
 }

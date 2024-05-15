@@ -17,6 +17,11 @@ interface ProfessionalI {
   status: boolean;
 }
 
+interface tableProfessionalI {
+  id: number;
+  attributes: ProfessionalI
+}
+
 function Cargos() {
   interface TableCargosI {
     id: number;
@@ -28,16 +33,16 @@ function Cargos() {
     status: boolean
   };
   const Schema = z.object({
-    name: z.string({ required_error: "Campo Requerido", invalid_type_error: "Campo Requerido" }),
+    name: z.string({ required_error: "Campo Requerido", invalid_type_error: "Campo Requerido" }).min(1),
     establishment: z.number(),
     status: z.boolean().default(true)
   });
   const SchemaProfessional = z.object({
-    names:z.string({ required_error: "Campo Requerido", invalid_type_error: "Campo Requerido" }),
-    surnames:z.string({ required_error: "Campo Requerido", invalid_type_error: "Campo Requerido" }),
+    names: z.string({ required_error: "Campo Requerido", invalid_type_error: "Campo Requerido" }),
+    surnames: z.string({ required_error: "Campo Requerido", invalid_type_error: "Campo Requerido" }),
     establishment: z.number(),
     status: z.boolean().default(true),
-    position:z.number(),
+    position: z.number(),
   })
   const {
     register,
@@ -60,13 +65,14 @@ function Cargos() {
   const ref = useRef<HTMLDialogElement>(null);
   const handleShow = useCallback(() => {
     ref.current?.showModal();
+    setValue('establishment', GetStablishment().id);
   }, [ref]);
   const hadleClose = useCallback(() => {
     ref.current?.close();
   }, [ref]);
 
 
-  const getPositions = async (stablishment: number) => {
+  const getPositions = async (stablishment: string) => {
     try {
       const dataPos = await api_getPositions({ Stablishment: stablishment, page: metaData.page });
       setData(dataPos.data.data);
@@ -77,7 +83,7 @@ function Cargos() {
     }
   }
   useEffect(() => {
-    getPositions(GetStablishment().id)
+    getPositions(GetStablishment().name)
   }, [])
 
   const SubmitProfessional = async (dataZod: ProfessionalI) => {
@@ -103,12 +109,12 @@ function Cargos() {
     metaData.pageSize = metaData.pageSize
     metaData.total = metaData.total
     setMetaData(metaData);
-    getPositions(GetStablishment().id)
+    getPositions(GetStablishment().name)
   }
   const changeStatus = async (id: number, status: boolean) => {
     try {
       await api_putPositions(id, { status: status });
-      getPositions(GetStablishment().id);
+      getPositions(GetStablishment().name);
       setIsLoading(false);
       // hadleClose()
       toast.success('Se actualizo correctamente');
@@ -121,7 +127,7 @@ function Cargos() {
     setIsLoading(true)
     try {
       await api_postPositions(dataZod);
-      getPositions(GetStablishment().id);
+      getPositions(GetStablishment().name);
       setIsLoading(false);
       hadleClose()
       reset();
@@ -140,15 +146,20 @@ function Cargos() {
   }
 
   const refProfesional = useRef<HTMLDialogElement>(null);
-  const handleShowProfesional = useCallback((id:number) => {
-    setValueProfessional("establishment",GetStablishment().id);
-    setValueProfessional("position",id);
+  const handleShowProfesional = useCallback((id: number) => {
+    setValueProfessional("establishment", GetStablishment().id);
+    setValueProfessional("position", id);
     refProfesional.current?.showModal();
   }, [refProfesional]);
 
   const hadleCloseProfesional = useCallback(() => {
     refProfesional.current?.close();
   }, [refProfesional]);
+
+  useEffect(() => {
+    console.log(errors);
+  }, [errors])
+
 
   return (<>
     <div>
@@ -257,50 +268,51 @@ function Cargos() {
     </Modal>
 
     <Modal ref={refProfesional}>
-        <Modal.Header className="font-bold">Creacion de profesional
-          <Button onClick={hadleCloseProfesional} size="sm" color="ghost" shape="circle" className="absolute right-2 top-2">
-            x
-          </Button>
-        </Modal.Header>
-        <Modal.Body>
-          <form className="flex flex-col" onSubmit={handleSubmitProfessional(onSubmitProfessional)}>
-            <div className="mt-2 flex rounded-md shadow-sm">
-              <span className="inline-flex items-center rounded-l-md border border-r-0 border-gray-300 px-3  sm:text-sm">
-                Nombres
-              </span>
-              <input
-                type="text"
-                {...registerProfessional("names")}
-                className="block w-full min-w-0 flex-1 rounded-none rounded-r-md border-0 py-1.5 text-gray-900 ring-1 ring-inset ring-primary placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-primary sm:text-sm sm:leading-6"
-              />
-              <span className="inline-flex items-center rounded-l-md border border-r-0 border-gray-300 px-3  sm:text-sm">
-                Apellidos
-              </span>
-              <input
-                type="text"
-                {...registerProfessional("surnames")}
-                className="block w-full min-w-0 flex-1 rounded-none rounded-r-md border-0 py-1.5 text-gray-900 ring-1 ring-inset ring-primary placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-primary sm:text-sm sm:leading-6"
-              />
-            </div>
-            <Button color="primary" animation className="m-2" disabled={isLoading} type="submit" loading={isLoading} >Guardar</Button>
-          </form>
-        </Modal.Body>
-      </Modal>
+      <Modal.Header className="font-bold">Creacion de profesional
+        <Button onClick={hadleCloseProfesional} size="sm" color="ghost" shape="circle" className="absolute right-2 top-2">
+          x
+        </Button>
+      </Modal.Header>
+      <Modal.Body>
+        <form className="flex flex-col" onSubmit={handleSubmitProfessional(onSubmitProfessional)}>
+          <div className="mt-2 flex rounded-md shadow-sm">
+            <span className="inline-flex items-center rounded-l-md border border-r-0 border-gray-300 px-3  sm:text-sm">
+              Nombres
+            </span>
+            <input
+              type="text"
+              {...registerProfessional("names")}
+              className="block w-full min-w-0 flex-1 rounded-none rounded-r-md border-0 py-1.5 text-gray-900 ring-1 ring-inset ring-primary placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-primary sm:text-sm sm:leading-6"
+            />
+            <span className="inline-flex items-center rounded-l-md border border-r-0 border-gray-300 px-3  sm:text-sm">
+              Apellidos
+            </span>
+            <input
+              type="text"
+              {...registerProfessional("surnames")}
+              className="block w-full min-w-0 flex-1 rounded-none rounded-r-md border-0 py-1.5 text-gray-900 ring-1 ring-inset ring-primary placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-primary sm:text-sm sm:leading-6"
+            />
+          </div>
+          <Button color="primary" animation className="m-2" disabled={isLoading} type="submit" loading={isLoading} >Guardar</Button>
+        </form>
+      </Modal.Body>
+    </Modal>
   </>
   )
 }
-function Profesional({ id, name,handleShow }: { id: number, name: string,handleShow:(id:number) => void; }) {
-  
+function Profesional({ id, name, handleShow }: { id: number, name: string, handleShow: (id: number) => void; }) {
+
 
   const { bearer, setRole, GetRole, user, GetStablishment } = useUserStore()
   const [metaData, setMetaData] = useState<metaI>({ page: 1, pageCount: 0, pageSize: 0, total: 0 });
-  const [data, setData] = useState<ProfessionalI[]>([])
+  const [data, setData] = useState<tableProfessionalI[]>([])
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  const getProfessionals = async (stablishment: number) => {
+  const getProfessionals = async (stablishment: string) => {
     try {
       const dataPos = await api_getProfessionals({ position: name, Stablishment: stablishment, page: metaData.page });
+      console.log(dataPos.data);
       setData(dataPos.data.data);
       setMetaData(dataPos.data.meta.pagination);
 
@@ -309,7 +321,7 @@ function Profesional({ id, name,handleShow }: { id: number, name: string,handleS
     }
   }
   useEffect(() => {
-    getProfessionals(GetStablishment().id)
+    getProfessionals(GetStablishment().name)
   }, [])
 
 
@@ -324,6 +336,14 @@ function Profesional({ id, name,handleShow }: { id: number, name: string,handleS
           </button>
         </th>
       </tr>
+      {data.map((profesional, index) => (
+        
+        <tr key={index}>
+          <td>
+            {profesional.attributes.names} {profesional.attributes.surnames} {profesional.attributes.status ? "activo" : "desactivado"}
+          </td>
+        </tr>
+      ))}
     </>
   );
 }

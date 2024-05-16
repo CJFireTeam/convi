@@ -95,10 +95,14 @@ export function api_putPositions(id: number, data: any) {
 export function api_getProfessionals({ position, Stablishment, page }: { position: string, Stablishment: string, page: number }) {
   let query = `?filters[$and][0][establishment][name][$eq]=${Stablishment}`  
   // query = query + `&pagination[page]=${page}&pagination[pageSize]=5`
-  query = query + `?filters[$and][0][position][name][$eq]={position}`
+  query = query + `&filters[$and][0][position][name][$eq]=${position}`
   // query = query + `&sort[0]=id:asc`
   return api.get(`professionals${query}`)
 }
 export function api_postProfessionals(data: any) {
   return api.post(`professionals`, { data: data })
+}
+
+export function api_putProfessionals(id: number, data: any) {
+  return api.put(`professionals/${id}`, data);
 }

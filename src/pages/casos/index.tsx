@@ -53,7 +53,10 @@ function Table({ data }: { data: caseInterface[] }) {
     router.push("/casos/categorizar");
   };
 
-  const handleClickGestionar = ()=>{
+  const handleClickGestionar = (id: number, derived: boolean )=>{
+    localStorage.setItem("complaint", id.toString())
+    localStorage.setItem("case", id.toString());
+    localStorage.setItem("derivado", derived.toString());
     router.push("/casos/gestionar")
   }
 
@@ -220,7 +223,7 @@ function Table({ data }: { data: caseInterface[] }) {
                   </button>
                 )}
                 {person.attributes.derived === true && person.attributes.fase === 2 &&(
-                  <button onClick={handleClickGestionar}>
+                  <button onClick={() =>handleClickGestionar(person.id,person.attributes.derived)}>
                     <EnvelopeIcon className="h-6 w-6" aria-hidden="true"  />
                   </button>
                 )}

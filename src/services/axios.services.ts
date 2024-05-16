@@ -53,6 +53,13 @@ export function api_cases({ createdBy, userId, page = 1 }: { createdBy: number, 
   return api.get(`cases${query}`)
 }
 
+export function api_complaint({ caseId }: { caseId: number }) {
+  // let query = `?populate=*`;
+  let query = `?filters[first_case]=${caseId}`
+
+  return api.get(`complaints${query}`)
+}
+
 export function api_casesOne(id: string) {
   let query = `?populate[created][populate][0]=role&populate[directed][populate][0]=role`
   return api.get(`cases/${id}${query}`)
@@ -79,6 +86,9 @@ export function api_updateUser(id: number, data: any) {
 export function api_updateCases(id: number, data: any) {
   return api.put(`cases/${id}`, { data: data })
 }
+export function api_updateComplaint(id: number, data: any) {
+  return api.put(`complaints/${id}`, { data: data })
+}
 
 export function api_getPositions({ Stablishment, page }: { Stablishment: string, page: number }) {
   let query = `?filters[$and][0][establishment][name][$eq]=${Stablishment}`
@@ -93,7 +103,7 @@ export function api_putPositions(id: number, data: any) {
   return api.put(`positions/${id}`, { data: data })
 }
 export function api_getProfessionals({ position, Stablishment, page }: { position: string, Stablishment: string, page: number }) {
-  let query = `?filters[$and][0][establishment][name][$eq]=${Stablishment}`  
+  let query = `?filters[$and][0][establishment][name][$eq]=${Stablishment}`
   // query = query + `&pagination[page]=${page}&pagination[pageSize]=5`
   query = query + `&filters[$and][0][position][name][$eq]=${position}`
   // query = query + `&sort[0]=id:asc`

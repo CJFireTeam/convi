@@ -1,8 +1,7 @@
  import ResumenCaseComponent from "../../../components/case/resumen.case.component";
  import ResumenComplaintComponent from "../../../components/case/resumen.complaint.component";
- import { api_cases, api_casesOne, api_updateCases } from '@/services/axios.services';
+ import { api_cases, api_casesOne, api_updateCases, api_updateComplaint,api_complaint } from '@/services/axios.services';
  import { useUserStore } from '@/store/userStore';
- import { categorizarSchema } from '@/validations/categorizarSchema';
  import { zodResolver } from '@hookform/resolvers/zod';
  import { useRouter } from 'next/router';
  import React, { useEffect, useState } from 'react';
@@ -17,10 +16,11 @@
 
 
  interface GestionarI {
-    inform: string;
-    denounce: string;
-    derive: string;
-    fase:number;
+    options: string;
+    // inform: string;
+    // denounce: string;
+    // derive: string;
+    // fase:number;
 }
 
 
@@ -42,7 +42,15 @@ export default function Gestionar() {
             console.log(error);
         }
     };
-
+    const getcomplaint = async (id: number) => {
+        let assigned: number | undefined = undefined;
+        try {
+            const caseData = await api_complaint({caseId:id});
+            // setData(caseData.data.data);
+        } catch (error) {
+            console.log(error);
+        }
+    };
     useEffect(() => {
         if (user?.id === 0) return;
         const storedCaseId = localStorage.getItem("case");
@@ -53,8 +61,14 @@ export default function Gestionar() {
         setCaseId(storedCaseId);
         setIsDerived(isDerivedValue);
     }, [user]);
-    
+
+   
     const [data, setData] = useState<caseInterface>();
+
+    useEffect(() =>{
+        if(!data) return
+        getcomplaint(data.id)
+    },[data]);
 
     const {
         register,
@@ -67,15 +81,15 @@ export default function Gestionar() {
 
     const Submit = async (dataZod: GestionarI) => {
         try {
-            // console.log(data?.id)
-            dataZod.fase = 3;
-            console.log(dataZod)
-            // console.log(data?.id)
-            
-            // if (!data) return;
-            // 
-            // await api_updateCases(data.id, dataZod);
-            // toast.success('Se categorizo correctamente');
+           console.log(dataZod)
+           console.log(dataZod.options)
+           console.log(dataZod)
+           console.log(data?.id)
+           
+             if (!data) return;
+            // await api_updateCases(data.id, fase:3);
+            await api_updateComplaint(25,dataZod);
+            //toast.success('Se complemento correctamente');
             // localStorage.removeItem("case")
             // localStorage.removeItem("derivado")
             // back();
@@ -84,13 +98,12 @@ export default function Gestionar() {
             toast.error('ha ocurrido un error')
         }
     };
-    useEffect(() => {
-        if (!data?.id) return;
-        if (!data?.attributes.derived) back();
-        setValue("fase", 3);
-    }, [data])
-
-
+    const onSubmit: SubmitHandler<GestionarI> = (data) => Submit(data)
+    // useEffect(() => {
+    //     if (!data?.id) return;
+    //     if (!data?.attributes.derived) back();
+    //     setValue("fase",3);
+    // }, [data])
     return (
         <>
          <form onSubmit={handleSubmit(Submit)}>
@@ -114,17 +127,17 @@ export default function Gestionar() {
                                             <th className="px-3 py-3.5 w-1/3 text-left text-sm font-semibold text-gray-900 border-r border-gray-300">Informar</th>
                                             <td className="px-3 py-3.5 w-2/3 text-left text-sm font-normal	 text-gray-900">
                                                 <label className="inline-flex items-center ml-4 mr-4 mt-2 mb-2">
-                                                    <input type="checkbox" {...register('inform')} value="comunicar" className="form-checkbox h-5 w-5 text-gray-600" />
+                                                    <input type="checkbox" {...register('options', {setValueAs: (value) => value === "" ? undefined : value,})} value="comunicar" className="form-checkbox h-5 w-5 text-gray-600" />
                                                     <span className="ml-2">Comunicar a la dirección</span>
                                                 </label>
-                                                {errors.inform?.message && (<p className="text-error text-sm ml-4 mr-4 mt-1 mb-1">{errors.inform.message}</p>)}
+                                            
                                             </td>
                                         </tr>
                                         <tr>
                                             <th className="px-3 py-3.5 w-1/3 text-left text-sm font-semibold text-gray-900 border-r border-gray-300">Denunciar</th>
                                             <td className="px-3 py-3.5 w-2/3 text-left text-sm font-normal	 text-gray-900 ">
                                                 <label className="inline-flex items-center ml-4 mr-4 mt-2 mb-2">
-                                                    <input type="checkbox" {...register('denounce')} value="fiscalia" className="form-checkbox h-5 w-5 text-gray-600" />
+                                                    <input type="checkbox" {...register('options', {setValueAs: (value) => value === "" ? undefined : value,})} value="fiscalia" className="form-checkbox h-5 w-5 text-gray-600" />
                                                     <Image
                                                         className="ml-2"
                                                         src={fiscalia}
@@ -135,7 +148,7 @@ export default function Gestionar() {
                                                     /> 
                                                 </label>
                                                 <label className="inline-flex items-center ml-4 mr-4 mt-2 mb-2">
-                                                    <input type="checkbox" {...register('denounce')} value="pdi" className="form-checkbox h-5 w-5 text-gray-600" />
+                                                    <input type="checkbox" {...register('options', {setValueAs: (value) => value === "" ? undefined : value,})} value="pdi" className="form-checkbox h-5 w-5 text-gray-600" />
                                                     <Image
                                                         className="ml-2"
                                                         src={pdi}
@@ -148,7 +161,7 @@ export default function Gestionar() {
                                                     />  
                                                 </label>
                                                 <label className="inline-flex items-center ml-4 mr-4 mt-2 mb-2">
-                                                    <input type="checkbox" {...register('denounce')} value="carabineros" className="form-checkbox h-5 w-5 text-gray-600" />
+                                                    <input type="checkbox" {...register('options', {setValueAs: (value) => value === "" ? undefined : value,})} value="carabineros" className="form-checkbox h-5 w-5 text-gray-600" />
                                                     <Image
                                                         className="ml-2"
                                                         src={carabineros}
@@ -160,31 +173,33 @@ export default function Gestionar() {
                                                        
                                                     />    
                                                 </label>
-                                                {errors.denounce?.message && (<p className="text-error text-sm ml-4 mr-4 mt-1 mb-1">{errors.denounce.message}</p>)}
                                             </td>
                                         </tr>
                                         <tr>
                                             <th className="px-3 py-3.5 w-1/3 text-left text-sm font-semibold text-gray-900 border-r border-gray-300">Derivar</th>
                                             <td className="px-3 py-3.5 w-2/3 text-left text-sm font-normal	 text-gray-900">
                                                 <label className="inline-flex items-center ml-4 mr-4 mt-2 mb-2">
-                                                    <input type="checkbox" {...register('derive')} value="convi" className="form-checkbox h-5 w-5 text-gray-600" />
+                                                    <input type="checkbox" {...register('options', {setValueAs: (value) => value === "" ? undefined : value,})} value="convi" className="form-checkbox h-5 w-5 text-gray-600" />
                                                     <span className="ml-2">Equipo Convi</span>
                                                 </label>
                                                 <label className="inline-flex items-center ml-4 mr-4 mt-2 mb-2">
-                                                <input type="checkbox" {...register('derive')} value="opd" className="form-checkbox h-5 w-5 text-gray-600" />
+                                                <input type="checkbox" {...register('options', {setValueAs: (value) => value === "" ? undefined : value,})} value="opd" className="form-checkbox h-5 w-5 text-gray-600" />
                                                     <span className="ml-2">Oficina de protección derechos</span>
                                                 </label>
                                                 <label className="inline-flex items-center ml-4 mr-4 mt-2 mb-2">
-                                                    <input type="checkbox" {...register('derive')} value="otras" className="form-checkbox h-5 w-5 text-gray-600" />
+                                                    <input type="checkbox" {...register('options', {setValueAs: (value) => value === "" ? undefined : value,})} value="otras" className="form-checkbox h-5 w-5 text-gray-600" />
                                                     <span className="ml-2">Otras derivaciones</span>
                                                 </label>
-                                                {errors.derive?.message && (<p className="text-error text-sm ml-4 mr-4 mt-1 mb-1">{errors.derive.message}</p>)}
                                             </td>
                                         </tr>
                                     </tbody>
                                 </table>
                             </div>}
                             <div className='flex justify-center'>
+                             {errors.options?.message && (<p className="text-error text-sm ml-4 mr-4 mt-1 mb-1">{errors.options.message}</p>)}
+                            </div>
+                            <div className='flex justify-center'>
+                                
                                     <button type="submit" className="px-4 rounded-md bg-primary my-5 px-2 py-2 text-center text-sm font-semibold text-white hover:brightness-90">
                                             Complementar
                                     </button>

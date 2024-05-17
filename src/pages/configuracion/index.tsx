@@ -381,10 +381,10 @@ function Profesional({ id, name, handleShow }: { id: number, name: string, handl
       </tr>
       {data.map((profesional, index) => (
         <tr key={index}>
-          <td className="p-3 flex flex-row justify-between text-left border rounded-md">
-            <span className="order-1"> Nombre: {profesional.attributes.names} {profesional.attributes.surnames}</span>
-            <span className=""> Correo electronico: {profesional.attributes.email}</span>
-            <button className="order-3" onClick={() => toggleStatus(profesional.id, profesional.attributes.status)}>
+          <td className="p-3 flex flex-col md:flex-row lg:flex-row justify-between text-left border rounded-md">
+            <span className="order-1 flex-1"> Nombre: {profesional.attributes.names} {profesional.attributes.surnames}</span>
+            <span className="order-2 flex-1"> Correo electronico: {profesional.attributes.email}</span>
+            <button className="order-3 flex-none" onClick={() => toggleStatus(profesional.id, profesional.attributes.status)}>
               {profesional.attributes.status ? <LockOpenIcon className=" w-7 h-7"/>: <LockClosedIcon className=" w-7 h-7"/>}
             </button>
           </td>

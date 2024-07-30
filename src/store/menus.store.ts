@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { devtools, persist, createJSONStorage } from 'zustand/middleware';
 import type { } from '@redux-devtools/extension';
-import { ArchiveBoxIcon, Cog6ToothIcon, HomeIcon, LightBulbIcon, UsersIcon } from '@heroicons/react/20/solid';
+import { ArchiveBoxIcon, Cog6ToothIcon, HomeIcon, LightBulbIcon, UsersIcon, FolderIcon } from '@heroicons/react/20/solid';
 export interface Imenus {
   name: string;
   href: string;
@@ -64,6 +64,13 @@ const ProfesorMenus: IMenuChildren[] = [
     name: "Lista de casos",
     href: "/casos",
     icon: ArchiveBoxIcon,
+    children:[],
+    current: false,
+  },
+  {
+    name: "Encuestas",
+    href: "/encuestas",
+    icon: FolderIcon,
     children:[],
     current: false,
   },

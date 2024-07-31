@@ -1,7 +1,14 @@
-import { create } from 'zustand';
-import { devtools, persist, createJSONStorage } from 'zustand/middleware';
-import type { } from '@redux-devtools/extension';
-import { ArchiveBoxIcon, Cog6ToothIcon, HomeIcon, LightBulbIcon, UsersIcon, FolderIcon } from '@heroicons/react/20/solid';
+import { create } from "zustand";
+import { devtools, persist, createJSONStorage } from "zustand/middleware";
+import type {} from "@redux-devtools/extension";
+import {
+  ArchiveBoxIcon,
+  Cog6ToothIcon,
+  HomeIcon,
+  LightBulbIcon,
+  UsersIcon,
+  FolderIcon,
+} from "@heroicons/react/20/solid";
 export interface Imenus {
   name: string;
   href: string;
@@ -11,18 +18,24 @@ export interface Imenus {
       title?: string;
       titleId?: string;
     } & React.RefAttributes<SVGSVGElement>
-  >
+  >;
 }
-interface IMenuChildren extends Imenus{
-  children:Imenus[];
+interface IMenuChildren extends Imenus {
+  children: Imenus[];
 }
 
 const AuthenticatedMenus: IMenuChildren[] = [
-  { name: "Dashboard", href: "/", icon: HomeIcon, current: false,children:[] },
+  {
+    name: "Dashboard",
+    href: "/",
+    icon: HomeIcon,
+    current: false,
+    children: [],
+  },
   {
     name: "Te Escuchamos",
-    
-    children:[],
+
+    children: [],
     href: "/te_escuchamos",
     icon: UsersIcon,
     current: false,
@@ -33,45 +46,63 @@ const AuthenticatedMenus: IMenuChildren[] = [
     href: "/sugerencia",
     icon: LightBulbIcon,
     current: false,
-    children:[]
+    children: [],
   },
-]
+];
 
 const EncargadoMenus: IMenuChildren[] = [
-  { name: "Home", href: "/", icon: HomeIcon,children:[], current: false },
+  { name: "Home", href: "/", icon: HomeIcon, children: [], current: false },
   {
     name: "Gestion De Casos",
     href: "/gestion",
-    children:[
-      {name:"Denuncias",current:false,href:"/casos",icon:Cog6ToothIcon}
+    children: [
+      {
+        name: "Denuncias",
+        current: false,
+        href: "/casos",
+        icon: Cog6ToothIcon,
+      },
     ],
     icon: Cog6ToothIcon,
     current: false,
   },
-  { name: "Configuracion", href: "/configuracion", icon: Cog6ToothIcon,children:[], current: false },
-];
-
-const ProfesorMenus: IMenuChildren[] = [
-  { name: "Home", href: "/", icon: HomeIcon, current: false,children:[] },
   {
-    name: "Denuncia",
-    href: "/casos/denuncia",
-    icon: UsersIcon,
-    children:[],
-    current: false,
-  },
-  {
-    name: "Lista de casos",
-    href: "/casos",
-    icon: ArchiveBoxIcon,
-    children:[],
+    name: "Configuracion",
+    href: "/configuracion",
+    icon: Cog6ToothIcon,
+    children: [],
     current: false,
   },
   {
     name: "Encuestas",
     href: "/encuestas",
     icon: FolderIcon,
-    children:[],
+    children: [],
+    current: false,
+  },
+];
+
+const ProfesorMenus: IMenuChildren[] = [
+  { name: "Home", href: "/", icon: HomeIcon, current: false, children: [] },
+  {
+    name: "Denuncia",
+    href: "/casos/denuncia",
+    icon: UsersIcon,
+    children: [],
+    current: false,
+  },
+  {
+    name: "Lista de casos",
+    href: "/casos",
+    icon: ArchiveBoxIcon,
+    children: [],
+    current: false,
+  },
+  {
+    name: "Encuestas",
+    href: "/encuestas",
+    icon: FolderIcon,
+    children: [],
     current: false,
   },
 ];
@@ -86,12 +117,12 @@ type State = {
   menus: IMenuChildren[];
 };
 
-
 export const useMenuStore = create<State & Actions>()(
   devtools(
     (set, get) => ({
       menus: [],
-      setMenusAuthenticated: () => set((state) => ({ menus: AuthenticatedMenus })),
+      setMenusAuthenticated: () =>
+        set((state) => ({ menus: AuthenticatedMenus })),
       setMenusEncargado: () => set((state) => ({ menus: EncargadoMenus })),
       setMenusProfesor: () => set((state) => ({ menus: ProfesorMenus })),
       setActive: (href: string) =>
@@ -100,7 +131,8 @@ export const useMenuStore = create<State & Actions>()(
             ...menu,
             current: menu.href === href,
           })),
-        }))
+        })),
     }),
-    { name: 'menuStore' })
+    { name: "menuStore" }
+  )
 );

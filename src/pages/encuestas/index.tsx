@@ -4,11 +4,33 @@ import WarningAlert from "@/components/alerts/warningAlert";
 import ErrorAlert from "../../components/alerts/errorAlert";
 import InfoAlert from "../../components/alerts/infoAlert";
 import { useState } from "react";
+import { EyeIcon, PencilIcon } from "@heroicons/react/24/outline";
+import { useUserStore } from "@/store/userStore";
+import metaI from "@/interfaces/meta.interface";
+
 export default function Index() {
   const { push } = useRouter();
   const redirect = () => {
     push("encuestas/creacion");
   };
+  const { user, GetRole, role } = useUserStore();
+  const [metaData, setMetaData] = useState<metaI>({page:1,pageCount:0,pageSize:0,total:0});
+  const [data, setData] = useState<surveyInterface[]>([]);
+  // const getData = async () => {
+  //   let assigned: number | undefined = undefined;
+  //   try {
+  //     if (GetRole() !== "Authenticated") {
+  //       assigned = user?.id
+  //     }
+  //     const data = await api_cases({ createdBy: user?.id, userId: assigned,page:metaData.page });
+  //     setData(data.data.data);
+  //     setMetaData(data.data.meta.pagination);
+  //   } catch (error) {
+  //     console.log(error);
+  //   }
+  // };
+
+  
   return (
     <div className="px-4 sm:px-6 lg:px-8">
       <div className="flex items-center justify-between ">
@@ -38,49 +60,68 @@ export default function Index() {
 }
 
 function Table() {
-    const [encuestas, setEncuestas] = useState("");
+  const [encuestas, setEncuestas] = useState("");
   return (
     <>
-    {encuestas &&(
-
-    )}
-      <table className="min-w-full divide-y divide-gray-300">
-        <thead className="bg-gray-50">
-          <tr>
-            <th
-              scope="col"
-              className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6"
-            >
-              #
-            </th>
-            <th
-              scope="col"
-              className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
-            >
-              Nombre Encuesta
-            </th>
-            <th
-              scope="col"
-              className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
-            >
-              Fecha inicio
-            </th>
-            <th
-              scope="col"
-              className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
-            >
-              Fecha Termino
-            </th>
-            <th
-              scope="col"
-              className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
-            >
-              Ver
-            </th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-gray-200 bg-white"></tbody>
-      </table>
+      {encuestas !== '' ?(
+        <table className="min-w-full divide-y divide-gray-300">
+          <thead className="bg-gray-50">
+            <tr>
+              <th
+                scope="col"
+                className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6"
+              >
+                #
+              </th>
+              <th
+                scope="col"
+                className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+              >
+                Nombre Encuesta
+              </th>
+              <th
+                scope="col"
+                className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+              >
+                Fecha Inicio
+              </th>
+              <th
+                scope="col"
+                className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+              >
+                Fecha Termino
+              </th>
+              <th
+                scope="col"
+                className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+              >
+                Ver
+              </th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-200 bg-white">
+            <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
+               1
+            </td>
+            <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
+               Vuelta a clases
+            </td>
+            <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
+               06/03/2025
+            </td>
+            <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
+               11/03/2025
+            </td>
+            <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
+                <button >
+                    <EyeIcon className="h-6 w-6" aria-hidden="true" />
+                    </button>
+            </td>
+          </tbody>
+        </table>
+      ):(
+        <WarningAlert message="Aun no has creado una encuesta."/>
+      )}
     </>
   );
 }

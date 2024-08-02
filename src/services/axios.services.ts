@@ -45,6 +45,14 @@ export function api_establishmentByComuna(comuna: string) {
   return api.get("establishments?fields[0]=name&filters[Comuna][$eq]=" + comuna)
 }
 
+export function api_surveys({ createdBy, userId, page = 1 }: { createdBy: number, userId?: number, page?: number }) {
+  let query = `?populate[creador][populate][0]=role&populate[usuarios][populate][0]=role`
+  query = query + `&filters[$or][0][creador]=${createdBy}`
+  if (userId) query = query + `&filters[$or][1][usuarios]=${userId}`
+  query = query + `&pagination[page]=${page}&pagination[pageSize]=10`
+  return api.get(`formularios${query}`)
+}
+
 export function api_cases({ createdBy, userId, page = 1 }: { createdBy: number, userId?: number, page?: number }) {
   let query = `?populate[created][populate][0]=role&populate[directed][populate][0]=role`
   query = query + `&filters[$or][0][created]=${createdBy}`

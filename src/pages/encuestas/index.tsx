@@ -3,10 +3,11 @@ import { Button } from "react-daisyui";
 import WarningAlert from "@/components/alerts/warningAlert";
 import ErrorAlert from "../../components/alerts/errorAlert";
 import InfoAlert from "../../components/alerts/infoAlert";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { EyeIcon, PencilIcon } from "@heroicons/react/24/outline";
 import { useUserStore } from "@/store/userStore";
 import metaI from "@/interfaces/meta.interface";
+import { api_surveys } from "@/services/axios.services";
 
 export default function Index() {
   const { push } = useRouter();
@@ -14,23 +15,28 @@ export default function Index() {
     push("encuestas/creacion");
   };
   const { user, GetRole, role } = useUserStore();
-  const [metaData, setMetaData] = useState<metaI>({page:1,pageCount:0,pageSize:0,total:0});
+  const [metaData, setMetaData] = useState<metaI>({ page: 1, pageCount: 0, pageSize: 0, total: 0 });
   const [data, setData] = useState<surveyInterface[]>([]);
-  // const getData = async () => {
-  //   let assigned: number | undefined = undefined;
-  //   try {
-  //     if (GetRole() !== "Authenticated") {
-  //       assigned = user?.id
-  //     }
-  //     const data = await api_cases({ createdBy: user?.id, userId: assigned,page:metaData.page });
-  //     setData(data.data.data);
-  //     setMetaData(data.data.meta.pagination);
-  //   } catch (error) {
-  //     console.log(error);
-  //   }
-  // };
+  const getData = async () => {
+    let assigned: number | undefined = undefined;
+    try {
+      if (GetRole() !== "Authenticated") {
+        assigned = user?.id
+      }
+      const response = await api_surveys({ createdBy: user?.id, userId: assigned, page: metaData.page });
+      setData(response.data.data);
+      setMetaData(response.data.meta.pagination);
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
-  
+  useEffect(() => {
+    if (user?.id === 0) return;
+    getData();
+  }, [user]);
+
+
   return (
     <div className="px-4 sm:px-6 lg:px-8">
       <div className="flex items-center justify-between ">
@@ -50,7 +56,7 @@ export default function Index() {
         <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
           <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
             <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
-              <Table />
+              <Table data={data} />
             </div>
           </div>
         </div>
@@ -59,11 +65,11 @@ export default function Index() {
   );
 }
 
-function Table() {
-  const [encuestas, setEncuestas] = useState("");
+function Table({ data }: { data: surveyInterface[] }) {
+  console.log(data)
   return (
     <>
-      {encuestas !== '' ?(
+      {data.length !== 0  ? (
         <table className="min-w-full divide-y divide-gray-300">
           <thead className="bg-gray-50">
             <tr>
@@ -100,27 +106,31 @@ function Table() {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200 bg-white">
-            <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
-               1
-            </td>
-            <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
-               Vuelta a clases
-            </td>
-            <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
-               06/03/2025
-            </td>
-            <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
-               11/03/2025
-            </td>
-            <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
-                <button >
+            {data.map((survey, index) => (
+              <tr>
+                <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
+                  {index + 1}
+                </td>
+                <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
+                  {survey.attributes.titulo}
+                </td>
+                <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
+                {survey.attributes.fechaInicio}
+                </td>
+                <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
+                {survey.attributes.fechaFin}
+                </td>
+                <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
+                  <button >
                     <EyeIcon className="h-6 w-6" aria-hidden="true" />
-                    </button>
-            </td>
+                  </button>
+                </td>
+              </tr>
+            ))}
           </tbody>
         </table>
-      ):(
-        <WarningAlert message="Aun no has creado una encuesta."/>
+      ) : (
+        <WarningAlert message="No se han encontrado encuestas." />
       )}
     </>
   );

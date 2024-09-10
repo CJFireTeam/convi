@@ -1,6 +1,6 @@
-import { ArrowLeftIcon, PencilIcon, PlusIcon, XMarkIcon } from "@heroicons/react/20/solid";
+import { ArrowLeftIcon, PencilIcon, PlusIcon, StarIcon, TrashIcon } from "@heroicons/react/20/solid";
 import { Router, useRouter } from "next/router";
-import { Button, Input, Modal } from "react-daisyui";
+import { Button, Input } from "react-daisyui";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import {
@@ -10,28 +10,13 @@ import {
   useForm,
   useFormContext,
 } from "react-hook-form";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { error } from "console";
-
-interface QuestionI {
-  Titulo: string;
-  Tipo: "text" | "option" | "multipleChoice" | "qualification";
-  Opciones: [];
-}
-
-interface CreateQuestionProps {
-  newChildren: (data: QuestionI) => Promise<void>;
-}
-
-const options = z.string({
-  required_error: "Se requiere ingresar datos para la opcion a mostrar",
-}).min(1, 'Se requiren minimo 1 caracteres');
-
-const QuestionZod = z.object({
-  Titulo: z.string({ required_error: "Se requiere titulo del formulario" }).min(1, "Se requiere titulo del formulario"),
-  Tipo: z.enum(["text", "option", "multipleChoice", "qualification"], { required_error: "Seleccione una opción" }),
-  Opciones: z.array(options),
-});
+import { useEffect, useRef, useState } from "react";
+import DatePicker, { registerLocale } from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
+import { es } from "date-fns/locale/es";
+import { toast } from "react-toastify";
+import { api_postQuestions, api_postSurveys } from "@/services/axios.services";
+registerLocale("es", es);
 
 interface FormularyI {
   Titulo: string;
@@ -40,13 +25,29 @@ interface FormularyI {
   Question: QuestionI[];
 }
 
+interface QuestionI {
+  Titulo: string;
+  Tipo: "text" | "option" | "multipleChoice" | "qualification";
+  Opciones: string[];
+}
+
+const options = z.string({
+  required_error: "Se requiere ingresar datos para la opción a mostrar",
+}).min(1, 'Se requieren mínimo 1 caracteres');
+
+const QuestionZod = z.object({
+  Titulo: z.string({ required_error: "Se requiere título de la pregunta" }).min(1, "Se requiere título de la pregunta"),
+  Tipo: z.enum(["text", "option", "multipleChoice", "qualification"], { required_error: "Seleccione una opción" }),
+  Opciones: z.array(options),
+});
+
 const FormularyZod = z.object({
-  Titulo: z.string({ required_error: "Se requiere titulo del formulario" }),
+  Titulo: z.string({ required_error: "Se requiere título del formulario" }),
   FechaInicio: z.date({
-    required_error: "Se require fecha de inicio del formulario",
+    required_error: "Se requiere fecha de inicio del formulario",
   }),
   FechaFin: z.date({
-    required_error: "Se require fecha de finalizacion del formulario",
+    required_error: "Se requiere fecha de finalización del formulario",
   }),
   Question: z.array(QuestionZod),
 });
@@ -58,36 +59,58 @@ export default function Creacion() {
 
   const {
     register,
-    getValues,
-    setValue,
     handleSubmit,
-    trigger,
-    watch,
-    reset,
     control,
+    watch,
+    setValue,
     formState: { errors },
   } = methods;
 
   const router = useRouter();
-
-  const { fields, append, prepend, remove, swap, move, insert } = useFieldArray(
-    {
-      control, // control props comes from useForm (optional: if you are using FormProvider)
-      name: "Question", // unique name for your Field Array
-    }
-  );
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: "Question",
+  });
 
   const redirect = () => {
     router.back();
   };
 
-  const onSubmit = async (data: any) => {
-    console.log(data);
-  };
+  /*  const onSubmit = async (data: any) => {
+     console.log("Datos enviados:", data);
+     if (Object.keys(errors).length) {
+       console.log("Errores:", errors);
+     }
+   }; */
 
   const newChildren = async (data: QuestionI) => {
-    append(data)
-  }
+    append(data);
+  };
+
+  const handleDateChange = (field: "FechaInicio" | "FechaFin") => (date: Date | null) => {
+    if (date) {
+      setValue(field, date);
+    }
+  };
+
+  const onSubmit = async (dataSurvey: FormularyI) => {
+    /*  try {
+       await api_postSurveys(dataSurvey);
+      
+       // hadleCloseProfesional()
+       // resetProfessional();
+       toast.success('Se creo la encuesta correctamente');
+     } catch (error) {
+       console.log(error);
+       // setIsLoading(false)
+       toast.error('ha ocurrido un error')
+     } */
+     console.log(dataSurvey);
+  };
+
+  // Acceder a las fechas desde el formulario
+  const fechaInicio = watch("FechaInicio");
+  const fechaFin = watch("FechaFin");
 
 
   return (
@@ -101,18 +124,43 @@ export default function Creacion() {
         <ArrowLeftIcon className="h-5 w-5" aria-hidden="true" />
       </Button>
       <h1 className="text-center font-bold">Creación de encuesta</h1>
-      <div className="grid grid-cols-1 gap-4 w-10/12 mx-auto">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-10/12 mx-auto">
+        {/* Formulario de creación */}
         <fieldset className="border shadow-md rounded-lg p-6 md:m-10 m-0">
-          <legend className="text-center">Previsualización de encuesta</legend>
+          <legend className="text-center">Formulario</legend>
           <FormProvider {...methods}>
             <form
               onSubmit={methods.handleSubmit(onSubmit)}
-              className=" md:mx-16 mx-0 flex flex-col items-center"
+              className="md:mx-16 mx-0 flex flex-col items-center text-center"
             >
-              <TitleComponent/>
+              <TitleComponent />
+              {errors.Titulo && <p className="text-red-500 text-sm">{errors.Titulo.message}</p>}
 
-              
+              <div className="w-full my-4">
+                <label className="block text-sm font-medium text-gray-700">Fecha de Inicio</label>
+                <DatePicker
+                  selected={watch("FechaInicio") || null}
+                  onChange={handleDateChange("FechaInicio")}
+                  className="mt-1 block w-full border border-gray-300 rounded-md"
+                  locale="es"
+                />
+                {errors.FechaInicio && <p className="text-red-500">{errors.FechaInicio.message}</p>}
+              </div>
+              <div className="w-full mb-4">
+                <label className="block text-sm font-medium text-gray-700">Fecha de Fin</label>
+                <DatePicker
+                  selected={watch("FechaFin") || null}
+                  onChange={handleDateChange("FechaFin")}
+                  className="mt-1 block w-full border border-gray-300 rounded-md"
+                  locale="es"
+                />
+                {errors.FechaFin && <p className="text-red-500">{errors.FechaFin.message}</p>}
+              </div>
 
+              {fields.map((field, index) => (
+                <QuestionComponent key={field.id} index={index} remove={remove} />
+              ))}
+              <AddQuestionComponent append={append} />
               <div className="text-center my-2">
                 <Button>Guardar</Button>
               </div>
@@ -120,9 +168,35 @@ export default function Creacion() {
           </FormProvider>
         </fieldset>
 
+        {/* Previsualización del formulario */}
+        <fieldset className="border shadow-md rounded-lg p-6 md:m-10 m-0">
+          <legend className="text-center">Previsualización de encuesta</legend>
+          <FormProvider {...methods}>
+            <div className="p-4 flex flex-col items-center">
+              <h2 className="text-xl font-semibold mb-4">
+                {watch("Titulo") || "Título del formulario"}
+              </h2>
+
+              {/* Mostrar fechas en la previsualización */}
+              <div className="grid grid-cols-2">
+
+                <div className="mb-4 ml-4 mr-4">
+                  <p className="font-medium">Fecha de Inicio:</p>
+                  <p>{fechaInicio ? fechaInicio.toLocaleDateString() : "No definida"}</p>
+                </div>
+                <div className="mb-4 ml-4 mr-4">
+                  <p className="font-medium">Fecha de Fin:</p>
+                  <p>{fechaFin ? fechaFin.toLocaleDateString() : "No definida"}</p>
+                </div>
+              </div>
+              {fields.map((field, index) => (
+                <PreviewQuestionComponent key={field.id} index={index} />
+              ))}
+            </div>
+          </FormProvider>
+        </fieldset>
 
       </div>
-
     </>
   );
 }
@@ -131,7 +205,7 @@ function TitleComponent() {
   const [isOpen, setIsOpen] = useState(false);
   const componentRef = useRef<HTMLDivElement>(null);
   const methods = useFormContext<FormularyI>();
-  const { register, watch, setValue, getValues } = methods;
+  const { register, watch, setValue, formState: { errors } } = methods;
   const watchTitle = watch("Titulo");
   const handleClear = () => {
     setValue("Titulo", "");
@@ -140,7 +214,7 @@ function TitleComponent() {
     if (!isOpen && (!watchTitle || watchTitle.length === 0)) {
       return (
         <h1 className="text-xl font-semibold flex items-center space-x-2">
-          Ingrese Titulo{" "}
+          Ingrese Título{" "}
           <PencilIcon className="h-5 w-5 text-error ml-2" aria-hidden="true" />
         </h1>
       );
@@ -153,7 +227,6 @@ function TitleComponent() {
     );
   };
   useEffect(() => {
-    // Función para manejar los clics en el documento
     const handleClickOutside = (event: MouseEvent) => {
       if (
         componentRef.current &&
@@ -163,10 +236,7 @@ function TitleComponent() {
       }
     };
 
-    // Añadir el listener de clic al documento
     document.addEventListener("mousedown", handleClickOutside);
-
-    // Limpiar el listener cuando el componente se desmonte
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
@@ -180,7 +250,6 @@ function TitleComponent() {
           }}
         >
           {showText()}
-          {/* {isOpen && ShowText()} */}
         </button>
       )}
       {isOpen && (
@@ -188,8 +257,8 @@ function TitleComponent() {
           <input
             type="text"
             {...register("Titulo")}
-            placeholder="Escriba aqui el titulo..."
-            className="flex-grow px-4 py-2  border-none focus:ring-0 outline-none"
+            placeholder="Escriba aquí el título..."
+            className="flex-grow px-4 py-2 border-none focus:ring-0 outline-none"
           />
           {watchTitle && (
             <button
@@ -205,10 +274,152 @@ function TitleComponent() {
   );
 }
 
-function DateStartEnd(){
-  return(
-    <>
-    
-    </>
+function AddQuestionComponent({ append }: { append: (data: QuestionI) => void }) {
+  const nuevaPregunta: QuestionI = {
+    Titulo: "",
+    Tipo: "text",
+    Opciones: [],
+  };
+
+  const agregarPregunta = () => {
+    append(nuevaPregunta);
+  };
+
+  return (
+    <div className="text-center my-4">
+      <Button onClick={agregarPregunta} color="primary">
+        Agregar Pregunta
+      </Button>
+    </div>
+  );
+}
+
+function QuestionComponent({ index, remove }: { index: number, remove: (index: number) => void }) {
+  const { register, watch, setValue, formState: { errors } } = useFormContext<FormularyI>();
+  const tipoPregunta = watch(`Question.${index}.Tipo`);
+
+  const addOption = () => {
+    const currentOptions = watch(`Question.${index}.Opciones`) || [];
+    setValue(`Question.${index}.Opciones`, [...currentOptions, ""]);
+  };
+
+  const deleteQuestion = () => {
+    remove(index);
+  };
+
+  return (
+    <div className="my-4 p-4 border rounded-lg">
+      <input
+        {...register(`Question.${index}.Titulo`)}
+        placeholder="Ingrese el título de la pregunta"
+        className="w-full mb-2"
+      />
+      {errors?.Question?.[index]?.Titulo && <p className="text-red-500 text-sm">{errors.Question[index].Titulo?.message}</p>}
+
+      <select {...register(`Question.${index}.Tipo`)} className="w-full mb-2">
+        <option value="text">Texto</option>
+        <option value="option">Opción</option>
+        <option value="multipleChoice">Múltiple elección</option>
+        <option value="qualification">Calificación</option>
+      </select>
+      {errors?.Question?.[index]?.Tipo && <p className="text-red-500 text-sm">{errors.Question[index].Tipo?.message}</p>}
+
+      {tipoPregunta === "text" && (
+        <input
+          type="text"
+          className="w-full mt-2"
+          placeholder="Respuesta de texto"
+          disabled
+        />
+      )}
+
+      {tipoPregunta === "option" && (
+        <>
+          {(watch(`Question.${index}.Opciones`) || []).map((_, idx: number) => (
+            <div key={idx} className="flex items-center mb-2">
+              <input
+                type="text"
+                {...register(`Question.${index}.Opciones.${idx}`)}
+                className="w-full"
+                placeholder="Ingrese una opción"
+              />
+            </div>
+          ))}
+          <button type="button" onClick={addOption} className="btn btn-primary">
+            Añadir Opción
+          </button>
+        </>
+      )}
+
+      {tipoPregunta === "multipleChoice" && (
+        <>
+          {(watch(`Question.${index}.Opciones`) || []).map((_, idx: number) => (
+            <div key={idx} className="flex items-center mb-2">
+              <input
+                type="text"
+                {...register(`Question.${index}.Opciones.${idx}`)}
+                className="w-full"
+                placeholder="Ingrese una opción"
+              />
+            </div>
+          ))}
+          <button type="button" onClick={addOption} className="btn btn-primary">
+            Añadir Opción
+          </button>
+        </>
+      )}
+
+      {tipoPregunta === "qualification" && (
+        <div className="flex space-x-2 mt-2">
+          {[1, 2, 3, 4, 5].map((star) => (
+            <StarIcon key={star} className="text-yellow-500" />
+          ))}
+        </div>
+      )}
+      <button onClick={deleteQuestion} className="text-red-500 mt-4">
+        <TrashIcon className="h-5 w-5" aria-hidden="true" />
+      </button>
+    </div>
+
+  );
+}
+
+function PreviewQuestionComponent({ index }: { index: number }) {
+  const { watch } = useFormContext<FormularyI>();
+  const tipoPregunta = watch(`Question.${index}.Tipo`);
+  const opciones = watch(`Question.${index}.Opciones`) || [];
+  const titulo = watch(`Question.${index}.Titulo`);
+
+
+  return (
+    <div className="my-4 p-4 border rounded-lg text-center items-center">
+      <h3 className="font-semibold mb-2">{titulo}</h3>
+
+      {tipoPregunta === "text" && <input type="text" className="w-full" disabled />}
+
+      {tipoPregunta === "option" &&
+        opciones.map((opcion, idx) => (
+          <div key={idx} className="flex items-center mb-2">
+            <input type="radio" disabled className="mr-2" />
+            <label>{opcion}</label>
+          </div>
+        ))}
+
+      {tipoPregunta === "multipleChoice" &&
+        opciones.map((opcion, idx) => (
+          <div key={idx} className="flex items-center mb-2">
+            <input type="checkbox" disabled className="mr-2" />
+            <label>{opcion}</label>
+          </div>
+        ))}
+
+      {tipoPregunta === "qualification" && (
+        <div className="flex space-x-2 mt-2">
+          {[1, 2, 3, 4, 5].map((star) => (
+            <StarIcon key={star} className="text-yellow-500" />
+          ))}
+        </div>
+      )}
+    </div>
   );
 }

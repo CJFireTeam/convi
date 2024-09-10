@@ -1,4 +1,4 @@
-import { ArrowLeftIcon, PencilIcon, PlusIcon, StarIcon } from "@heroicons/react/20/solid";
+import { ArrowLeftIcon, PencilIcon, PlusIcon, StarIcon, TrashIcon } from "@heroicons/react/20/solid";
 import { Router, useRouter } from "next/router";
 import { Button, Input } from "react-daisyui";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -11,8 +11,12 @@ import {
   useFormContext,
 } from "react-hook-form";
 import { useEffect, useRef, useState } from "react";
-import DatePicker from 'react-datepicker';
+import DatePicker, { registerLocale } from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
+import { es } from "date-fns/locale/es";
+import { toast } from "react-toastify";
+import { api_postQuestions, api_postSurveys } from "@/services/axios.services";
+registerLocale("es", es);
 
 interface FormularyI {
   Titulo: string;
@@ -63,7 +67,7 @@ export default function Creacion() {
   } = methods;
 
   const router = useRouter();
-  const { fields, append } = useFieldArray({
+  const { fields, append, remove } = useFieldArray({
     control,
     name: "Question",
   });
@@ -72,9 +76,12 @@ export default function Creacion() {
     router.back();
   };
 
-  const onSubmit = async (data: any) => {
-    console.log(data);
-  };
+  /*  const onSubmit = async (data: any) => {
+     console.log("Datos enviados:", data);
+     if (Object.keys(errors).length) {
+       console.log("Errores:", errors);
+     }
+   }; */
 
   const newChildren = async (data: QuestionI) => {
     append(data);
@@ -85,6 +92,26 @@ export default function Creacion() {
       setValue(field, date);
     }
   };
+
+  const onSubmit = async (dataSurvey: FormularyI) => {
+    /*  try {
+       await api_postSurveys(dataSurvey);
+      
+       // hadleCloseProfesional()
+       // resetProfessional();
+       toast.success('Se creo la encuesta correctamente');
+     } catch (error) {
+       console.log(error);
+       // setIsLoading(false)
+       toast.error('ha ocurrido un error')
+     } */
+     console.log(dataSurvey);
+  };
+
+  // Acceder a las fechas desde el formulario
+  const fechaInicio = watch("FechaInicio");
+  const fechaFin = watch("FechaFin");
+
 
   return (
     <>
@@ -104,15 +131,18 @@ export default function Creacion() {
           <FormProvider {...methods}>
             <form
               onSubmit={methods.handleSubmit(onSubmit)}
-              className="md:mx-16 mx-0 flex flex-col items-center"
+              className="md:mx-16 mx-0 flex flex-col items-center text-center"
             >
               <TitleComponent />
-              <div className="w-full mb-4">
+              {errors.Titulo && <p className="text-red-500 text-sm">{errors.Titulo.message}</p>}
+
+              <div className="w-full my-4">
                 <label className="block text-sm font-medium text-gray-700">Fecha de Inicio</label>
                 <DatePicker
                   selected={watch("FechaInicio") || null}
                   onChange={handleDateChange("FechaInicio")}
                   className="mt-1 block w-full border border-gray-300 rounded-md"
+                  locale="es"
                 />
                 {errors.FechaInicio && <p className="text-red-500">{errors.FechaInicio.message}</p>}
               </div>
@@ -122,12 +152,13 @@ export default function Creacion() {
                   selected={watch("FechaFin") || null}
                   onChange={handleDateChange("FechaFin")}
                   className="mt-1 block w-full border border-gray-300 rounded-md"
+                  locale="es"
                 />
                 {errors.FechaFin && <p className="text-red-500">{errors.FechaFin.message}</p>}
               </div>
 
               {fields.map((field, index) => (
-                <QuestionComponent key={field.id} index={index} />
+                <QuestionComponent key={field.id} index={index} remove={remove} />
               ))}
               <AddQuestionComponent append={append} />
               <div className="text-center my-2">
@@ -145,12 +176,26 @@ export default function Creacion() {
               <h2 className="text-xl font-semibold mb-4">
                 {watch("Titulo") || "Título del formulario"}
               </h2>
+
+              {/* Mostrar fechas en la previsualización */}
+              <div className="grid grid-cols-2">
+
+                <div className="mb-4 ml-4 mr-4">
+                  <p className="font-medium">Fecha de Inicio:</p>
+                  <p>{fechaInicio ? fechaInicio.toLocaleDateString() : "No definida"}</p>
+                </div>
+                <div className="mb-4 ml-4 mr-4">
+                  <p className="font-medium">Fecha de Fin:</p>
+                  <p>{fechaFin ? fechaFin.toLocaleDateString() : "No definida"}</p>
+                </div>
+              </div>
               {fields.map((field, index) => (
                 <PreviewQuestionComponent key={field.id} index={index} />
               ))}
             </div>
           </FormProvider>
         </fieldset>
+
       </div>
     </>
   );
@@ -160,7 +205,7 @@ function TitleComponent() {
   const [isOpen, setIsOpen] = useState(false);
   const componentRef = useRef<HTMLDivElement>(null);
   const methods = useFormContext<FormularyI>();
-  const { register, watch, setValue } = methods;
+  const { register, watch, setValue, formState: { errors } } = methods;
   const watchTitle = watch("Titulo");
   const handleClear = () => {
     setValue("Titulo", "");
@@ -249,13 +294,17 @@ function AddQuestionComponent({ append }: { append: (data: QuestionI) => void })
   );
 }
 
-function QuestionComponent({ index }: { index: number }) {
-  const { register, watch, setValue } = useFormContext<FormularyI>();
+function QuestionComponent({ index, remove }: { index: number, remove: (index: number) => void }) {
+  const { register, watch, setValue, formState: { errors } } = useFormContext<FormularyI>();
   const tipoPregunta = watch(`Question.${index}.Tipo`);
 
   const addOption = () => {
     const currentOptions = watch(`Question.${index}.Opciones`) || [];
     setValue(`Question.${index}.Opciones`, [...currentOptions, ""]);
+  };
+
+  const deleteQuestion = () => {
+    remove(index);
   };
 
   return (
@@ -265,12 +314,15 @@ function QuestionComponent({ index }: { index: number }) {
         placeholder="Ingrese el título de la pregunta"
         className="w-full mb-2"
       />
+      {errors?.Question?.[index]?.Titulo && <p className="text-red-500 text-sm">{errors.Question[index].Titulo?.message}</p>}
+
       <select {...register(`Question.${index}.Tipo`)} className="w-full mb-2">
         <option value="text">Texto</option>
         <option value="option">Opción</option>
         <option value="multipleChoice">Múltiple elección</option>
         <option value="qualification">Calificación</option>
       </select>
+      {errors?.Question?.[index]?.Tipo && <p className="text-red-500 text-sm">{errors.Question[index].Tipo?.message}</p>}
 
       {tipoPregunta === "text" && (
         <input
@@ -324,7 +376,11 @@ function QuestionComponent({ index }: { index: number }) {
           ))}
         </div>
       )}
+      <button onClick={deleteQuestion} className="text-red-500 mt-4">
+        <TrashIcon className="h-5 w-5" aria-hidden="true" />
+      </button>
     </div>
+
   );
 }
 
@@ -334,23 +390,10 @@ function PreviewQuestionComponent({ index }: { index: number }) {
   const opciones = watch(`Question.${index}.Opciones`) || [];
   const titulo = watch(`Question.${index}.Titulo`);
 
-  // Acceder a las fechas desde el formulario
-  const fechaInicio = watch("FechaInicio");
-  const fechaFin = watch("FechaFin");
 
   return (
-    <div className="my-4 p-4 border rounded-lg">
+    <div className="my-4 p-4 border rounded-lg text-center items-center">
       <h3 className="font-semibold mb-2">{titulo}</h3>
-
-      {/* Mostrar fechas en la previsualización */}
-      <div className="mb-4">
-        <p className="font-medium">Fecha de Inicio:</p>
-        <p>{fechaInicio ? fechaInicio.toLocaleDateString() : "No definida"}</p>
-      </div>
-      <div className="mb-4">
-        <p className="font-medium">Fecha de Fin:</p>
-        <p>{fechaFin ? fechaFin.toLocaleDateString() : "No definida"}</p>
-      </div>
 
       {tipoPregunta === "text" && <input type="text" className="w-full" disabled />}
 

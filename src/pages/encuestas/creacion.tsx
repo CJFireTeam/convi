@@ -327,10 +327,14 @@ function AddQuestionComponent({ append }: { append: (data: QuestionI) => void })
     Tipo: "text",
     opciones: [],
   };
-
+  const methods = useForm<FormularyI>({
+    resolver: zodResolver(FormularyZod),
+  });
+  
   const agregarPregunta = () => {
     append(nuevaPregunta);
   };
+  const { register, watch, setValue, formState: { errors } } = methods;
 
   return (
     <div className="text-center my-4">
@@ -361,7 +365,7 @@ function QuestionComponent({ index, remove }: { index: number, remove: (index: n
         placeholder="Ingrese el título de la pregunta"
         className="w-full mb-2"
       />
-      {errors?.Question?.[index]?.Titulo && <p className="text-red-500 text-sm">{errors.Question[index].Titulo?.message}</p>}
+      {errors?.Question?.[index]?.Titulo && <p className="text-red-500 text-sm">{errors.Question?.[index]?.Titulo?.message}</p>}
 
       <select {...register(`Question.${index}.Tipo`)} className="w-full mb-2">
         <option value="text">Texto</option>
@@ -369,7 +373,11 @@ function QuestionComponent({ index, remove }: { index: number, remove: (index: n
         <option value="multipleChoice">Múltiple elección</option>
         <option value="qualification">Calificación</option>
       </select>
-      {errors?.Question?.[index]?.Tipo && <p className="text-red-500 text-sm">{errors.Question[index].Tipo?.message}</p>}
+      {errors &&
+      (errors.Question?.[index]?.Tipo ? (
+        <p className="text-red-500 text-sm">{errors?.Question?.[index]?.Tipo?.message}</p>
+      ) : null)
+    }
 
       {tipoPregunta === "text" && (
         <input

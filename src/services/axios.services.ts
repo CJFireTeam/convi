@@ -125,6 +125,7 @@ export function api_putProfessionals(id: number, data: any) {
   return api.put(`professionals/${id}`, data);
 }
 
+
 export function api_postSurveys(data: any) {
   return api.post(`formularios`, { data: data })
 }

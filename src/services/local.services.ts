@@ -41,6 +41,9 @@ export function getRegiones() {
 }
 export function getComunas(comuna:string) {
     return api2.get('comunas?region='+ comuna);
-  }
-  
+}
+ 
+export function assignFormUsers(location:number,formulary:number) {
+  return api2.post('form',{location:location,formulary:formulary});
+}
 

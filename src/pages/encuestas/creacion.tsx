@@ -18,6 +18,7 @@ import { toast } from "react-toastify";
 import { api_postQuestions, api_postSurveys } from "@/services/axios.services";
 registerLocale("es", es);
 import { useUserStore } from "../../store/userStore";
+import { assignFormUsers } from "../../services/local.services";
 
 interface FormularyI {
   Titulo: string;
@@ -113,8 +114,9 @@ export default function Creacion() {
       // Primero realiza el POST de la encuesta (api_postSurveys)
       const surveyResponse = await api_postSurveys(dataSurvey);
       // Rescatar la ID de la encuesta recién creada
-      const formulario = surveyResponse.data.id; // Asegúrate de que la respuesta tenga el campo "id"
-
+      const formulario = surveyResponse.data.data.id; // Asegúrate de que la respuesta tenga el campo "id"
+      const respUsers = await assignFormUsers(dataSurvey.establishment,dataSurvey.creador);
+      console.log(respUsers)
       // Ahora procesa las preguntas, asignando valores por defecto si Opciones está vacío
       const processedQuestions = dataSurvey.Question.map((question) => {
         if (question.opciones.length === 0) {
@@ -130,7 +132,7 @@ export default function Creacion() {
       // Prepara las preguntas con el campo `formulario`
       const questionsWithSurveyId = processedQuestions.map((question) => ({
         ...question,
-        "formulario": surveyResponse.data.data.id // Asigna el surveyId a cada pregunta
+        "formulario": formulario // Asigna el surveyId a cada pregunta
       }));
 
       // Realiza el POST de cada pregunta asociada al surveyId

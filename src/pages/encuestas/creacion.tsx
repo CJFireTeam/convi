@@ -1,6 +1,6 @@
 import { ArrowLeftIcon, PencilIcon, PlusIcon, StarIcon, TrashIcon } from "@heroicons/react/20/solid";
 import { Router, useRouter } from "next/router";
-import { Button, Input } from "react-daisyui";
+import { Button, Input, Textarea } from "react-daisyui";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import {
@@ -17,18 +17,23 @@ import { es } from "date-fns/locale/es";
 import { toast } from "react-toastify";
 import { api_postQuestions, api_postSurveys } from "@/services/axios.services";
 registerLocale("es", es);
+import { useUserStore } from "../../store/userStore";
+import { assignFormUsers } from "../../services/local.services";
 
 interface FormularyI {
   Titulo: string;
   FechaInicio: Date;
   FechaFin: Date;
+  creador:number;
+  Descripcion:string;
+  establishment: number;
   Question: QuestionI[];
 }
 
 interface QuestionI {
   Titulo: string;
   Tipo: "text" | "option" | "multipleChoice" | "qualification";
-  Opciones: string[];
+  opciones: string[];
 }
 
 const options = z.string({
@@ -38,7 +43,7 @@ const options = z.string({
 const QuestionZod = z.object({
   Titulo: z.string({ required_error: "Se requiere título de la pregunta" }).min(1, "Se requiere título de la pregunta"),
   Tipo: z.enum(["text", "option", "multipleChoice", "qualification"], { required_error: "Seleccione una opción" }),
-  Opciones: z.array(options),
+  opciones: z.array(options),
 });
 
 const FormularyZod = z.object({
@@ -49,6 +54,9 @@ const FormularyZod = z.object({
   FechaFin: z.date({
     required_error: "Se requiere fecha de finalización del formulario",
   }),
+  creador:z.number({required_error:"Campo Requerido",invalid_type_error:"Tipo invalido"}),
+  Descripcion:z.string({required_error:"Campo Requerido",invalid_type_error:"Tipo Invalido"}),
+  establishment: z.number({required_error:"Campo Requerido",invalid_type_error:"Tipo Invalido"}),
   Question: z.array(QuestionZod),
 });
 
@@ -56,6 +64,7 @@ export default function Creacion() {
   const methods = useForm<FormularyI>({
     resolver: zodResolver(FormularyZod),
   });
+  const {user} = useUserStore();
 
   const {
     register,
@@ -93,24 +102,55 @@ export default function Creacion() {
     }
   };
 
+  useEffect(()=>{
+    
+    setValue('creador',user.id);
+    setValue('establishment',user.establishment.id);
+  },[user]);
+
   const onSubmit = async (dataSurvey: FormularyI) => {
-    /*  try {
-       await api_postSurveys(dataSurvey);
-      
-       // hadleCloseProfesional()
-       // resetProfessional();
-       toast.success('Se creo la encuesta correctamente');
-     } catch (error) {
-       console.log(error);
-       // setIsLoading(false)
-       toast.error('ha ocurrido un error')
-     } */
-     console.log(dataSurvey);
+    try {
+     
+      // Primero realiza el POST de la encuesta (api_postSurveys)
+      const surveyResponse = await api_postSurveys(dataSurvey);
+      // Rescatar la ID de la encuesta recién creada
+      const formulario = surveyResponse.data.data.id; // Asegúrate de que la respuesta tenga el campo "id"
+      const respUsers = await assignFormUsers(dataSurvey.establishment,dataSurvey.creador);
+      console.log(respUsers)
+      // Ahora procesa las preguntas, asignando valores por defecto si Opciones está vacío
+      const processedQuestions = dataSurvey.Question.map((question) => {
+        if (question.opciones.length === 0) {
+          if (question.Tipo === "text") {
+            return { ...question, opciones: ["input"] };
+          } else if (question.Tipo === "qualification") {
+            return { ...question, opciones: ["qualification"] };
+          }
+        }
+        return question;
+      });
+
+      // Prepara las preguntas con el campo `formulario`
+      const questionsWithSurveyId = processedQuestions.map((question) => ({
+        ...question,
+        "formulario": formulario // Asigna el surveyId a cada pregunta
+      }));
+
+      // Realiza el POST de cada pregunta asociada al surveyId
+      await Promise.all(questionsWithSurveyId.map((question) => api_postQuestions(question)));
+
+      toast.success('Encuesta y preguntas creadas correctamente');
+    } catch (error) {
+      console.error("Error al crear la encuesta o las preguntas:", error);
+      toast.error('Ocurrió un error al crear la encuesta o las preguntas');
+    }
   };
+
+
 
   // Acceder a las fechas desde el formulario
   const fechaInicio = watch("FechaInicio");
   const fechaFin = watch("FechaFin");
+  const descripcionForm = watch('Descripcion');
 
 
   return (
@@ -157,6 +197,12 @@ export default function Creacion() {
                 {errors.FechaFin && <p className="text-red-500">{errors.FechaFin.message}</p>}
               </div>
 
+              <div className="w-full mb-4">
+                <label className="block text-sm font-medium text-gray-700">Descripcion del formulario</label>
+                <Textarea {...register('Descripcion')}/>
+                {errors.Descripcion && <p className="text-red-500">{errors.Descripcion.message}</p>}
+              </div>
+
               {fields.map((field, index) => (
                 <QuestionComponent key={field.id} index={index} remove={remove} />
               ))}
@@ -180,14 +226,15 @@ export default function Creacion() {
               {/* Mostrar fechas en la previsualización */}
               <div className="grid grid-cols-2">
 
-                <div className="mb-4 ml-4 mr-4">
+                <div className="mb-4  mr-12">
                   <p className="font-medium">Fecha de Inicio:</p>
                   <p>{fechaInicio ? fechaInicio.toLocaleDateString() : "No definida"}</p>
                 </div>
-                <div className="mb-4 ml-4 mr-4">
+                <div className="mb-4 ml-12 ">
                   <p className="font-medium">Fecha de Fin:</p>
                   <p>{fechaFin ? fechaFin.toLocaleDateString() : "No definida"}</p>
                 </div>
+                <p>{descripcionForm ? descripcionForm : <span className="font-medium">Sin Descripción</span>}</p>
               </div>
               {fields.map((field, index) => (
                 <PreviewQuestionComponent key={field.id} index={index} />
@@ -278,12 +325,16 @@ function AddQuestionComponent({ append }: { append: (data: QuestionI) => void })
   const nuevaPregunta: QuestionI = {
     Titulo: "",
     Tipo: "text",
-    Opciones: [],
+    opciones: [],
   };
-
+  const methods = useForm<FormularyI>({
+    resolver: zodResolver(FormularyZod),
+  });
+  
   const agregarPregunta = () => {
     append(nuevaPregunta);
   };
+  const { register, watch, setValue, formState: { errors } } = methods;
 
   return (
     <div className="text-center my-4">
@@ -299,8 +350,8 @@ function QuestionComponent({ index, remove }: { index: number, remove: (index: n
   const tipoPregunta = watch(`Question.${index}.Tipo`);
 
   const addOption = () => {
-    const currentOptions = watch(`Question.${index}.Opciones`) || [];
-    setValue(`Question.${index}.Opciones`, [...currentOptions, ""]);
+    const currentOptions = watch(`Question.${index}.opciones`) || [];
+    setValue(`Question.${index}.opciones`, [...currentOptions, ""]);
   };
 
   const deleteQuestion = () => {
@@ -314,7 +365,7 @@ function QuestionComponent({ index, remove }: { index: number, remove: (index: n
         placeholder="Ingrese el título de la pregunta"
         className="w-full mb-2"
       />
-      {errors?.Question?.[index]?.Titulo && <p className="text-red-500 text-sm">{errors.Question[index].Titulo?.message}</p>}
+      {errors?.Question?.[index]?.Titulo && <p className="text-red-500 text-sm">{errors.Question?.[index]?.Titulo?.message}</p>}
 
       <select {...register(`Question.${index}.Tipo`)} className="w-full mb-2">
         <option value="text">Texto</option>
@@ -322,7 +373,11 @@ function QuestionComponent({ index, remove }: { index: number, remove: (index: n
         <option value="multipleChoice">Múltiple elección</option>
         <option value="qualification">Calificación</option>
       </select>
-      {errors?.Question?.[index]?.Tipo && <p className="text-red-500 text-sm">{errors.Question[index].Tipo?.message}</p>}
+      {errors &&
+      (errors.Question?.[index]?.Tipo ? (
+        <p className="text-red-500 text-sm">{errors?.Question?.[index]?.Tipo?.message}</p>
+      ) : null)
+    }
 
       {tipoPregunta === "text" && (
         <input
@@ -335,11 +390,11 @@ function QuestionComponent({ index, remove }: { index: number, remove: (index: n
 
       {tipoPregunta === "option" && (
         <>
-          {(watch(`Question.${index}.Opciones`) || []).map((_, idx: number) => (
+          {(watch(`Question.${index}.opciones`) || []).map((_, idx: number) => (
             <div key={idx} className="flex items-center mb-2">
               <input
                 type="text"
-                {...register(`Question.${index}.Opciones.${idx}`)}
+                {...register(`Question.${index}.opciones.${idx}`)}
                 className="w-full"
                 placeholder="Ingrese una opción"
               />
@@ -353,11 +408,11 @@ function QuestionComponent({ index, remove }: { index: number, remove: (index: n
 
       {tipoPregunta === "multipleChoice" && (
         <>
-          {(watch(`Question.${index}.Opciones`) || []).map((_, idx: number) => (
+          {(watch(`Question.${index}.opciones`) || []).map((_, idx: number) => (
             <div key={idx} className="flex items-center mb-2">
               <input
                 type="text"
-                {...register(`Question.${index}.Opciones.${idx}`)}
+                {...register(`Question.${index}.opciones.${idx}`)}
                 className="w-full"
                 placeholder="Ingrese una opción"
               />
@@ -387,7 +442,7 @@ function QuestionComponent({ index, remove }: { index: number, remove: (index: n
 function PreviewQuestionComponent({ index }: { index: number }) {
   const { watch } = useFormContext<FormularyI>();
   const tipoPregunta = watch(`Question.${index}.Tipo`);
-  const opciones = watch(`Question.${index}.Opciones`) || [];
+  const opciones = watch(`Question.${index}.opciones`) || [];
   const titulo = watch(`Question.${index}.Titulo`);
 
 

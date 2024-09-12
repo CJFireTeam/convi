@@ -1,9 +1,9 @@
 interface surveyInterface{
     id: number;
     attributes: {
-        titulo: string;
-        fechaInicio: string;
-        fechaFin: string;
+        Titulo: string;
+        FechaInicio: string;
+        FechaFin: string;
         creador:{
             data:{
                 id: number;

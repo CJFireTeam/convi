@@ -1,13 +1,14 @@
-import { useRouter } from "next/router";
-import { Button } from "react-daisyui";
+import router, { useRouter } from "next/router";
+import { Button, Modal } from "react-daisyui";
 import WarningAlert from "@/components/alerts/warningAlert";
 import ErrorAlert from "../../components/alerts/errorAlert";
 import InfoAlert from "../../components/alerts/infoAlert";
-import { useEffect, useState } from "react";
-import { EyeIcon, PencilIcon } from "@heroicons/react/24/outline";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useUserStore } from "@/store/userStore";
 import metaI from "@/interfaces/meta.interface";
 import { api_getQuestions, api_surveys } from "@/services/axios.services";
+import { differenceInDays } from 'date-fns';
+import { ArrowLeftIcon, EyeIcon } from "@heroicons/react/20/solid";
 interface questionaryI {
   id: number;
   attributes: {
@@ -19,6 +20,7 @@ interface questionaryI {
           Titulo: string;
           FechaInicio: string;
           FechaFin: string;
+          status: boolean;
         };
       };
     };
@@ -65,10 +67,18 @@ export default function Index() {
 
   useEffect(() => {
     if (user?.id === 0) return;
-    console.log(GetRole());
     if (GetRole() === "Profesor") getData();
+  }, [user]);
+
+  useEffect(() => {
+    if (user?.id === 0) return;
+    console.log(GetRole());
     if (GetRole() === "Authenticated") getQuestionary();
   }, [user]);
+
+
+  const [form, setForm] = useState(false);
+  const [selectedForm, setSelectedForm] = useState<questionaryI | null>(null);
 
   if (GetRole() === "Profesor") {
     return (
@@ -87,11 +97,18 @@ export default function Index() {
           </div>
         </div>
         <div className="mt-8 flow-root">
-          <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-            <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
-              <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
-                <Table data={data} />
-              </div>
+          <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8"></div>
+          <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
+            <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
+              <Table data={data} />
+              {metaData.page < metaData.pageCount && (
+                <Button onClick={() => setMetaData({ ...metaData, page: metaData.page + 1 })} color="primary">
+                  Cargar más encuestas
+                </Button>
+              )}
+              {metaData.page >= metaData.pageCount && (
+                <p>No hay más encuestas</p>
+              )}
             </div>
           </div>
         </div>
@@ -99,42 +116,95 @@ export default function Index() {
     );
   }
 
+
+
   if (GetRole() === "Authenticated") {
     const ExtraPages = () => {
       if (metaData.pageCount > 1)
         return <Button color="primary">Ver mas</Button>;
       return null;
     };
+
     return (
       <>
-        <div className="w-4/5">
-          {dataQuestionary.map((e, index) => (
-            <div
-              key={index}
-              className="border-x-2 border-y border-primary p-2 flex"
-            >
-              <div>
-                <span className="flex flex-col justify-start">
-                  <label className="font-bold text-lg">
-                    {e.attributes.formulario.data.attributes.Titulo}
-                  </label>
-                  <label>
+        {!form && (<>
+          <div className="w-4/5 mx-auto">
+            {dataQuestionary.map((e, index) => (
+              <>
+                <div
+                  onClick={() => {
+                    setSelectedForm(e);
+                    setForm(true);
+                  }}
+                  key={index}
+                  className="bg-white shadow-md rounded-md p-4 my-2 hover:border-primary hover:border-2 hover:cursor-pointer"
+                >
+                  <div className="flex justify-between mb-2">
+                    <h2 className="font-bold text-lg">
+                      {e.attributes.formulario.data.attributes.Titulo}
+                    </h2>
+
+                    <div>
+                      <span
+                        className={`font-bold ${differenceInDays(new Date(e.attributes.formulario.data.attributes.FechaFin), new Date(e.attributes.formulario.data.attributes.FechaInicio)) > 5 ? 'text-green-600' : 'text-red-600'}`}
+                      >
+                        Termina en {differenceInDays(new Date(e.attributes.formulario.data.attributes.FechaFin), new Date(e.attributes.formulario.data.attributes.FechaInicio))} días.
+                      </span>
+
+                    </div>
+                  </div>
+                  <p className="text-gray-600">
                     {e.attributes.formulario.data.attributes.Descripcion}
-                  </label>
-                </span>
-              </div>
-            </div>
-          ))}
-        </div>
-        {ExtraPages()}
+                  </p>
+                </div>
+              </>
+            ))}
+          </div>
+          {ExtraPages()}
+        </>)}
+        {form && selectedForm && (
+          <FomrularyResponse form={selectedForm} />
+        )}
       </>
     );
   }
   return null;
 }
 
+interface props {
+  form: questionaryI;
+
+}
+
+function FomrularyResponse(props: props) {
+  useEffect(()=> {
+    console.log(props.form.id)
+    console.log(props.form.attributes.formulario.data.id)
+  },[])
+
+  return (
+    <>
+      <ArrowLeftIcon className="btn btn-outline btn-primary rounded-full" onClick={() => router.reload()} ></ArrowLeftIcon>
+      <div className="w-4/5 mx-auto">
+        <div className="grid grid-col-1 md:grid-col-2 gap-4">
+
+          <div className="grid col-span-2 gap-4 text-center">
+            <h1 className="font-bold text-3xl">{props.form.attributes.formulario.data.attributes.Titulo.charAt(0).toUpperCase() +
+              props.form.attributes.formulario.data.attributes.Titulo.slice(1)}</h1>
+          </div>
+          <div className="grid col-span-2 gap-4 text-center">
+            <p className="font-semibold text-lg">{props.form.attributes.formulario.data.attributes.Descripcion.charAt(0).toUpperCase() +
+              props.form.attributes.formulario.data.attributes.Descripcion.slice(1)}</p>
+          </div>
+
+        </div>
+      </div>
+    </>
+  );
+}
+
 function Table({ data }: { data: surveyInterface[] }) {
-  console.log(data);
+  console.log("data llegada ala tabla de peticiones profesor:", data);
   return (
     <>
       {data.length !== 0 ? (
@@ -180,13 +250,13 @@ function Table({ data }: { data: surveyInterface[] }) {
                   {index + 1}
                 </td>
                 <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
-                  {survey.attributes.titulo}
+                  {survey.attributes.Titulo}{survey.attributes.descripcion}
                 </td>
                 <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
-                  {survey.attributes.fechaInicio}
+                  {survey.attributes.FechaInicio}
                 </td>
                 <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
-                  {survey.attributes.fechaFin}
+                  {survey.attributes.FechaFin}
                 </td>
                 <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
                   <button>
@@ -197,6 +267,7 @@ function Table({ data }: { data: surveyInterface[] }) {
             ))}
           </tbody>
         </table>
+
       ) : (
         <WarningAlert message="No se han encontrado encuestas." />
       )}

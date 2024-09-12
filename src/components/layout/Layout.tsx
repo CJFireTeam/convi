@@ -31,6 +31,7 @@ import { api_me } from "../../services/axios.services";
 import { Imenus, useMenuStore } from "../../store/menus.store";
 import { Badge, Button, Drawer, Dropdown, Menu, Navbar } from "react-daisyui";
 import ModalWhoIS from "../authenticated/modalWhoIs";
+import ModalQuestion from "../authenticated/modalQuestion";
 type LayoutProps = {
   children: ReactNode;
 };
@@ -225,7 +226,7 @@ export default function Layout(props: LayoutProps) {
         </Navbar>
       </Drawer>
       <main className="py-10">
-      {GetRole() === "Authenticated" && <><ModalWhoIS /></>}
+      {GetRole() === "Authenticated" && <><ModalWhoIS /><ModalQuestion/>  </>}
         <div className="px-4 sm:px-6 lg:px-8">{props.children}</div>
       </main>
     </>

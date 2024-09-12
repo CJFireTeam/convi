@@ -179,19 +179,39 @@ export default function Creacion() {
               <div className="w-full my-4">
                 <label className="block text-sm font-medium text-gray-700">Fecha de Inicio</label>
                 <DatePicker
-                  selected={watch("FechaInicio") || null}
+                  selected={new Date()}
                   onChange={handleDateChange("FechaInicio")}
                   className="mt-1 block w-full border border-gray-300 rounded-md"
+                  dropdownMode="select"
+                  yearDropdownItemNumber={15}
+                  peekNextMonth
+                  showYearDropdown
+                  showMonthDropdown
+                  dateFormat={"dd/MM/yyyy"}
+                  selectsStart
+                  startDate={fechaInicio}
+                  endDate={fechaFin}
                   locale="es"
+         
                 />
                 {errors.FechaInicio && <p className="text-red-500">{errors.FechaInicio.message}</p>}
               </div>
               <div className="w-full mb-4">
                 <label className="block text-sm font-medium text-gray-700">Fecha de Fin</label>
                 <DatePicker
-                  selected={watch("FechaFin") || null}
+                  selected={new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)}
                   onChange={handleDateChange("FechaFin")}
                   className="mt-1 block w-full border border-gray-300 rounded-md"
+                  dropdownMode="select"
+                  yearDropdownItemNumber={15}
+                  peekNextMonth
+                  showYearDropdown
+                  showMonthDropdown
+                  dateFormat={"dd/MM/yyyy"}
+                  selectsEnd
+                  startDate={fechaInicio}
+                  endDate={fechaFin}
+                  minDate={fechaInicio}
                   locale="es"
                 />
                 {errors.FechaFin && <p className="text-red-500">{errors.FechaFin.message}</p>}

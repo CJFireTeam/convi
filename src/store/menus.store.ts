@@ -48,6 +48,13 @@ const AuthenticatedMenus: IMenuChildren[] = [
     current: false,
     children: [],
   },
+  {
+    name: "Encuestas",
+    href: "/encuestas",
+    icon: FolderIcon,
+    children: [],
+    current: false,
+  },
 ];
 
 const EncargadoMenus: IMenuChildren[] = [

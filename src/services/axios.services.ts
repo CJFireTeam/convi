@@ -132,3 +132,12 @@ export function api_postSurveys(data: any) {
 export function api_postQuestions(data: any) {
   return api.post(`preguntas`, { data: data })
 }
+
+export function api_getQuestions(user:string,populate?:boolean) {
+  let query = `?filters[$and][0][isCompleted][$eq]=${false}&filters[$and][1][user][username][$eq]=${user}`
+if (populate) {
+  query = query + '&populate=*'
+}
+
+  return api.get(`userforms${query}`);
+}

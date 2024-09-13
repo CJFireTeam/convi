@@ -10,24 +10,33 @@ interface body  {
 export default async function  handler (req: NextApiRequest, res: NextApiResponse) {
   // Verifica si el método de la solicitud es POST
   if (req.method === 'POST') {
-    const  body:body = req.body 
-    // Maneja la lógica de la solicitud POST aquí
-    const stablishment  = await axios.get(`${backendUrl}establishments/${req.body.location}`,{headers:{"Content-Type":'application/json;charset=utf-8',Authorization: req.headers.authorization}})
-    const stablishmentName  = (stablishment.data.data.attributes.name);
-
-    const users = await axios.get(`${backendUrl}users?filters[$and][0][establishment_authenticateds][name][$eq]=${stablishmentName}&filters[$or][1][tipo][$ne]=otro`,{headers:{"Content-Type":'application/json;charset=utf-8',Authorization: req.headers.authorization}})
-    for (const element of users.data) {
-      try {
-        console.log(element.id)
-        const response = await axios.post(`${backendUrl}userforms`, { data:{formulario: body.formulary,user:element.id} },{headers:{"Content-Type":'application/json;charset=utf-8',Authorization: req.headers.authorization}});
-        console.log(response)
-      } catch (error) {
-        if (axios.isAxiosError(error)) {
-          console.log(error.response?.data)
-
+    try {
+      console.log(req.headers)
+      const  body:body = req.body 
+      // Maneja la lógica de la solicitud POST aquí
+      const stablishment  = await axios.get(`${backendUrl}establishments/${req.body.location}`,{headers:{"Content-Type":'application/json;charset=utf-8',Authorization: req.headers.authorization}})
+      const stablishmentName  = (stablishment.data.data.attributes.name);
+      
+      const users = await axios.get(`${backendUrl}users?filters[$and][0][establishment_authenticateds][name][$eq]=${stablishmentName}&filters[$or][1][tipo][$ne]=otro`,{headers:{"Content-Type":'application/json;charset=utf-8',Authorization: req.headers.authorization}})
+      for (const element of users.data) {
+        try {
+          // console.log(element.id)
+          const response = await axios.post(`${backendUrl}userforms`, { data:{formulario: body.formulary,user:element.id} },{headers:{"Content-Type":'application/json;charset=utf-8',Authorization: req.headers.authorization}});
+          // console.log(response)
+        } catch (error) {
+          if (axios.isAxiosError(error)) {
+            // console.log(error.response?.data)
+            
+          }
+          return res.status(400).json({ error: `Error a procesar usuario ${element.id}` });
         }
-        return res.status(400).json({ error: `Error a procesar usuario ${element.id}` });
       }
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        // console.log(error.response?.data)
+        
+      }
+      return res.status(400).json({ error: `Error al procesar` });
     }
     res.status(200).json({ message: 'Solicitud POST recibida correctamente' });
   } else {

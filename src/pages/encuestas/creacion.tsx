@@ -115,7 +115,7 @@ export default function Creacion() {
       const surveyResponse = await api_postSurveys(dataSurvey);
       // Rescatar la ID de la encuesta recién creada
       const formulario = surveyResponse.data.data.id; // Asegúrate de que la respuesta tenga el campo "id"
-      const respUsers = await assignFormUsers(dataSurvey.establishment,dataSurvey.creador);
+      const respUsers = await assignFormUsers(dataSurvey.establishment,formulario);
       console.log(respUsers)
       // Ahora procesa las preguntas, asignando valores por defecto si Opciones está vacío
       const processedQuestions = dataSurvey.Question.map((question) => {

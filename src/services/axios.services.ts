@@ -154,3 +154,6 @@ export function api_getQuestionsByForm({ formId }: { formId: number }) {
   return api.get(`preguntas${query}`)
 }
 
+export function api_postResponseForm(data: any) {
+  return api.post(`user-question-forms`, { data: data })
+}

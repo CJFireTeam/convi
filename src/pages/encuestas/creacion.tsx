@@ -24,8 +24,8 @@ interface FormularyI {
   Titulo: string;
   FechaInicio: Date;
   FechaFin: Date;
-  creador:number;
-  Descripcion:string;
+  creador: number;
+  Descripcion: string;
   establishment: number;
   Question: QuestionI[];
 }
@@ -41,22 +41,22 @@ const options = z.string({
 }).min(1, 'Se requieren mínimo 1 caracteres');
 
 const QuestionZod = z.object({
-  Titulo: z.string({ required_error: "Se requiere título de la pregunta" }).min(1, "Se requiere título de la pregunta"),
+  Titulo: z.string({ required_error: "Se requiere título de la pregunta." }).min(1, "Se requiere título de la pregunta."),
   Tipo: z.enum(["text", "option", "multipleChoice", "qualification"], { required_error: "Seleccione una opción" }),
   opciones: z.array(options),
 });
 
 const FormularyZod = z.object({
-  Titulo: z.string({ required_error: "Se requiere título del formulario" }),
+  Titulo: z.string({ required_error: "Se requiere título del formulario." }),
   FechaInicio: z.date({
-    required_error: "Se requiere fecha de inicio del formulario",
+    required_error: "Se requiere fecha de inicio del formulario.",
   }),
   FechaFin: z.date({
-    required_error: "Se requiere fecha de finalización del formulario",
+    required_error: "Se requiere fecha de finalización del formulario.",
   }),
-  creador:z.number({required_error:"Campo Requerido",invalid_type_error:"Tipo invalido"}),
-  Descripcion:z.string({required_error:"Campo Requerido",invalid_type_error:"Tipo Invalido"}),
-  establishment: z.number({required_error:"Campo Requerido",invalid_type_error:"Tipo Invalido"}),
+  creador: z.number({ required_error: "Campo Requerido", invalid_type_error: "Tipo invalido" }),
+  Descripcion: z.string({ required_error: "Campo Requerido", invalid_type_error: "Tipo Invalido" }),
+  establishment: z.number({ required_error: "Campo Requerido", invalid_type_error: "Tipo Invalido" }),
   Question: z.array(QuestionZod),
 });
 
@@ -64,8 +64,7 @@ export default function Creacion() {
   const methods = useForm<FormularyI>({
     resolver: zodResolver(FormularyZod),
   });
-  const {user} = useUserStore();
-
+  const { user, GetRole, role } = useUserStore();
   const {
     register,
     handleSubmit,
@@ -102,20 +101,20 @@ export default function Creacion() {
     }
   };
 
-  useEffect(()=>{
-    
-    setValue('creador',user.id);
-    setValue('establishment',user.establishment.id);
-  },[user]);
+  useEffect(() => {
+
+    setValue('creador', user.id);
+    setValue('establishment', user.establishment.id);
+  }, [user]);
 
   const onSubmit = async (dataSurvey: FormularyI) => {
     try {
-     
+
       // Primero realiza el POST de la encuesta (api_postSurveys)
       const surveyResponse = await api_postSurveys(dataSurvey);
       // Rescatar la ID de la encuesta recién creada
       const formulario = surveyResponse.data.data.id; // Asegúrate de que la respuesta tenga el campo "id"
-      const respUsers = await assignFormUsers(dataSurvey.establishment,formulario);
+      const respUsers = await assignFormUsers(dataSurvey.establishment, formulario);
       console.log(respUsers)
       // Ahora procesa las preguntas, asignando valores por defecto si Opciones está vacío
       const processedQuestions = dataSurvey.Question.map((question) => {
@@ -152,9 +151,9 @@ export default function Creacion() {
   const fechaFin = watch("FechaFin");
   const descripcionForm = watch('Descripcion');
 
-
+  
   return (
-    <>
+    <>  
       <Button
         className="mx-4 my-2"
         onClick={redirect}
@@ -167,70 +166,83 @@ export default function Creacion() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-10/12 mx-auto">
         {/* Formulario de creación */}
         <fieldset className="border shadow-md rounded-lg p-6 md:m-10 m-0">
-          <legend className="text-center">Formulario</legend>
+          <legend className="text-center">Editor de Formulario</legend>
           <FormProvider {...methods}>
-            <form
-              onSubmit={methods.handleSubmit(onSubmit)}
-              className="md:mx-16 mx-0 flex flex-col items-center text-center"
-            >
-              <TitleComponent />
-              {errors.Titulo && <p className="text-red-500 text-sm">{errors.Titulo.message}</p>}
+            <div className="w-full max-w-4xl mx-auto p-6 bg-white shadow-md rounded-lg">
 
-              <div className="w-full my-4">
-                <label className="block text-sm font-medium text-gray-700">Fecha de Inicio</label>
-                <DatePicker
-                  selected={new Date()}
-                  onChange={handleDateChange("FechaInicio")}
-                  className="mt-1 block w-full border border-gray-300 rounded-md"
-                  dropdownMode="select"
-                  yearDropdownItemNumber={15}
-                  peekNextMonth
-                  showYearDropdown
-                  showMonthDropdown
-                  dateFormat={"dd/MM/yyyy"}
-                  selectsStart
-                  startDate={fechaInicio}
-                  endDate={fechaFin}
-                  locale="es"
-         
-                />
-                {errors.FechaInicio && <p className="text-red-500">{errors.FechaInicio.message}</p>}
-              </div>
-              <div className="w-full mb-4">
-                <label className="block text-sm font-medium text-gray-700">Fecha de Fin</label>
-                <DatePicker
-                  selected={new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)}
-                  onChange={handleDateChange("FechaFin")}
-                  className="mt-1 block w-full border border-gray-300 rounded-md"
-                  dropdownMode="select"
-                  yearDropdownItemNumber={15}
-                  peekNextMonth
-                  showYearDropdown
-                  showMonthDropdown
-                  dateFormat={"dd/MM/yyyy"}
-                  selectsEnd
-                  startDate={fechaInicio}
-                  endDate={fechaFin}
-                  minDate={fechaInicio}
-                  locale="es"
-                />
-                {errors.FechaFin && <p className="text-red-500">{errors.FechaFin.message}</p>}
-              </div>
+              <form
+                onSubmit={methods.handleSubmit(onSubmit)}
+                className="space-y-6"
+              >
+                <div className="text-center">
+                  <h2 className="text-2xl font-bold text-gray-900">
+                    <TitleComponent />
+                  </h2>
+                  {errors.Titulo && (
+                    <p className="text-red-500 text-sm mt-1">{errors.Titulo.message}</p>
+                  )}
+                </div>
 
-              <div className="w-full mb-4">
-                <label className="block text-sm font-medium text-gray-700">Descripcion del formulario</label>
-                <Textarea {...register('Descripcion')}/>
-                {errors.Descripcion && <p className="text-red-500">{errors.Descripcion.message}</p>}
-              </div>
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <label className="block text-sm font-medium text-gray-700">Fecha de Inicio:</label>
+                    <DatePicker
+                      selected={new Date()}
+                      onChange={handleDateChange("FechaInicio")}
+                      className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary"
+                      dropdownMode="select"
+                      yearDropdownItemNumber={15}
+                      peekNextMonth
+                      showYearDropdown
+                      showMonthDropdown
+                      dateFormat={"dd/MM/yyyy"}
+                      selectsStart
+                      startDate={fechaInicio}
+                      endDate={fechaFin}
+                      locale="es"
 
-              {fields.map((field, index) => (
-                <QuestionComponent key={field.id} index={index} remove={remove} />
-              ))}
-              <AddQuestionComponent append={append} />
-              <div className="text-center my-2">
-                <Button>Guardar</Button>
-              </div>
-            </form>
+                    />
+                    {errors.FechaInicio && <p className="text-red-500 text-sm">{errors.FechaInicio.message}</p>}
+                  </div>
+                  <div className="space-y-2">
+                    <label className="block text-sm font-medium text-gray-700">Fecha de Fin:</label>
+                    <DatePicker
+                      selected={new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)}
+                      onChange={handleDateChange("FechaFin")}
+                      className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary"
+                      dropdownMode="select"
+                      yearDropdownItemNumber={15}
+                      peekNextMonth
+                      showYearDropdown
+                      showMonthDropdown
+                      dateFormat={"dd/MM/yyyy"}
+                      selectsEnd
+                      startDate={fechaInicio}
+                      endDate={fechaFin}
+                      minDate={fechaInicio}
+                      locale="es"
+                    />
+                    {errors.FechaFin && <p className="text-red-500 text-sm">{errors.FechaFin.message}</p>}
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700">Descripcion del formulario</label>
+                  <Textarea {...register('Descripcion')} className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary" />
+                  {errors.Descripcion && <p className="text-red-500">{errors.Descripcion.message}</p>}
+                </div>
+
+                <div className="space-y-4">
+                  {fields.map((field, index) => (
+                    <QuestionComponent key={field.id} index={index} remove={remove} />
+                  ))}
+                  <AddQuestionComponent append={append} />
+                </div>
+                <div className="text-center my-2">
+                  <Button className="w-full sm:w-auto px-6 py-2">Crear encuesta</Button>
+                </div>
+              </form>
+            </div>
           </FormProvider>
         </fieldset>
 
@@ -238,27 +250,32 @@ export default function Creacion() {
         <fieldset className="border shadow-md rounded-lg p-6 md:m-10 m-0">
           <legend className="text-center">Previsualización de encuesta</legend>
           <FormProvider {...methods}>
-            <div className="p-4 flex flex-col items-center">
-              <h2 className="text-xl font-semibold mb-4">
-                {watch("Titulo") || "Título del formulario"}
-              </h2>
-
-              {/* Mostrar fechas en la previsualización */}
-              <div className="grid grid-cols-2">
-
-                <div className="mb-4  mr-12">
-                  <p className="font-medium">Fecha de Inicio:</p>
-                  <p>{fechaInicio ? fechaInicio.toLocaleDateString() : "No definida"}</p>
-                </div>
-                <div className="mb-4 ml-12 ">
-                  <p className="font-medium">Fecha de Fin:</p>
-                  <p>{fechaFin ? fechaFin.toLocaleDateString() : "No definida"}</p>
-                </div>
-                <p>{descripcionForm ? descripcionForm : <span className="font-medium">Sin Descripción</span>}</p>
+            <div className="w-full max-w-4xl mx-auto p-6 bg-white shadow-md rounded-lg">
+              <div className="text-center">
+                <h2 className="text-2xl font-bold text-gray-900">
+                  {watch("Titulo") || "Título del formulario"}
+                </h2>
               </div>
+              <div className="grid md:grid-cols-2 gap-6 mt-3">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-700 flex items-center justify-center">Fecha de Inicio:</label>
+                  <p className="flex items-center justify-center">{fechaInicio ? fechaInicio.toLocaleDateString() : "No definida."}</p>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-700 flex items-center justify-center">Fecha de Fin:</label>
+                  <p className="flex items-center justify-center">{fechaFin ? fechaFin.toLocaleDateString() : "No definida."}</p>
+                </div>
+              </div>
+              <div className="mt-3">
+                <p className="w-full border-none">{descripcionForm ? descripcionForm : <span className="font-medium">Sin Descripción.</span>}</p>
+              </div>
+              <div className="">
+              <div className="my-4 p-4  text-center items-center">
               {fields.map((field, index) => (
-                <PreviewQuestionComponent key={field.id} index={index} />
-              ))}
+                  <PreviewQuestionComponent key={field.id} index={index} />
+                ))}
+              </div>
+              </div>
             </div>
           </FormProvider>
         </fieldset>
@@ -330,7 +347,7 @@ function TitleComponent() {
           {watchTitle && (
             <button
               onClick={handleClear}
-              className="ml-2 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
+              className="ml-2 px- py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
             >
               Limpiar
             </button>
@@ -350,7 +367,7 @@ function AddQuestionComponent({ append }: { append: (data: QuestionI) => void })
   const methods = useForm<FormularyI>({
     resolver: zodResolver(FormularyZod),
   });
-  
+
   const agregarPregunta = () => {
     append(nuevaPregunta);
   };
@@ -359,7 +376,7 @@ function AddQuestionComponent({ append }: { append: (data: QuestionI) => void })
   return (
     <div className="text-center my-4">
       <Button onClick={agregarPregunta} color="primary">
-        Agregar Pregunta
+        Agregar una pregunta
       </Button>
     </div>
   );
@@ -379,30 +396,33 @@ function QuestionComponent({ index, remove }: { index: number, remove: (index: n
   };
 
   return (
-    <div className="my-4 p-4 border rounded-lg">
-      <input
-        {...register(`Question.${index}.Titulo`)}
-        placeholder="Ingrese el título de la pregunta"
-        className="w-full mb-2"
-      />
-      {errors?.Question?.[index]?.Titulo && <p className="text-red-500 text-sm">{errors.Question?.[index]?.Titulo?.message}</p>}
-
-      <select {...register(`Question.${index}.Tipo`)} className="w-full mb-2">
-        <option value="text">Texto</option>
-        <option value="option">Opción</option>
-        <option value="multipleChoice">Múltiple elección</option>
-        <option value="qualification">Calificación</option>
-      </select>
-      {errors &&
-      (errors.Question?.[index]?.Tipo ? (
-        <p className="text-red-500 text-sm">{errors?.Question?.[index]?.Tipo?.message}</p>
-      ) : null)
-    }
+    <div className="space-y-4 p-6 bg-gray-50 rounded-lg shadow-sm">
+      <div className="space-y-2">
+        <input
+          {...register(`Question.${index}.Titulo`)}
+          placeholder="Ingrese el título de la pregunta..."
+          className="w-full mb-2 border border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary"
+        />
+        {errors?.Question?.[index]?.Titulo && <p className="text-red-500 text-sm">{errors.Question?.[index]?.Titulo?.message}</p>}
+      </div>
+      <div className="space-y-2">
+        <select {...register(`Question.${index}.Tipo`)} className="w-full mb-2 border border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary">
+          <option value="text">Texto</option>
+          <option value="option">Opción</option>
+          <option value="multipleChoice">Múltiple elección</option>
+          <option value="qualification">Calificación</option>
+        </select>
+        {errors &&
+          (errors.Question?.[index]?.Tipo ? (
+            <p className="text-red-500 text-sm">{errors?.Question?.[index]?.Tipo?.message}</p>
+          ) : null)
+        }
+      </div>
 
       {tipoPregunta === "text" && (
         <input
           type="text"
-          className="w-full mt-2"
+          className="w-full mt-2 border border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary"
           placeholder="Respuesta de texto"
           disabled
         />
@@ -410,50 +430,58 @@ function QuestionComponent({ index, remove }: { index: number, remove: (index: n
 
       {tipoPregunta === "option" && (
         <>
+          <p className="font-medium">Opciones:</p>
           {(watch(`Question.${index}.opciones`) || []).map((_, idx: number) => (
             <div key={idx} className="flex items-center mb-2">
               <input
                 type="text"
                 {...register(`Question.${index}.opciones.${idx}`)}
-                className="w-full"
-                placeholder="Ingrese una opción"
+                className="w-full border border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary"
+                placeholder="Ingrese el nombre de la opción..."
               />
             </div>
           ))}
-          <button type="button" onClick={addOption} className="btn btn-primary">
-            Añadir Opción
-          </button>
+          <div className="space-y-2 flex items-center justify-center">
+            <button type="button" onClick={addOption} className="btn btn-primary text-white">
+              Añadir Opción
+            </button>
+          </div>
         </>
       )}
 
       {tipoPregunta === "multipleChoice" && (
         <>
+          <p className="font-medium">Opciones:</p>
           {(watch(`Question.${index}.opciones`) || []).map((_, idx: number) => (
             <div key={idx} className="flex items-center mb-2">
               <input
                 type="text"
                 {...register(`Question.${index}.opciones.${idx}`)}
-                className="w-full"
-                placeholder="Ingrese una opción"
+                className="w-full border border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary"
+                placeholder="Ingrese el nombre de la opción..."
               />
             </div>
           ))}
-          <button type="button" onClick={addOption} className="btn btn-primary">
-            Añadir Opción
-          </button>
+          <div className="space-y-2 flex items-center justify-center">
+            <button type="button" onClick={addOption} className="btn btn-primary text-white">
+              Añadir Opción
+            </button>
+          </div>
         </>
       )}
 
       {tipoPregunta === "qualification" && (
-        <div className="flex space-x-2 mt-2">
+        <div className="flex space-x-2 mt-2 items-center justify-center">
           {[1, 2, 3, 4, 5].map((star) => (
-            <StarIcon key={star} className="text-yellow-500" />
+            <StarIcon key={star} className="text-yellow-500 w-12 h-12" />
           ))}
         </div>
       )}
-      <button onClick={deleteQuestion} className="text-red-500 mt-4">
-        <TrashIcon className="h-5 w-5" aria-hidden="true" />
-      </button>
+      <div className="space-y-2 flex items-center justify-center">
+        <button onClick={deleteQuestion} className="text-red-500 mt-4 items-center">
+          <TrashIcon className="h-5 w-5" aria-hidden="true" />
+        </button>
+      </div>
     </div>
 
   );
@@ -467,34 +495,41 @@ function PreviewQuestionComponent({ index }: { index: number }) {
 
 
   return (
-    <div className="my-4 p-4 border rounded-lg text-center items-center">
-      <h3 className="font-semibold mb-2">{titulo}</h3>
+    <div className="space-y-2">
+      <h3 className="font-semibold mb-2 mt-2">{titulo}</h3>
 
-      {tipoPregunta === "text" && <input type="text" className="w-full" disabled />}
+      {tipoPregunta === "text" && <input type="text" className="w-full border border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary" disabled />}
 
-      {tipoPregunta === "option" &&
-        opciones.map((opcion, idx) => (
-          <div key={idx} className="flex items-center mb-2">
-            <input type="radio" disabled className="mr-2" />
-            <label>{opcion}</label>
-          </div>
-        ))}
+      {tipoPregunta === "option" &&(
+        <div className="grid grid-cols-3 gap-2">
+          {opciones.map((opcion, idx) => (
+            <div key={idx} className="flex items-center justify-center mb-2">
+              <input type="radio" disabled className="mr-2" />
+              <label>{opcion}</label>
+            </div>
+          ))}
+        </div>
+        )}
 
-      {tipoPregunta === "multipleChoice" &&
-        opciones.map((opcion, idx) => (
-          <div key={idx} className="flex items-center mb-2">
+      {tipoPregunta === "multipleChoice" &&(
+        <div className="grid grid-cols-3 gap-2">
+        {opciones.map((opcion, idx) => (
+          <div key={idx} className="flex items-center justify-center mb-2">
             <input type="checkbox" disabled className="mr-2" />
             <label>{opcion}</label>
           </div>
         ))}
+      </div>
+        )}
 
       {tipoPregunta === "qualification" && (
-        <div className="flex space-x-2 mt-2">
+        <div className="flex space-x-2 mt-2 items-center justify-center">
           {[1, 2, 3, 4, 5].map((star) => (
-            <StarIcon key={star} className="text-yellow-500" />
+            <StarIcon key={star} className="text-yellow-500 w-9 h-9" />
           ))}
         </div>
       )}
     </div>
   );
 }
+

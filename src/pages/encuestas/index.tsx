@@ -6,10 +6,13 @@ import InfoAlert from "../../components/alerts/infoAlert";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useUserStore } from "@/store/userStore";
 import metaI from "@/interfaces/meta.interface";
-import { api_getQuestions, api_getQuestionsByForm, api_surveys } from "@/services/axios.services";
+import { api_getQuestions, api_getQuestionsByForm, api_postResponseForm, api_surveys } from "@/services/axios.services";
 import { differenceInDays } from 'date-fns';
-import { ArrowLeftIcon, EyeIcon, StarIcon } from "@heroicons/react/20/solid";
+import { ArrowLeftIcon, EyeIcon, PaperAirplaneIcon, StarIcon } from "@heroicons/react/20/solid";
 import { z } from "zod";
+import { useFieldArray, useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { toast } from "react-toastify";
 interface questionaryI {
   id: number;
   attributes: {
@@ -67,7 +70,7 @@ export default function Index() {
   };
 
   useEffect(() => {
-    if (user?.id !== 0 && GetRole() === "Profesor") {
+    if (user?.id !== 0 && GetRole() === "Profesor" || GetRole() === "Encargado de Convivencia Escolar") {
       getData();
     }
   }, [user, metaData.page]);
@@ -81,7 +84,6 @@ export default function Index() {
 
   useEffect(() => {
     if (user?.id === 0) return;
-    console.log(GetRole());
     if (GetRole() === "Authenticated") getQuestionary();
   }, [user]);
 
@@ -89,7 +91,7 @@ export default function Index() {
   const [form, setForm] = useState(false);
   const [selectedForm, setSelectedForm] = useState<questionaryI | null>(null);
 
-  if (GetRole() === "Profesor") {
+  if (GetRole() === "Profesor" || GetRole() === "Encargado de Convivencia Escolar") {
     return (
       <div className="px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between ">
@@ -106,8 +108,9 @@ export default function Index() {
           </div>
         </div>
         <div className="mt-8 flow-root">
-          <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8"></div>
           <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
+            {data.length != 0 ?(
+            <>
             <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
               <Table data={data} />
             </div>
@@ -121,6 +124,8 @@ export default function Index() {
                 <p className="text-center text-gray-500">Mostrando todas las encuestas.</p>
               )}
             </div>
+            </>
+            ): <WarningAlert message="Aun no has creado una encuesta" />}
           </div>
         </div>
       </div>
@@ -174,19 +179,13 @@ export default function Index() {
           {ExtraPages()}
         </>)}
         {form && selectedForm && (
-          <FomrularyResponse form={selectedForm} />
+          <FomrularyResponse form={selectedForm} userId={user.id} />
         )}
       </>
     );
   }
   return null;
 }
-
-interface props {
-  form: questionaryI;
-
-}
-
 interface IPreguntas {
   id: number;
   attributes: {
@@ -195,6 +194,24 @@ interface IPreguntas {
     opciones: [];
   }
 }
+
+interface props {
+  form: questionaryI;
+  userId: number;
+}
+
+interface IResForm {
+  userForm: number;
+  validationResponse: IQuestion[];
+}
+interface IQuestion {
+  pregunta: number;
+  response: IRes[];
+}
+interface IRes {
+  respuesta: string | string[];
+}
+
 
 function FomrularyResponse(props: props) {
   const formId = props.form.attributes.formulario.data.id
@@ -214,113 +231,214 @@ function FomrularyResponse(props: props) {
   }, [formId])
 
   const res = z.object({
-    respuesta:z.string(),
+    respuesta: z.union([
+      z.string().min(1, "Este campo es obligatorio"),
+      z.array(z.string()).min(1, "Debes seleccionar al menos una opción")
+    ]),
   });
 
   const SchemaRespuesta = z.object({
-    pregunta: z.number(),
+    pregunta: z.number({ required_error: "Campo obligatorio", invalid_type_error: "Tipo Inválido" }),
     response: z.array(res),
   });
 
-  const Validation = z.object({
-    userform: z.number(),
-    validationResponse:z.array(SchemaRespuesta),
-  }) 
+  const ValidationZod = z.object({
+    userForm: z.number(),
+    validationResponse: z.array(SchemaRespuesta),
+  });
+
+  const methods = useForm<IResForm>({
+    resolver: zodResolver(ValidationZod),
+    defaultValues: {
+      userForm: props.userId,
+      validationResponse: [],
+    },
+  });
+
+  const { register, handleSubmit, control, watch, setValue, getValues, formState: { errors }, reset } = methods;
+
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: "validationResponse"
+  });
+
+  useEffect(() => {
+    // Inicializar los campos del formulario basados en dataPreguntas
+    dataPreguntas.forEach((pregunta) => {
+      append({
+        pregunta: pregunta.id,
+        response: [{ respuesta: pregunta.attributes.Tipo === "multipleChoice" ? [] : "" }]
+      });
+    });
+  }, [dataPreguntas, append]);
+
+  useEffect(() => {
+    setValue('userForm', props.userId);
+  }, [props.userId, setValue]);
+
+  const onSubmit = async (data: IResForm) => {
+    console.log(data);
+    /* try {
+      const response = await api_postResponseForm(data);
+      if (response) {
+        toast.success('Encuesta enviada con éxito')
+        router.reload();
+      }
+    } catch (errors) {
+      toast.error('Error al enviar la encuesta');
+    } */
+  };
+
+  /* const onSubmit = async (data: IResForm) => {
+    // Transformar datos según lo que espera el backend
+    const transformedData = {
+      userForm: data.userForm,
+      validationResponse: data.validationResponse.map((item) => ({
+        pregunta: item.pregunta,
+        response: item.response[0].respuesta,  // Asumiendo que response es un único valor
+      })),
+    };
+  
+    console.log(transformedData);
+  
+    try {
+      const response = await api_postResponseForm(transformedData);
+      if (response) {
+        toast.success('Encuesta enviada con éxito');
+        router.reload();
+      }
+    } catch (errors) {
+      toast.error('Error al enviar la encuesta');
+    }
+  }; */
 
   return (
     <>
-      <ArrowLeftIcon className="btn btn-outline btn-primary rounded-full" onClick={() => router.reload()} ></ArrowLeftIcon>
+      <ArrowLeftIcon className="btn btn-outline btn-primary rounded-full" onClick={() => router.reload()} />
       <div className="w-full md:w-3/4 mx-auto mt-2">
-        <div className="grid grid-col-1 md:grid-col-2 gap-4 border rounded-md shadow-lg p-4">
-          <div className="grid grid-col-1 md:col-span-2 gap-4 text-center">
-            <h1 className="font-bold text-3xl">{props.form.attributes.formulario.data.attributes.Titulo.charAt(0).toUpperCase() +
-              props.form.attributes.formulario.data.attributes.Titulo.slice(1)}</h1>
-          </div>
-          <div className="grid col-span-1 md:col-span-2 gap-4 text-center">
-            <p className="font-semibold text-lg">{props.form.attributes.formulario.data.attributes.Descripcion.charAt(0).toUpperCase() +
-              props.form.attributes.formulario.data.attributes.Descripcion.slice(1)}</p>
-          </div>
-          {dataPreguntas.map((e, index) => (
-            <>
-              <div className="flex flex-col items-center" key={index}>
-                {e.attributes.Tipo === "option" && (
-                  <>
-                    <label className="label font-semibold mb-2 md:mb-0 md:mr-2 inline-block">{e.attributes.Titulo.charAt(0).toUpperCase() +
-                      e.attributes.Titulo.slice(1)}</label>
-                    {e.attributes.opciones.map((opciones, i) => (<>
-                      {opciones && (<>
+        <form onSubmit={methods.handleSubmit(onSubmit)}>
+          <div className="grid grid-col-1 md:grid-col-2 gap-4 border rounded-md shadow-lg p-4">
+            <div className="grid grid-col-1 md:col-span-2 gap-4 text-center">
+              <h1 className="font-bold text-3xl">
+                {props.form.attributes.formulario.data.attributes.Titulo.charAt(0).toUpperCase() +
+                  props.form.attributes.formulario.data.attributes.Titulo.slice(1)}
+              </h1>
+            </div>
+            <div className="grid col-span-1 md:col-span-2 gap-4 text-center">
+              <p className="font-semibold text-lg">
+                {props.form.attributes.formulario.data.attributes.Descripcion.charAt(0).toUpperCase() +
+                  props.form.attributes.formulario.data.attributes.Descripcion.slice(1)}
+              </p>
+            </div>
+            {fields.map((field, index) => {
+              const pregunta = dataPreguntas[index];
+              return (
+                <div key={field.id} className="flex flex-col items-center w-full">
+                  <label className="label font-semibold mb-2 md:mb-0 md:mr-2 inline-block">
+                    {pregunta.attributes.Titulo.charAt(0).toUpperCase() + pregunta.attributes.Titulo.slice(1)}
+                  </label>
+                  {pregunta.attributes.Tipo === "option" && (
+                    <>
+                      {pregunta.attributes.opciones.map((opcion, i) => (
                         <div key={i} className="flex items-center mb-2">
-                          <input type="radio" name={e.attributes.Tipo} className="mr-2" />
-                          <label>{opciones}</label>
+                          <input
+                            type="radio"
+                            {...register(`validationResponse.${index}.response.0.respuesta`)}
+                            value={opcion}
+                            className="mr-2"
+                          />
+                          <label>{opcion}</label>
                         </div>
-                      </>)}
-                    </>))}
-                  </>
-                )}
-
-                {e.attributes.Tipo === "text" && (
-                  <>
-                    <label className="label font-semibold mb-2 md:mb-0 md:mr-2 inline-block">{e.attributes.Titulo.charAt(0).toUpperCase() +
-                      e.attributes.Titulo.slice(1)}</label>
-                    {e.attributes.opciones.map((opciones, i) => (<>
-                      {opciones === "input" && (<>
-                        <Textarea rows={3} placeholder="Ingrese su respuesta..." key={i} className="textarea textarea-primary w-3/4" />
-                      </>)}
-                    </>))}
-                  </>
-                )}
-
-                {e.attributes.Tipo === "qualification" && (
-                  <>
-                    <label className="label font-semibold mb-2 md:mb-0 md:mr-2 inline-block">
-                      {e.attributes.Titulo.charAt(0).toUpperCase() + e.attributes.Titulo.slice(1)}
-                    </label>
-
-                    {/* Renderizamos solo un conjunto de estrellas */}
-                    <StarRating />
-                  </>
-                )}
-
-                {e.attributes.Tipo === "multipleChoice" && (
-                  <>
-                    <label className="label font-semibold mb-2 md:mb-0 md:mr-2 inline-block">{e.attributes.Titulo.charAt(0).toUpperCase() +
-                      e.attributes.Titulo.slice(1)}</label>
-                    {e.attributes.opciones.map((opciones, i) => (<>
-                      {opciones && (<>
+                      ))}
+                      {errors.validationResponse?.[index]?.response?.[0]?.respuesta && (
+                        <p className="text-red-500 text-sm mt-1" role="alert">
+                          Por favor, seleccione una opción.
+                        </p>
+                      )}
+                    </>
+                  )}
+                  {pregunta.attributes.Tipo === "text" && (
+                    <>
+                      <Textarea
+                        rows={3}
+                        placeholder="Ingrese su respuesta..."
+                        {...register(`validationResponse.${index}.response.0.respuesta`)}
+                        className="textarea textarea-primary w-full"
+                      />
+                      {errors.validationResponse?.[index]?.response?.[0]?.respuesta && (
+                        <p className="text-red-500 text-sm mt-1" role="alert">
+                          Este campo es obligatorio.
+                        </p>
+                      )}
+                    </>
+                  )}
+                  {pregunta.attributes.Tipo === "qualification" && (
+                    <>
+                      <StarRating
+                        value={Number(watch(`validationResponse.${index}.response.0.respuesta`) || 0)}
+                        onChange={(value) => setValue(`validationResponse.${index}.response.0.respuesta`, value.toString())}
+                      />
+                      {errors.validationResponse?.[index]?.response?.[0]?.respuesta && (
+                        <p className="text-red-500 text-sm mt-1" role="alert">
+                          Por favor, seleccione una calificación.
+                        </p>
+                      )}
+                    </>
+                  )}
+                  {pregunta.attributes.Tipo === "multipleChoice" && (
+                    <>
+                      {pregunta.attributes.opciones.map((opcion, i) => (
                         <div key={i} className="flex items-center mb-2">
-                          <input type="checkbox" name={e.attributes.Tipo} className="mr-2" />
-                          <label>{opciones}</label>
+                          <input
+                            type="checkbox"
+                            {...register(`validationResponse.${index}.response.0.respuesta`)}
+                            value={opcion}
+                            className="mr-2"
+                          />
+                          <label>{opcion}</label>
                         </div>
-                      </>)}
-                    </>))}
-                  </>
-                )}
-              </div>
-            </>
-          ))}
-
-        </div>
+                      ))}
+                      {errors.validationResponse?.[index]?.response?.[0]?.respuesta && (
+                        <p className="text-red-500 text-sm mt-1" role="alert">
+                          Por favor, seleccione al menos una opción.
+                        </p>
+                      )}
+                    </>
+                  )}
+                </div>
+              );
+            })}
+            <div className="grid col-span-2 gap-2 w-2/5 mx-auto">
+              <button type="submit" className="btn btn-outline btn-primary">
+                Enviar <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </form>
       </div>
     </>
   );
 }
 
-function StarRating() {
-  const [rating, setRating] = useState<number>(0);
+interface StarRatingProps {
+  onChange: (value: number) => void;
+  value: number;
+}
 
-  const handleClick = (value: number) => {
-    setRating(value);
+function StarRating({ onChange, value }: StarRatingProps) {
+  const handleClick = (newValue: number) => {
+    onChange(newValue);
   };
 
   return (
     <div className="flex space-x-2">
-      {/* Un único conjunto de estrellas */}
       {[1, 2, 3, 4, 5].map((index) => (
         <svg
           key={index}
           onClick={() => handleClick(index)}
-          className={`h-6 w-6 cursor-pointer ${index <= rating ? "text-yellow-500" : "text-gray-400"
-            }`}
+          className={`h-6 w-6 cursor-pointer ${index <= value ? "text-yellow-500" : "text-gray-400"}`}
           fill="currentColor"
           viewBox="0 0 24 24"
         >
@@ -332,7 +450,6 @@ function StarRating() {
 }
 
 function Table({ data }: { data: surveyInterface[] }) {
-  console.log("data llegada ala tabla de peticiones profesor:", data);
   return (
     <>
       {data.length !== 0 ? (

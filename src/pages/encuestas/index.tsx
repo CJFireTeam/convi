@@ -276,8 +276,8 @@ function FomrularyResponse(props: props) {
     setValue('userForm', props.userId);
   }, [props.userId, setValue]);
 
-  const onSubmit = async (data: IResForm) => {
-    console.log(data);
+  // const onSubmit = async (data: IResForm) => {
+  //   console.log(data);
     /* try {
       const response = await api_postResponseForm(data);
       if (response) {
@@ -287,7 +287,7 @@ function FomrularyResponse(props: props) {
     } catch (errors) {
       toast.error('Error al enviar la encuesta');
     } */
-  };
+  // };
 
   /* const onSubmit = async (data: IResForm) => {
     // Transformar datos según lo que espera el backend
@@ -311,6 +311,63 @@ function FomrularyResponse(props: props) {
       toast.error('Error al enviar la encuesta');
     }
   }; */
+
+    //inserta pero no relaciona
+  // const onSubmit = async (data: IResForm) => {
+  //   const transformedData = {
+  //     pregunta: data.validationResponse.map((item) => ({
+  //       id: item.pregunta,
+  //     })),
+  //     response: data.validationResponse.map((item) => ({
+  //       respuesta: item.response[0].respuesta,
+  //     })),
+  //   };
+  
+  //   const userForm = {
+  //     user: props.userId,
+  //     pregunta: transformedData.pregunta,
+  //     response: JSON.stringify(transformedData.response),
+  //   };
+  
+  //   try {
+  //     const response = await api_postResponseForm(userForm);
+  //     if (response) {
+  //       toast.success('Encuesta enviada con éxito');
+  //       // router.reload();
+  //     }
+  //   } catch (errors) {
+  //     toast.error('Error al enviar la encuesta');
+  //   }
+  // };
+
+  const onSubmit = async (data: IResForm) => {
+    const transformedData = {
+      pregunta: data.validationResponse.map((item) => ({
+        id: item.pregunta,
+        formulario: props.form.id, // Agrega el id del formulario
+      })),
+      response: data.validationResponse.map((item) => ({
+        respuesta: item.response[0].respuesta,
+        pregunta: item.pregunta, // Agrega el id de la pregunta
+      })),
+    };
+  
+    const userForm = {
+      formulario: props.form.id, // Agrega el id del formulario
+      pregunta: transformedData.pregunta,
+      response: JSON.stringify(transformedData.response),
+    };
+  
+    try {
+      console.log("este es el response enviado",userForm)
+      const response = await api_postResponseForm(userForm);
+      if (response) {
+        toast.success('Encuesta enviada con éxito');
+      }
+    } catch (errors) {
+      toast.error('Error al enviar la encuesta');
+    }
+  };
 
   return (
     <>

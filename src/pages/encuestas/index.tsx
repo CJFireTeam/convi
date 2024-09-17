@@ -340,34 +340,34 @@ function FomrularyResponse(props: props) {
   //   }
   // };
 
-  const onSubmit = async (data: IResForm) => {
-    const transformedData = {
-      pregunta: data.validationResponse.map((item) => ({
-        id: item.pregunta,
-        formulario: props.form.id, // Agrega el id del formulario
-      })),
-      response: data.validationResponse.map((item) => ({
-        respuesta: item.response[0].respuesta,
-        pregunta: item.pregunta, // Agrega el id de la pregunta
-      })),
-    };
+  // const onSubmit = async (data: IResForm) => {
+  //   const transformedData = {
+  //     pregunta: data.validationResponse.map((item) => ({
+  //       id: item.pregunta,
+  //       formulario: props.form.id, // Agrega el id del formulario
+  //     })),
+  //     response: data.validationResponse.map((item) => ({
+  //       respuesta: item.response[0].respuesta,
+  //       pregunta: item.pregunta, // Agrega el id de la pregunta
+  //     })),
+  //   };
   
-    const userForm = {
-      formulario: props.form.id, // Agrega el id del formulario
-      pregunta: transformedData.pregunta,
-      response: JSON.stringify(transformedData.response),
-    };
+  //   const userForm = {
+  //     formulario: props.form.id, // Agrega el id del formulario
+  //     pregunta: transformedData.pregunta,
+  //     response: JSON.stringify(transformedData.response),
+  //   };
   
-    try {
-      console.log("este es el response enviado",userForm)
-      const response = await api_postResponseForm(userForm);
-      if (response) {
-        toast.success('Encuesta enviada con éxito');
-      }
-    } catch (errors) {
-      toast.error('Error al enviar la encuesta');
-    }
-  };
+  //   try {
+  //     console.log("este es el response enviado",userForm)
+  //     const response = await api_postResponseForm(userForm);
+  //     if (response) {
+  //       toast.success('Encuesta enviada con éxito');
+  //     }
+  //   } catch (errors) {
+  //     toast.error('Error al enviar la encuesta');
+  //   }
+  // };
 
   return (
     <>

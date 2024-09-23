@@ -6,7 +6,7 @@ import InfoAlert from "../../components/alerts/infoAlert";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useUserStore } from "@/store/userStore";
 import metaI from "@/interfaces/meta.interface";
-import { api_getQuestions, api_getQuestionsByForm, api_postResponseForm, api_surveys } from "@/services/axios.services";
+import { api_getQuestions, api_getQuestionsByForm, api_postResponseForm, api_surveys, api_updateUserForm } from "@/services/axios.services";
 import { differenceInDays } from 'date-fns';
 import { ArrowLeftIcon, EyeIcon, PaperAirplaneIcon, StarIcon } from "@heroicons/react/20/solid";
 import { z } from "zod";
@@ -107,12 +107,16 @@ export default function Index() {
             </Button>
           </div>
         </div>
-        <div className="mt-8 flow-root">
-          <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
-            {data.length != 0 ?(
-            <>
-            <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
-              <Table data={data} />
+        {data.length != 0 ? (
+          <>
+            <div className="mt-8 flow-root">
+              <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+                <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
+                  <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
+                    <Table data={data} />
+                  </div>
+                </div>
+              </div>
             </div>
             <div className="flex justify-center mt-4">
 
@@ -124,10 +128,9 @@ export default function Index() {
                 <p className="text-center text-gray-500">Mostrando todas las encuestas.</p>
               )}
             </div>
-            </>
-            ): <WarningAlert message="Aun no has creado una encuesta" />}
-          </div>
-        </div>
+          </>
+        ) : <WarningAlert message="Aun no has creado una encuesta" />}
+
       </div>
     );
   }
@@ -143,46 +146,73 @@ export default function Index() {
 
     return (
       <>
-        {!form && (<>
-          <div className="w-4/5 mx-auto">
-            {dataQuestionary.map((e, index) => (
-              <>
-                <div
-                  onClick={() => {
-                    setSelectedForm(e);
-                    setForm(true);
-                  }}
-                  key={index}
-                  className="bg-white shadow-md rounded-md p-4 my-2 hover:border-primary hover:border-2 hover:cursor-pointer"
-                >
-                  <div className="flex justify-between mb-2">
-                    <h2 className="font-bold text-lg">
-                      {e.attributes.formulario.data.attributes.Titulo}
-                    </h2>
-
-                    <div>
-                      <span
-                        className={`font-bold ${differenceInDays(new Date(e.attributes.formulario.data.attributes.FechaFin), new Date(e.attributes.formulario.data.attributes.FechaInicio)) > 5 ? 'text-green-600' : 'text-red-600'}`}
-                      >
-                        Termina en {differenceInDays(new Date(e.attributes.formulario.data.attributes.FechaFin), new Date(e.attributes.formulario.data.attributes.FechaInicio))} días.
-                      </span>
-
+        {!form && dataQuestionary.length > 0 && (
+          <>
+            <div className="w-4/5 mx-auto">
+              {dataQuestionary.map((e, index) => {
+                const daysRemaining = differenceInDays(new Date(e.attributes.formulario.data.attributes.FechaFin), new Date());
+                const isExpired = daysRemaining < 0;
+                return (
+                  <div
+                    key={index}
+                    onClick={() => {
+                      if (!isExpired) {
+                        setSelectedForm(e);
+                        setForm(true);
+                      }
+                    }}
+                    className={`bg-white shadow-md rounded-md p-4 my-2 ${isExpired
+                      ? 'cursor-not-allowed border-red-600'
+                      : 'hover:border-primary hover:border-2 hover:cursor-pointer'
+                      }`}
+                  >
+                    <div className="flex justify-between mb-2">
+                      <h2 className="font-bold text-lg">
+                        {e.attributes.formulario.data.attributes.Titulo}
+                      </h2>
+                      <div>
+                        <span
+                          className={`font-bold ${isExpired ? 'text-red-600' : daysRemaining >= 5 ? 'text-green-600' : 'text-red-600'
+                            }`}
+                        >
+                          {isExpired ? 'Encuesta no respondida' : `Termina en ${daysRemaining} días.`}
+                        </span>
+                      </div>
                     </div>
+                    <div className="flex justify-between ">
+                      <p className="text-gray-600 ">
+                        {e.attributes.formulario.data.attributes.Descripcion}
+                      </p>
+                      {/* Agregar las fechas de inicio y fin */}
+                      <div className="flex flex-col md:flex-row">
+                        <p className="text-gray-500 mr-4">
+                          Fecha de Inicio: {new Date(e.attributes.formulario.data.attributes.FechaInicio).toLocaleDateString()}
+                        </p>
+                        <p className="text-gray-500">
+                          Fecha de Fin: {new Date(e.attributes.formulario.data.attributes.FechaFin).toLocaleDateString()}
+                        </p>
+                      </div>
+                    </div>
+
                   </div>
-                  <p className="text-gray-600">
-                    {e.attributes.formulario.data.attributes.Descripcion}
-                  </p>
-                </div>
-              </>
-            ))}
-          </div>
-          {ExtraPages()}
-        </>)}
+                );
+              })}
+            </div>
+            {ExtraPages()}
+          </>
+        )}
         {form && selectedForm && (
-          <FomrularyResponse form={selectedForm} userId={user.id} />
+          <FomrularyResponse form={selectedForm} />
+        )}
+        {!form && dataQuestionary.length === 0 && (
+          <>
+            <WarningAlert message={'Sin encuestas disponibles.'} />
+          </>
         )}
       </>
     );
+
+
   }
   return null;
 }
@@ -197,24 +227,20 @@ interface IPreguntas {
 
 interface props {
   form: questionaryI;
-  userId: number;
 }
 
 interface IResForm {
-  userForm: number;
-  validationResponse: IQuestion[];
-}
-interface IQuestion {
-  pregunta: number;
-  response: IRes[];
-}
-interface IRes {
-  respuesta: string | string[];
+  respuestas: {
+    userform: number; // ID del usuario
+    pregunta: number; // ID de la pregunta
+    response: any; // Respuesta, puede ser un string o JSON
+  }[];
 }
 
 
 function FomrularyResponse(props: props) {
-  const formId = props.form.attributes.formulario.data.id
+  const formId = props.form.attributes.formulario.data.id;
+  const userFormId = props.form.id;
 
   const [dataPreguntas, setDataPreguntas] = useState<IPreguntas[]>([])
   const getQuestionsByForm = async () => {
@@ -230,28 +256,23 @@ function FomrularyResponse(props: props) {
     getQuestionsByForm();
   }, [formId])
 
-  const res = z.object({
-    respuesta: z.union([
-      z.string().min(1, "Este campo es obligatorio"),
-      z.array(z.string()).min(1, "Debes seleccionar al menos una opción")
-    ]),
+  const resZod = z.object({
+    userform: z.number({ required_error: "Campo Requerido", invalid_type_error: "Tipo Invalido" }),
+    pregunta: z.number({ required_error: "Campo Requerido", invalid_type_error: "Tipo Invalido" }),
+    response: z.union([
+      z.string({ required_error: "Campo Requerido", invalid_type_error: "Tipo Invalido" }).min(1, { message: "La respuesta no puede estar vacía" }),
+      z.array(z.string({ required_error: "Campo Requerido", invalid_type_error: "Tipo Invalido" })),
+    ]), // acepta string o JSON
   });
 
-  const SchemaRespuesta = z.object({
-    pregunta: z.number({ required_error: "Campo obligatorio", invalid_type_error: "Tipo Inválido" }),
-    response: z.array(res),
-  });
-
-  const ValidationZod = z.object({
-    userForm: z.number(),
-    validationResponse: z.array(SchemaRespuesta),
+  const validationSchema = z.object({
+    respuestas: z.array(resZod)
   });
 
   const methods = useForm<IResForm>({
-    resolver: zodResolver(ValidationZod),
+    resolver: zodResolver(validationSchema),
     defaultValues: {
-      userForm: props.userId,
-      validationResponse: [],
+      respuestas: [],
     },
   });
 
@@ -259,185 +280,114 @@ function FomrularyResponse(props: props) {
 
   const { fields, append, remove } = useFieldArray({
     control,
-    name: "validationResponse"
+    name: "respuestas",
   });
 
   useEffect(() => {
-    // Inicializar los campos del formulario basados en dataPreguntas
-    dataPreguntas.forEach((pregunta) => {
-      append({
-        pregunta: pregunta.id,
-        response: [{ respuesta: pregunta.attributes.Tipo === "multipleChoice" ? [] : "" }]
-      });
-    });
-  }, [dataPreguntas, append]);
-
-  useEffect(() => {
-    setValue('userForm', props.userId);
-  }, [props.userId, setValue]);
-
-  // const onSubmit = async (data: IResForm) => {
-  //   console.log(data);
-    /* try {
-      const response = await api_postResponseForm(data);
-      if (response) {
-        toast.success('Encuesta enviada con éxito')
-        router.reload();
-      }
-    } catch (errors) {
-      toast.error('Error al enviar la encuesta');
-    } */
-  // };
-
-  /* const onSubmit = async (data: IResForm) => {
-    // Transformar datos según lo que espera el backend
-    const transformedData = {
-      userForm: data.userForm,
-      validationResponse: data.validationResponse.map((item) => ({
-        pregunta: item.pregunta,
-        response: item.response[0].respuesta,  // Asumiendo que response es un único valor
-      })),
-    };
-  
-    console.log(transformedData);
-  
-    try {
-      const response = await api_postResponseForm(transformedData);
-      if (response) {
-        toast.success('Encuesta enviada con éxito');
-        router.reload();
-      }
-    } catch (errors) {
-      toast.error('Error al enviar la encuesta');
+    if (dataPreguntas.length > 0) {
+      // Limpiar el campo de respuestas
+      setValue("respuestas", dataPreguntas.map(pregunta => ({
+        userform: userFormId, // ID del userForm
+        pregunta: pregunta.id, // ID de la pregunta
+        response: '', // Inicializamos la respuesta como vacío
+      })));
     }
-  }; */
+  }, [dataPreguntas, props.form, setValue]);
 
-    //inserta pero no relaciona
-  // const onSubmit = async (data: IResForm) => {
-  //   const transformedData = {
-  //     pregunta: data.validationResponse.map((item) => ({
-  //       id: item.pregunta,
-  //     })),
-  //     response: data.validationResponse.map((item) => ({
-  //       respuesta: item.response[0].respuesta,
-  //     })),
-  //   };
-  
-  //   const userForm = {
-  //     user: props.userId,
-  //     pregunta: transformedData.pregunta,
-  //     response: JSON.stringify(transformedData.response),
-  //   };
-  
-  //   try {
-  //     const response = await api_postResponseForm(userForm);
-  //     if (response) {
-  //       toast.success('Encuesta enviada con éxito');
-  //       // router.reload();
-  //     }
-  //   } catch (errors) {
-  //     toast.error('Error al enviar la encuesta');
-  //   }
-  // };
 
-  // const onSubmit = async (data: IResForm) => {
-  //   const transformedData = {
-  //     pregunta: data.validationResponse.map((item) => ({
-  //       id: item.pregunta,
-  //       formulario: props.form.id, // Agrega el id del formulario
-  //     })),
-  //     response: data.validationResponse.map((item) => ({
-  //       respuesta: item.response[0].respuesta,
-  //       pregunta: item.pregunta, // Agrega el id de la pregunta
-  //     })),
-  //   };
-  
-  //   const userForm = {
-  //     formulario: props.form.id, // Agrega el id del formulario
-  //     pregunta: transformedData.pregunta,
-  //     response: JSON.stringify(transformedData.response),
-  //   };
-  
-  //   try {
-  //     console.log("este es el response enviado",userForm)
-  //     const response = await api_postResponseForm(userForm);
-  //     if (response) {
-  //       toast.success('Encuesta enviada con éxito');
-  //     }
-  //   } catch (errors) {
-  //     toast.error('Error al enviar la encuesta');
-  //   }
-  // };
+
+  const onSubmit = async (data: IResForm) => {
+    try {
+      //foreach para recorrer el array de da.respuestas y 
+      //hacer la peticion dependiendo del largo de este 
+      for (const respuesta of data.respuestas) {
+        const { userform, pregunta, response } = respuesta;
+        // Envía cada respuesta de forma individual
+        await api_postResponseForm({ userform, pregunta, response });
+      }
+      // Cambio el isCompleted a true
+      await api_updateUserForm(userFormId, { isCompleted: true });
+      toast.success('Respuestas enviadas con éxito');
+      // Espera antes de recargar la página
+      setTimeout(() => {
+        router.reload();
+      }, 1500);
+    } catch (error) {
+      toast.error('Error al enviar las respuestas');
+    }
+  };
 
   return (
     <>
-      <ArrowLeftIcon className="btn btn-outline btn-primary rounded-full" onClick={() => router.reload()} />
       <div className="w-full md:w-3/4 mx-auto mt-2">
         <form onSubmit={methods.handleSubmit(onSubmit)}>
-          <div className="grid grid-col-1 md:grid-col-2 gap-4 border rounded-md shadow-lg p-4">
-            <div className="grid grid-col-1 md:col-span-2 gap-4 text-center">
+          <div className="grid grid-cols-1 w-full md:grid-cols-2 gap-4 border rounded-md shadow-lg p-4">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-10 text-primary cursor-pointer" onClick={() => router.reload()}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="m11.25 9-3 3m0 0 3 3m-3-3h7.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"  />
+            </svg>
+            <div className="grid col-span-2 gap-4 text-center">
               <h1 className="font-bold text-3xl">
-                {props.form.attributes.formulario.data.attributes.Titulo.charAt(0).toUpperCase() +
-                  props.form.attributes.formulario.data.attributes.Titulo.slice(1)}
+                {props.form.attributes.formulario.data.attributes.Titulo}
               </h1>
             </div>
-            <div className="grid col-span-1 md:col-span-2 gap-4 text-center">
+            <div className="grid col-span-2 gap-4 text-center">
               <p className="font-semibold text-lg">
-                {props.form.attributes.formulario.data.attributes.Descripcion.charAt(0).toUpperCase() +
-                  props.form.attributes.formulario.data.attributes.Descripcion.slice(1)}
+                {props.form.attributes.formulario.data.attributes.Descripcion}
               </p>
             </div>
             {fields.map((field, index) => {
               const pregunta = dataPreguntas[index];
               return (
-                <div key={field.id} className="flex flex-col items-center w-full">
-                  <label className="label font-semibold mb-2 md:mb-0 md:mr-2 inline-block">
-                    {pregunta.attributes.Titulo.charAt(0).toUpperCase() + pregunta.attributes.Titulo.slice(1)}
+                <div key={field.id} className="grid col-span-2 md:col-span-1 justify-center w-full">
+                  <label className="label font-semibold mb-2 mx-auto ">
+                    {pregunta.attributes.Titulo}
                   </label>
+                  {pregunta.attributes.Tipo === "text" && (
+                    <>
+                        <textarea
+                          rows={3}
+                          placeholder="Ingrese su respuesta..."
+                          {...register(`respuestas.${index}.response`)}
+                          className="textarea textarea-primary w-full"
+                        />
+                      {errors.respuestas?.[index]?.response && (
+                        <p className="text-red-500 text-sm mt-1 text-center" role="alert">
+                          {errors.respuestas[index]?.response?.message as string}
+                        </p>
+                      )}
+                    </>
+                  )}
+                  
                   {pregunta.attributes.Tipo === "option" && (
                     <>
                       {pregunta.attributes.opciones.map((opcion, i) => (
-                        <div key={i} className="flex items-center mb-2">
+                        <div key={i} className="flex flex-row ml-4 mb-2">
                           <input
                             type="radio"
-                            {...register(`validationResponse.${index}.response.0.respuesta`)}
+                            {...register(`respuestas.${index}.response`)}
                             value={opcion}
-                            className="mr-2"
+                            className="mr-2 radio radio-primary"
                           />
                           <label>{opcion}</label>
                         </div>
                       ))}
-                      {errors.validationResponse?.[index]?.response?.[0]?.respuesta && (
-                        <p className="text-red-500 text-sm mt-1" role="alert">
-                          Por favor, seleccione una opción.
+                      {errors.respuestas?.[index]?.response && (
+                        <p className="text-red-500 text-sm mt-1 text-center" role="alert">
+                          {errors.respuestas[index]?.response?.message as string}
                         </p>
                       )}
                     </>
                   )}
-                  {pregunta.attributes.Tipo === "text" && (
-                    <>
-                      <Textarea
-                        rows={3}
-                        placeholder="Ingrese su respuesta..."
-                        {...register(`validationResponse.${index}.response.0.respuesta`)}
-                        className="textarea textarea-primary w-full"
-                      />
-                      {errors.validationResponse?.[index]?.response?.[0]?.respuesta && (
-                        <p className="text-red-500 text-sm mt-1" role="alert">
-                          Este campo es obligatorio.
-                        </p>
-                      )}
-                    </>
-                  )}
+                  
                   {pregunta.attributes.Tipo === "qualification" && (
                     <>
-                      <StarRating
-                        value={Number(watch(`validationResponse.${index}.response.0.respuesta`) || 0)}
-                        onChange={(value) => setValue(`validationResponse.${index}.response.0.respuesta`, value.toString())}
-                      />
-                      {errors.validationResponse?.[index]?.response?.[0]?.respuesta && (
-                        <p className="text-red-500 text-sm mt-1" role="alert">
-                          Por favor, seleccione una calificación.
+                        <StarRating
+                          value={Number(watch(`respuestas.${index}.response`) || 0)}
+                          onChange={(value) => setValue(`respuestas.${index}.response`, value.toString())}
+                        />
+                      {errors.respuestas?.[index]?.response && (
+                        <p className="text-red-500 text-sm mt-1 ml-6 md:ml-9" role="alert">
+                          {errors.respuestas[index]?.response?.message as string}
                         </p>
                       )}
                     </>
@@ -445,19 +395,19 @@ function FomrularyResponse(props: props) {
                   {pregunta.attributes.Tipo === "multipleChoice" && (
                     <>
                       {pregunta.attributes.opciones.map((opcion, i) => (
-                        <div key={i} className="flex items-center mb-2">
+                        <div key={i} className="flex items-center mb-2 ml-4">
                           <input
                             type="checkbox"
-                            {...register(`validationResponse.${index}.response.0.respuesta`)}
                             value={opcion}
-                            className="mr-2"
+                            {...register(`respuestas.${index}.response`)} // Asegúrate de manejar la lógica para respuestas múltiples
+                            className="mr-2 checkbox checkbox-primary"
                           />
                           <label>{opcion}</label>
                         </div>
                       ))}
-                      {errors.validationResponse?.[index]?.response?.[0]?.respuesta && (
-                        <p className="text-red-500 text-sm mt-1" role="alert">
-                          Por favor, seleccione al menos una opción.
+                      {errors.respuestas?.[index]?.response && (
+                        <p className="text-red-500 text-sm mt-1 text-center" role="alert">
+                          {errors.respuestas[index]?.response?.message as string}
                         </p>
                       )}
                     </>
@@ -467,9 +417,7 @@ function FomrularyResponse(props: props) {
             })}
             <div className="grid col-span-2 gap-2 w-2/5 mx-auto">
               <button type="submit" className="btn btn-outline btn-primary">
-                Enviar <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5" />
-                </svg>
+                Enviar
               </button>
             </div>
           </div>
@@ -490,7 +438,7 @@ function StarRating({ onChange, value }: StarRatingProps) {
   };
 
   return (
-    <div className="flex space-x-2">
+    <div className="flex space-x-2 ml-4">
       {[1, 2, 3, 4, 5].map((index) => (
         <svg
           key={index}
@@ -507,6 +455,10 @@ function StarRating({ onChange, value }: StarRatingProps) {
 }
 
 function Table({ data }: { data: surveyInterface[] }) {
+  const handleRouter = (id: number) => {
+    sessionStorage.setItem("id_survey", id.toString());
+    router.push("/encuestas/visualizar");
+  };
   return (
     <>
       {data.length !== 0 ? (
@@ -561,7 +513,8 @@ function Table({ data }: { data: surveyInterface[] }) {
                   {survey.attributes.FechaFin}
                 </td>
                 <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
-                  <button>
+                  {survey.id}
+                  <button onClick={() => handleRouter(survey.id)}>
                     <EyeIcon className="h-6 w-6" aria-hidden="true" />
                   </button>
                 </td>

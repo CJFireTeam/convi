@@ -31,18 +31,50 @@ function ModalQuestions() {
   )
 };
 
+interface questionaryI {
+  id: number;
+  attributes: {
+    formulario: {
+      data: {
+        id: number;
+        attributes: {
+          Descripcion: string;
+          Titulo: string;
+          FechaInicio: string;
+          FechaFin: string;
+          status: boolean;
+        };
+      };
+    };
+    isCompleted: boolean;
+  };
+}
+
 export default function ModalQuestion() {
   const { bearer, setRole, GetRole, user, isLoading, updateUser } = useUserStore();
   const [countQuestions, setCountQuestions] = useState(0);
-  const getQuestionary = async () => {
-    const questions = await api_getQuestions(user.username);
+  const [dataQuestionary, setdataQuestionary] = useState<questionaryI[]>([]);
 
+  const getQuestionary = async () => {
+    const questions = await api_getQuestions(user.username, true);
     setCountQuestions(questions.data.meta.pagination.total);
+    setdataQuestionary(questions.data.data);
   }
   useEffect(() => {
     getQuestionary();
   }, [])
-  if (countQuestions !== 0) return (<><ModalQuestions />  </>)
+
+  // Verificamos si hay encuestas y si alguno tiene una FechaFin mayor a la fecha actual
+  const hasValidQuestionary = dataQuestionary.some(
+    (e) =>
+      !e.attributes.isCompleted &&
+      new Date(e.attributes.formulario.data.attributes.FechaFin) > new Date()
+  );
+
+  if (countQuestions !== 0 && hasValidQuestionary) {
+    return <ModalQuestions />;
+  }
+
   return null;
 }
 

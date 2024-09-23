@@ -84,13 +84,6 @@ export default function Creacion() {
     router.back();
   };
 
-  /*  const onSubmit = async (data: any) => {
-     console.log("Datos enviados:", data);
-     if (Object.keys(errors).length) {
-       console.log("Errores:", errors);
-     }
-   }; */
-
   const newChildren = async (data: QuestionI) => {
     append(data);
   };
@@ -155,27 +148,27 @@ export default function Creacion() {
   return (
     <>  
       <Button
-        className="mx-4 my-2"
+        className="mx-1 sm:mx-2 md:mx-4 my-1 sm:my-2"
         onClick={redirect}
         color="primary"
         variant="outline"
       >
         <ArrowLeftIcon className="h-5 w-5" aria-hidden="true" />
       </Button>
-      <h1 className="text-center font-bold">Creación de encuesta</h1>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-10/12 mx-auto">
+      <h1 className="text-center font-bold text-lg sm:text-md md:text-xl mb-2">Creación de encuesta</h1>
+      <div className="grid grid-cols-1 md:grid-cols-2 sm:grid-cols-1 gap-1 sm:gap-2 md:gap-4 w-12/12 sm:w-11/12 md:w-10/12 mx-auto">
         {/* Formulario de creación */}
-        <fieldset className="border shadow-md rounded-lg p-6 md:m-10 m-0">
+        <fieldset className="border shadow-md rounded-lg p-2 sm:p-3 md:p-4 md:m-3 m-0">
           <legend className="text-center">Editor de Formulario</legend>
           <FormProvider {...methods}>
-            <div className="w-full max-w-4xl mx-auto p-6 bg-white shadow-md rounded-lg">
+            <div className="w-full max-w-4xl mx-auto p-2 sm:p-3 md:p-4 bg-white shadow-md rounded-lg">
 
               <form
                 onSubmit={methods.handleSubmit(onSubmit)}
-                className="space-y-6"
+                className="space-y-3 sm:space-y-4 md:space-y-6"
               >
                 <div className="text-center">
-                  <h2 className="text-2xl font-bold text-gray-900">
+                  <h2 className="text-lg sm:text-md md:text-xl font-bold text-gray-900">
                     <TitleComponent />
                   </h2>
                   {errors.Titulo && (
@@ -183,7 +176,7 @@ export default function Creacion() {
                   )}
                 </div>
 
-                <div className="grid md:grid-cols-2 gap-6">
+                <div className="grid md:grid-cols-2 gap-2 sm:gap-3 md:gap-4">
                   <div className="space-y-2">
                     <label className="block text-sm font-medium text-gray-700">Fecha de Inicio:</label>
                     <DatePicker
@@ -239,7 +232,7 @@ export default function Creacion() {
                   <AddQuestionComponent append={append} />
                 </div>
                 <div className="text-center my-2">
-                  <Button className="w-full sm:w-auto px-6 py-2">Crear encuesta</Button>
+                  <Button className="w-full sm:w-auto  px-6 py-2">Crear encuesta</Button>
                 </div>
               </form>
             </div>
@@ -247,16 +240,16 @@ export default function Creacion() {
         </fieldset>
 
         {/* Previsualización del formulario */}
-        <fieldset className="border shadow-md rounded-lg p-6 md:m-10 m-0">
+        <fieldset className="border shadow-md rounded-lg p-2 sm:p-3 md:p-4 md:m-3 m-0">
           <legend className="text-center">Previsualización de encuesta</legend>
           <FormProvider {...methods}>
-            <div className="w-full max-w-4xl mx-auto p-6 bg-white shadow-md rounded-lg">
+            <div className="w-full max-w-4xl mx-auto p-2 sm:p-3 md:p-4 bg-white shadow-md rounded-lg">
               <div className="text-center">
-                <h2 className="text-2xl font-bold text-gray-900">
+                <h2 className="text-lg sm:text-md md:text-xl font-bold text-gray-900">
                   {watch("Titulo") || "Título del formulario"}
                 </h2>
               </div>
-              <div className="grid md:grid-cols-2 gap-6 mt-3">
+              <div className="grid md:grid-cols-2 sm:grid-cols-2 gap-2 sm:gap-3 md:gap-4 mt-2 sm:mt-3">
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-gray-700 flex items-center justify-center">Fecha de Inicio:</label>
                   <p className="flex items-center justify-center">{fechaInicio ? fechaInicio.toLocaleDateString() : "No definida."}</p>
@@ -266,11 +259,11 @@ export default function Creacion() {
                   <p className="flex items-center justify-center">{fechaFin ? fechaFin.toLocaleDateString() : "No definida."}</p>
                 </div>
               </div>
-              <div className="mt-3">
+              <div className="mt-2 sm:mt-3">
                 <p className="w-full border-none">{descripcionForm ? descripcionForm : <span className="font-medium">Sin Descripción.</span>}</p>
               </div>
               <div className="">
-              <div className="my-4 p-4  text-center items-center">
+              <div className="my-3 sm:my-4 p-3 sm:p-4  text-center items-center">
               {fields.map((field, index) => (
                   <PreviewQuestionComponent key={field.id} index={index} />
                 ))}

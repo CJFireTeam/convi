@@ -47,18 +47,15 @@ export function api_establishmentByComuna(comuna: string) {
 export function api_surveys({ createdBy, userId, page = 1 }: { createdBy: number, userId?: number, page?: number }) {
   let query = `?populate[creador][populate][0]=role`
   query = query + `&filters[creador]=${createdBy}`
-  query = query + `&pagination[page]=${page}&pagination[pageSize]=1`
+  query = query + `&pagination[page]=${page}&pagination[pageSize]=10`
+  return api.get(`formularios${query}`)
+}
+export function api_survey({ surveyId }: {surveyId?: number}) {
+  let query = `?filters[id]=${surveyId}`
+  query = query +`&populate=formulario_pregutas`
   return api.get(`formularios${query}`)
 }
 
-
-// export function api_surveys({ createdBy, userId, page = 1 }: { createdBy: number, userId?: number, page?: number }) {
-//   let query = `?populate[creador][populate][0]=role&populate[usuarios][populate][0]=role`
-//   query = query + `&filters[$or][0][creador]=${createdBy}`
-//   if (userId) query = query + `&filters[$or][1][usuarios]=${userId}`
-//   query = query + `&pagination[page]=${page}&pagination[pageSize]=10`
-//   return api.get(`formularios${query}`)
-// }
 
 export function api_cases({ createdBy, userId, page = 1 }: { createdBy: number, userId?: number, page?: number }) {
   let query = `?populate[created][populate][0]=role&populate[directed][populate][0]=role`
@@ -141,7 +138,7 @@ export function api_postQuestions(data: any) {
 }
 
 export function api_getQuestions(user:string,populate?:boolean) {
-  let query = `?filters[$and][0][isCompleted][$eq]=${false}&filters[$and][1][user][username][$eq]=${user}`
+  let query = `?filters[$and][0][isCompleted][$eq]=${false}&filters[$and][1][user][username][$eq]=${user}&sort=createdAt:desc`
 if (populate) {
   query = query + '&populate=*'
 }
@@ -156,4 +153,8 @@ export function api_getQuestionsByForm({ formId }: { formId: number }) {
 
 export function api_postResponseForm(data: any) {
   return api.post(`user-question-forms`, { data: data })
+}
+
+export function api_updateUserForm(id: number, data: any) {
+  return api.put(`userforms/${id}`, { data:data });
 }

@@ -216,6 +216,7 @@ export default function Index() {
   }
   return null;
 }
+
 interface IPreguntas {
   id: number;
   attributes: {
@@ -323,7 +324,7 @@ function FomrularyResponse(props: props) {
         <form onSubmit={methods.handleSubmit(onSubmit)}>
           <div className="grid grid-cols-1 w-full md:grid-cols-2 gap-4 border rounded-md shadow-lg p-4">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-10 text-primary cursor-pointer" onClick={() => router.reload()}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="m11.25 9-3 3m0 0 3 3m-3-3h7.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"  />
+              <path strokeLinecap="round" strokeLinejoin="round" d="m11.25 9-3 3m0 0 3 3m-3-3h7.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
             </svg>
             <div className="grid col-span-2 gap-4 text-center">
               <h1 className="font-bold text-3xl">
@@ -338,30 +339,32 @@ function FomrularyResponse(props: props) {
             {fields.map((field, index) => {
               const pregunta = dataPreguntas[index];
               return (
-                <div key={field.id} className="grid col-span-2 md:col-span-1 justify-center w-full">
+                <div key={field.id} className="grid col-span-2 md:col-span-1 w-full">
                   <label className="label font-semibold mb-2 mx-auto ">
                     {pregunta.attributes.Titulo}
                   </label>
                   {pregunta.attributes.Tipo === "text" && (
                     <>
+                      <div className="flex flex-col items-center">
                         <textarea
                           rows={3}
                           placeholder="Ingrese su respuesta..."
                           {...register(`respuestas.${index}.response`)}
                           className="textarea textarea-primary w-full"
                         />
-                      {errors.respuestas?.[index]?.response && (
-                        <p className="text-red-500 text-sm mt-1 text-center" role="alert">
-                          {errors.respuestas[index]?.response?.message as string}
-                        </p>
-                      )}
+                        {errors.respuestas?.[index]?.response && (
+                          <p className="text-red-500 text-sm mt-1 text-center" role="alert">
+                            {errors.respuestas[index]?.response?.message as string}
+                          </p>
+                        )}
+                      </div>
                     </>
                   )}
-                  
+
                   {pregunta.attributes.Tipo === "option" && (
                     <>
                       {pregunta.attributes.opciones.map((opcion, i) => (
-                        <div key={i} className="flex flex-row ml-4 mb-2">
+                        <div key={i} className="flex flex-row justify-center ml-4 mb-2">
                           <input
                             type="radio"
                             {...register(`respuestas.${index}.response`)}
@@ -378,24 +381,26 @@ function FomrularyResponse(props: props) {
                       )}
                     </>
                   )}
-                  
+
                   {pregunta.attributes.Tipo === "qualification" && (
                     <>
+                      <div className="flex flex-row justify-center">
                         <StarRating
                           value={Number(watch(`respuestas.${index}.response`) || 0)}
                           onChange={(value) => setValue(`respuestas.${index}.response`, value.toString())}
                         />
-                      {errors.respuestas?.[index]?.response && (
-                        <p className="text-red-500 text-sm mt-1 ml-6 md:ml-9" role="alert">
-                          {errors.respuestas[index]?.response?.message as string}
-                        </p>
-                      )}
+                        {errors.respuestas?.[index]?.response && (
+                          <p className="text-red-500 text-sm mt-1 ml-6 md:ml-9" role="alert">
+                            {errors.respuestas[index]?.response?.message as string}
+                          </p>
+                        )}
+                      </div>
                     </>
                   )}
                   {pregunta.attributes.Tipo === "multipleChoice" && (
                     <>
                       {pregunta.attributes.opciones.map((opcion, i) => (
-                        <div key={i} className="flex items-center mb-2 ml-4">
+                        <div key={i} className="flex flex-row justify-center mb-2">
                           <input
                             type="checkbox"
                             value={opcion}
@@ -513,7 +518,6 @@ function Table({ data }: { data: surveyInterface[] }) {
                   {survey.attributes.FechaFin}
                 </td>
                 <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
-                  {survey.id}
                   <button onClick={() => handleRouter(survey.id)}>
                     <EyeIcon className="h-6 w-6" aria-hidden="true" />
                   </button>

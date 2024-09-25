@@ -68,7 +68,8 @@ export default function ModalQuestion() {
   const hasValidQuestionary = dataQuestionary.some(
     (e) =>
       !e.attributes.isCompleted &&
-      new Date(e.attributes.formulario.data.attributes.FechaFin) > new Date()
+      new Date(e.attributes.formulario.data.attributes.FechaFin) > new Date() 
+      && new Date(e.attributes.formulario.data.attributes.FechaInicio) >= new Date()
   );
 
   if (countQuestions !== 0 && hasValidQuestionary) {

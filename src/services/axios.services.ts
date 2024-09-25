@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { format } from 'date-fns';
 import Cookies from "js-cookie";
 let token = Cookies.get("bearer")
 const api = axios.create({
@@ -135,14 +136,27 @@ export function api_postQuestions(data: any) {
   return api.post(`preguntas`, { data: data })
 }
 
-export function api_getQuestions(user: string, populate?: boolean) {
+/* export function api_getQuestions(user: string, populate?: boolean) {
   let query = `?filters[$and][0][isCompleted][$eq]=${false}&filters[$and][1][user][username][$eq]=${user}&sort=createdAt:desc`
   if (populate) {
     query = query + '&populate=*'
   }
 
   return api.get(`userforms${query}`);
+} */
+
+export function api_getQuestions(user: string, populate?: boolean) {
+  // Obtener la fecha actual en formato ISO sin hora
+  const currentDate = format(new Date(), 'yyyy-MM-dd');
+
+  let query = `?filters[$and][0][isCompleted][$eq]=${false}&filters[$and][1][user][username][$eq]=${user}&filters[$and][2][formulario][FechaFin][$gte]=${currentDate}&sort=createdAt:desc`
+  if (populate) {
+    query = query + '&populate=*'
+  }
+
+  return api.get(`userforms${query}`);
 }
+
 
 export function api_getQuestionsCompleted(formId: number) {
   let query = `?filters[$and][0][isCompleted][$eq]=${true}&filters[$and][1][formulario][id][$eq]=${formId}&populate=*`
@@ -164,4 +178,9 @@ export function api_postResponseForm(data: any) {
 
 export function api_updateUserForm(id: number, data: any) {
   return api.put(`userforms/${id}`, { data: data });
+}
+
+export function api_getQuestionResponses({ questionId }: { questionId: number }) {
+  let query = `?populate=respuesta,userform.user&filters[pregunta][id][$eq]=${questionId}`
+  return api.get(`user-question-forms${query}`)
 }

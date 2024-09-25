@@ -46,6 +46,7 @@ const QuestionZod = z.object({
   opciones: z.array(options),
 });
 
+
 const FormularyZod = z.object({
   Titulo: z.string({ required_error: "Se requiere título del formulario." }),
   FechaInicio: z.date({
@@ -144,7 +145,8 @@ export default function Creacion() {
   const fechaFin = watch("FechaFin");
   const descripcionForm = watch('Descripcion');
 
-  
+  const fechaActual = new Date();
+
   return (
     <>  
       <Button
@@ -192,6 +194,7 @@ export default function Creacion() {
                       selectsStart
                       startDate={fechaInicio}
                       endDate={fechaFin}
+                      minDate={fechaActual} 
                       locale="es"
 
                     />
@@ -212,7 +215,7 @@ export default function Creacion() {
                       selectsEnd
                       startDate={fechaInicio}
                       endDate={fechaFin}
-                      minDate={fechaInicio}
+                      minDate={fechaInicio || fechaActual}
                       locale="es"
                     />
                     {errors.FechaFin && <p className="text-red-500 text-sm">{errors.FechaFin.message}</p>}

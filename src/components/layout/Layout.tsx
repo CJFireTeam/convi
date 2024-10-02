@@ -198,7 +198,8 @@ export default function Layout(props: LayoutProps) {
                   </Menu.Item>
                 ) : (
                   <Menu.Item key={index}>
-                    <a onClick={() => push(item.href)}>{item.name}</a>
+                    <a onClick={() => push(item.href)}
+                      className={`${item.specialStyle ? 'bg-sky-400 text-white hover:bg-sky-500' : ''}`}>{item.name}</a>
                   </Menu.Item>
                 )
               )}

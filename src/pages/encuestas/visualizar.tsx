@@ -325,7 +325,7 @@ export default function Visualizar() {
           <div className="text-center">
             <p className="font-bold text-lg">{dataSurvey?.attributes.Titulo}</p>
             <p>
-              <span className="font-semibold text-lg">Descripcion: </span>
+              <span className="font-semibold text-lg">Descripción: </span>
               {dataSurvey?.attributes.Descripcion}
             </p>
           </div>

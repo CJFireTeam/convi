@@ -223,7 +223,7 @@ export default function Creacion() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">Descripcion del formulario</label>
+                  <label className="block text-sm font-medium text-gray-700">Descripción del formulario</label>
                   <Textarea {...register('Descripcion')} className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary" />
                   {errors.Descripcion && <p className="text-red-500">{errors.Descripcion.message}</p>}
                 </div>
@@ -235,7 +235,7 @@ export default function Creacion() {
                   <AddQuestionComponent append={append} />
                 </div>
                 <div className="text-center my-2">
-                  <Button className="w-full sm:w-auto  px-6 py-2">Crear encuesta</Button>
+                  <Button className="btn btn-primary text-white w-full sm:w-auto  px-6 py-2">Crear encuesta</Button>
                 </div>
               </form>
             </div>
@@ -371,7 +371,7 @@ function AddQuestionComponent({ append }: { append: (data: QuestionI) => void })
 
   return (
     <div className="text-center my-4">
-      <Button onClick={agregarPregunta} color="primary">
+      <Button onClick={agregarPregunta} className="btn btn-primary bg-blue-500 hover:bg-blue-700 text-white py-2 px-4 rounded">
         Agregar una pregunta
       </Button>
     </div>
@@ -438,7 +438,7 @@ function QuestionComponent({ index, remove }: { index: number, remove: (index: n
             </div>
           ))}
           <div className="space-y-2 flex items-center justify-center">
-            <button type="button" onClick={addOption} className="btn btn-primary text-white">
+            <button type="button" onClick={addOption} className="btn btn-primary bg-blue-500 hover:bg-blue-700 text-white py-2 px-4 rounded">
               Añadir Opción
             </button>
           </div>
@@ -459,7 +459,7 @@ function QuestionComponent({ index, remove }: { index: number, remove: (index: n
             </div>
           ))}
           <div className="space-y-2 flex items-center justify-center">
-            <button type="button" onClick={addOption} className="btn btn-primary text-white">
+            <button type="button" onClick={addOption} className="btn btn-primary bg-blue-500 hover:bg-blue-700 text-white py-2 px-4 rounded">
               Añadir Opción
             </button>
           </div>

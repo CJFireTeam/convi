@@ -96,12 +96,6 @@ function Table({ data }: { data: caseInterface[] }) {
             scope="col"
             className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
           >
-            Cargo
-          </th>
-          <th
-            scope="col"
-            className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
-          >
             Creado por
           </th>
           {/* <th
@@ -155,11 +149,6 @@ function Table({ data }: { data: caseInterface[] }) {
           <tr key={index} className={`${colorsBG(person.attributes.fase)}`}>
             <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
               {index + 1}
-            </td>
-            <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
-              {
-                person.attributes.directed.data.attributes.role.data.attributes.name
-              }
             </td>
             <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
               {capitalizeFirstLetter(

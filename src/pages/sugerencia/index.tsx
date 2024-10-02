@@ -184,6 +184,7 @@ export default function Sugerencia() {
             );
             toast.success('Se envio la sugerencia correctamente');
             reset();
+            router.push({ pathname: "/" });
         } catch (error) {
             toast.error('Ocurrió un error al enviar la sugerencia. Por favor, inténtalo de nuevo más tarde.');
         }

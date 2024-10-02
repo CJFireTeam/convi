@@ -126,7 +126,7 @@ export default function Denuncia() {
                     {userList.length > 0 &&
                       userList.map((user: UserInterface) => (
                         <option value={user.id} key={user.id}>
-                          Derivar a {user.attributes.firstname} {user.attributes.first_lastname} {user.id}
+                          Derivar a {user.attributes.firstname} {user.attributes.first_lastname}
                         </option>
                       ))}
                   </select>

@@ -13,6 +13,7 @@ export interface Imenus {
   name: string;
   href: string;
   current: boolean;
+  specialStyle?: boolean;
   icon: React.ForwardRefExoticComponent<
     Omit<React.SVGProps<SVGSVGElement>, "ref"> & {
       title?: string;
@@ -26,19 +27,19 @@ interface IMenuChildren extends Imenus {
 
 const AuthenticatedMenus: IMenuChildren[] = [
   {
+    name: "Te Escuchamos",
+    children: [],
+    href: "/te_escuchamos",
+    icon: UsersIcon,
+    current: false,
+    specialStyle: true,
+  },
+  {
     name: "Dashboard",
     href: "/",
     icon: HomeIcon,
     current: false,
     children: [],
-  },
-  {
-    name: "Te Escuchamos",
-
-    children: [],
-    href: "/te_escuchamos",
-    icon: UsersIcon,
-    current: false,
   },
   // { name: "Casos", href: "/casos", icon: UsersIcon, current: false },
   {

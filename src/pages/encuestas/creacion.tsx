@@ -132,6 +132,7 @@ export default function Creacion() {
       await Promise.all(questionsWithSurveyId.map((question) => api_postQuestions(question)));
 
       toast.success('Encuesta y preguntas creadas correctamente');
+      router.push("/encuestas")
     } catch (error) {
       console.error("Error al crear la encuesta o las preguntas:", error);
       toast.error('Ocurrió un error al crear la encuesta o las preguntas');

@@ -185,3 +185,8 @@ export function api_getQuestionResponses({ questionId }: { questionId: number })
   let query = `?populate=respuesta,userform.user&filters[pregunta][id][$eq]=${questionId}`
   return api.get(`user-question-forms${query}`)
 }
+
+
+export function api_postSendMeeting(data: { CreationDate: string, RoomName: string, RoomUrl: string, Establishment: number, CreatorUser: number }) {
+  return api.post(`meetings`, data )
+}

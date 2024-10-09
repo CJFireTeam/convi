@@ -16,7 +16,10 @@ export default function Perfil() {
     const { push } = useRouter();
 
     function cambiarContraseñaClick() {
-        push("/perfil/cambiarcontrasena");
+        push("/perfil/cambiarContrasena");
+    }
+    function editarPerfilClick() {
+        push("/perfil/editar");
     }
 
     return (
@@ -58,8 +61,9 @@ export default function Perfil() {
                         Cambiar Contraseña
                     </button>
                     <button className="flex w-full justify-center rounded-md px-3 py-1.5 text-sm font-semibold leading-6 bg-primary text-white hover:brightness-90 mb-2 sm:mb-0 mt-2"
+                    onClick={editarPerfilClick}
                     >
-                        Editar Perfil
+                        Actualizar Información
                     </button>
                 </div>
             </div>

@@ -13,6 +13,10 @@ interface User {
   secondname: string;
   username: string;
   createdAt: string;
+  region: string;
+  comuna:string;
+  direccion:string;
+  phone:string;
   establishment_authenticateds:{
     id: number,
     name: string
@@ -54,11 +58,11 @@ type Actions = {
 };
 
 const baseRole = { createdAt: '', description: '', id: 0, name: '', type: '', updatedAt: '', }
-const baseUser = {establishment_authenticateds:[], blocked:false,confirmed:false,email: '',first_lastname: '',firstname: '',id: 0,second_lastname: '',secondname: '',username: '',createdAt :'',provider:'local',establishment: {id:0,name:''}}
+const baseUser = {establishment_authenticateds:[], blocked:false,confirmed:false,email: '',first_lastname: '',firstname: '',id: 0,second_lastname: '',secondname: '',username: '',createdAt :'',region:'',comuna:'',direccion: '',phone: '',provider:'local',establishment: {id:0,name:''}}
 export const useUserStore = create<State & Actions>()(
   devtools(
       (set, get) => ({
-        user: {establishment_authenticateds:[],blocked:false,confirmed:false,email: '',first_lastname: '',firstname: '',id: 0,second_lastname: '',secondname: '',username: '',createdAt :'',provider:'local',establishment: {id:0,name:''}},
+        user: {establishment_authenticateds:[],blocked:false,confirmed:false,email: '',first_lastname: '',firstname: '',id: 0,second_lastname: '',secondname: '',username: '',createdAt :'',region:'',comuna:'',direccion: '',phone: '',provider:'local',establishment: {id:0,name:''}},
         bearer: '',
         isLoading: true,
         role: { createdAt: '', description: '', id: 0, name: '', type: '', updatedAt: '', },

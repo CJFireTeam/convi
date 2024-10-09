@@ -380,7 +380,7 @@ export default function Register() {
                       htmlFor="direccion"
                       className="block text-sm font-medium leading-6 text-gray-900"
                     >
-                      Direccion
+                      Dirección
                     </label>
                     <div className="mt-2">
                       <input
@@ -398,7 +398,7 @@ export default function Register() {
                       htmlFor="phone"
                       className="block text-sm font-medium leading-6 text-gray-900"
                     >
-                      Telefono
+                      Teléfono
                     </label>
                     <div className="mt-2">
                       <input

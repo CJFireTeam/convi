@@ -32,8 +32,6 @@ api.interceptors.response.use(
   }
 );
 
-
-
 export function api_me() {
   return api.get('users/me?populate=*');
 }
@@ -62,6 +60,7 @@ export function api_cases({ createdBy, userId, page = 1 }: { createdBy: number, 
   query = query + `&filters[$or][0][created]=${createdBy}`
   if (userId) query = query + `&filters[$or][1][directed]=${userId}`
   query = query + `&pagination[page]=${page}&pagination[pageSize]=10`
+  query = query + `&sort[0]=createdAt%3Adesc`
   return api.get(`cases${query}`)
 }
 
@@ -188,5 +187,21 @@ export function api_getQuestionResponses({ questionId }: { questionId: number })
 
 
 export function api_postSendMeeting(data: { CreationDate: string, RoomName: string, RoomUrl: string, Establishment: number, CreatorUser: number }) {
-  return api.post(`meetings`, data )
+  return api.post(`meetings`, data)
+}
+
+export function api_postCase(caseData: {
+  directed?: number,
+  establishment: number,
+  created?: number,
+  fase: number,
+  derived: boolean,
+  story: string,
+  measures: string
+}) {
+  return api.post(`cases`, { data: caseData })
+}
+
+export function api_getOneUser(userId:number){
+  return api.get(`users/${userId}`)
 }

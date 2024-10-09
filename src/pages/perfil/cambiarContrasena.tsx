@@ -15,8 +15,6 @@ type Inputs = {
 }
 
 
-
-
 export default function CambiarContrasena() {
     const { register, handleSubmit, formState: { errors } } = useForm<Inputs>({
         resolver: zodResolver(changepassswordSchema),
@@ -36,7 +34,7 @@ export default function CambiarContrasena() {
         } catch (error) {
             console.log(error);
             if (isAxiosError(error) && error.response?.data?.error?.message === 'The provided current password is invalid') {
-                toast.error('Contraseña anterior invalida')
+                toast.error('Contraseña actual invalida')
             } else {
                 toast.error('Ocurrió un error al procesar tu solicitud. Por favor, inténtalo de nuevo más tarde.');
             }
@@ -64,7 +62,7 @@ export default function CambiarContrasena() {
                             <span className="text-base font-semibold leading-6 text-gray-900">Ingrese contraseña actual:</span>
                         </div>
                         <input
-                            type="text"
+                            type="password"
                             id="currentPassword"
                             {...register('currentPassword')}
                             className="col-start-1 md:col-span-1 lg:col-span-1 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary focus:border-primary "

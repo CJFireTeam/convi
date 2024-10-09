@@ -2,6 +2,7 @@ export default interface UserInterface {
   id: number;
   attributes: {
     username: string;
+    comuna:string;
     email: string;
     provider?: string;
     confirmed: boolean;

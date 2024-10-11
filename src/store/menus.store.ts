@@ -95,6 +95,13 @@ const EncargadoMenus: IMenuChildren[] = [
     children: [],
     current: false,
   },
+  {
+    name: "Documentos",
+    href: "/documentos",
+    icon: FolderIcon,
+    children: [],
+    current: false,
+  },
 ];
 
 const ProfesorMenus: IMenuChildren[] = [
@@ -128,11 +135,22 @@ const ProfesorMenus: IMenuChildren[] = [
     current: false,
   },
 ];
+const AdministradorMenus: IMenuChildren[] = [
+  { name: "Home", href: "/", icon: HomeIcon, current: false, children: [] },
+  {
+    name: "Administrar Usuarios",
+    href: "/administrador",
+    icon: UsersIcon,
+    children: [],
+    current: false,
+  }
+];
 
 type Actions = {
   setMenusAuthenticated(): void;
   setMenusEncargado(): void;
   setMenusProfesor(): void;
+  setMenusAdministrador(): void;
   setActive(href: string): void;
 };
 type State = {
@@ -147,6 +165,7 @@ export const useMenuStore = create<State & Actions>()(
         set((state) => ({ menus: AuthenticatedMenus })),
       setMenusEncargado: () => set((state) => ({ menus: EncargadoMenus })),
       setMenusProfesor: () => set((state) => ({ menus: ProfesorMenus })),
+      setMenusAdministrador: () => set((state) => ({ menus: AdministradorMenus })),
       setActive: (href: string) =>
         set((state) => ({
           menus: state.menus.map((menu) => ({

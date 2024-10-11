@@ -9,6 +9,8 @@ import Grafico from "@/components/encargado/graficos";
 import { routeModule } from "next/dist/build/templates/app-page";
 import CasesAuthenticated from "../components/authenticated/CasesAuthenticated";
 import ModalWhoIS from "../components/authenticated/modalWhoIs";
+import ContadorUsuarios from "@/components/administrador/contadorusuarios";
+
 const inter = Inter({ subsets: ["latin"] });
 
 export default function Home() {
@@ -17,6 +19,7 @@ export default function Home() {
     <>
       {role.name === "Authenticated" && <><Greetings_Authenticated /><CasesAuthenticated /></>}
       {role.name === "Encargado de Convivencia Escolar" && <><Grafico /></>}
+      {role.name === "admin" && <><ContadorUsuarios/></>}
     </>
   );
 }

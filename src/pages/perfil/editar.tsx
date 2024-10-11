@@ -39,18 +39,20 @@ export default function CambiarContrasena() {
 
     const onSubmit = async (data: Inputs) => {
         try {
-
-            const resp = await api_updateUser(user.id, data)
-            toast.success('Perfil guardado correctamente');
-            setTimeout(() => {
-                router.push("/perfil");
-            }, 3000);
+          const resp = await api_updateUser (user.id, data);
+          toast.success('Perfil guardado correctamente');
+          // Actualiza el estado del usuario en el store con la información actualizada
+          const response = await api_getOneUser(user.id);
+          const updatedUser = response.data; // Extract the user data from the response
+          useUserStore.getState().updateUser(updatedUser );
+          setTimeout(() => {
+            router.push("/perfil");
+          }, 3000);
         } catch (error) {
-            console.log(error);
-            toast.error('Ocurrió un error al procesar tu solicitud. Por favor, inténtalo de nuevo más tarde.');
-
+          console.log(error);
+          toast.error('Ocurrió un error al procesar tu solicitud. Por favor, inténtalo de nuevo más tarde.');
         }
-    }
+      }
 
     function atrasBoton() {
         router.push("/perfil");

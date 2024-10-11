@@ -40,7 +40,7 @@ const GraficoFases = ({dataNumbers}: {dataNumbers:number[]}) => {
     labels: ['1° ciclo', '2° ciclo', '3° ciclo', '4° ciclo'],
     datasets: [
       {
-        label: '# of Votes',
+        label: 'Cantidad en ciclos',
         data: [0, 0, 0, 0],
         backgroundColor: [
           'rgba(54, 162, 235, 0.4)',

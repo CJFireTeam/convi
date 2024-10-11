@@ -205,3 +205,16 @@ export function api_postCase(caseData: {
 export function api_getOneUser(userId:number){
   return api.get(`users/${userId}`)
 }
+
+
+export function api_getUsersEstablishment(escuelaId:number){
+  let query = `?filters[$and][0][role][name][$eq]=Profesor&filters[$and][1][establishment][id][$eq]=${escuelaId}`
+  query = query + `&filters[$and][0][role][name][$eq]=Encargado de Convivencia Escolar&filters[$and][1][establishment][id][$eq]=${escuelaId}`
+/*   query = query + `&filters[$and][0][role][name][$eq]=Authenticated&filters[$and][1][tipo][$eq]=alumno[$and][2][establishment_authenticateds][id][$eq]=${escuelaId}`
+ */  return api.get(`users${query}`)
+}
+
+export function api_getAllUsersByEstablishment(Establishment: string){
+  let query = `?filters[$and][0][establishment][name][$eq]=${Establishment}`
+  return api.get(`users${query}`)
+}

@@ -68,6 +68,7 @@ export default function Layout(props: LayoutProps) {
     setMenusAuthenticated,
     setMenusEncargado,
     setMenusProfesor,
+    setMenusAdministrador,
     setActive,
   } = useMenuStore();
   function capitalizeFirstLetter(string: string) {
@@ -96,6 +97,7 @@ export default function Layout(props: LayoutProps) {
     )
       setMenusEncargado();
     if (useUserStore.getState().GetRole() === "Profesor") setMenusProfesor();
+    if (useUserStore.getState().GetRole() === "admin") setMenusAdministrador();
     setActive(pathname);
   }, [useUserStore.getState().GetRole(), pathname]);
 

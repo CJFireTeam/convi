@@ -202,19 +202,44 @@ export function api_postCase(caseData: {
   return api.post(`cases`, { data: caseData })
 }
 
-export function api_getOneUser(userId:number){
+export function api_getOneUser(userId: number) {
   return api.get(`users/${userId}`)
 }
 
 
-export function api_getUsersEstablishment(escuelaId:number){
+/* export function api_getUsersEstablishment(escuelaId:number){
   let query = `?filters[$and][0][role][name][$eq]=Profesor&filters[$and][1][establishment][id][$eq]=${escuelaId}`
   query = query + `&filters[$and][0][role][name][$eq]=Encargado de Convivencia Escolar&filters[$and][1][establishment][id][$eq]=${escuelaId}`
-/*   query = query + `&filters[$and][0][role][name][$eq]=Authenticated&filters[$and][1][tipo][$eq]=alumno[$and][2][establishment_authenticateds][id][$eq]=${escuelaId}`
- */  return api.get(`users${query}`)
+  query = query + `&filters[$and][0][role][name][$eq]=Authenticated&filters[$and][1][tipo][$eq]=alumno[$and][2][establishment_authenticateds][id][$eq]=${escuelaId}`
+  return api.get(`users${query}`)
+} */
+
+export function api_getUsersProfeEstablishment(escuelaId: number) {
+  let query = `?filters[$and][0][role][name][$eq]=Profesor&filters[$and][1][establishment][id][$eq]=${escuelaId}`
+  return api.get(`users${query}`)
 }
 
-export function api_getAllUsersByEstablishment(Establishment: string){
-  let query = `?filters[$and][0][establishment][name][$eq]=${Establishment}`
+export function api_getUsersEncargadoEstablishment(escuelaId: number) {
+  let query = `?filters[$and][0][role][name][$eq]=Encargado de Convivencia Escolar&filters[$and][1][establishment][id][$eq]=${escuelaId}`
+  return api.get(`users${query}`)
+}
+
+export function api_GetUsersApoderadosEstablishment(escuelaId: number) {
+  let query = `?filters[$and][0][role][name][$eq]=Authenticated`
+  query = query + `&filters[$and][1][tipo][$eq]=apoderado`
+  query = query + `&filters[$and][2][establishment][id][$eq]=${escuelaId}`
+  return api.get(`users${query}`)
+}
+export function api_GetUsersAlumnosEstablishment(escuelaId: number) {
+  let query = `?filters[$and][0][role][name][$eq]=Authenticated`
+  query = query + `&filters[$and][1][tipo][$eq]=alumno`
+  query = query + `&filters[$and][2][establishment][id][$eq]=${escuelaId}`
+  return api.get(`users${query}`)
+}
+
+export function api_getAllUsersByEstablishment({ establishment, page }: { establishment: string, page: number }) {
+  let query = `?filters[$and][0][establishment][name][$eq]=${establishment}`
+  query = query + `&pagination[page]=${page}&pagination[pageSize]=10`
+  query = query + `&sort[0]=id:asc`
   return api.get(`users${query}`)
 }

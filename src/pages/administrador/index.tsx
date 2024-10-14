@@ -1,190 +1,167 @@
 import router, { useRouter } from "next/router";
-import { Button, Input, Modal, Textarea } from "react-daisyui";
 import WarningAlert from "@/components/alerts/warningAlert";
-import ErrorAlert from "../../components/alerts/errorAlert";
-import InfoAlert from "../../components/alerts/infoAlert";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useUserStore } from "@/store/userStore";
-import metaI from "@/interfaces/meta.interface";
-import { api_getQuestions, api_getQuestionsByForm, api_postResponseForm, api_surveys, api_updateUserForm } from "@/services/axios.services";
-import { differenceInDays } from 'date-fns';
-import { ArrowLeftIcon, EyeIcon, PaperAirplaneIcon, StarIcon } from "@heroicons/react/20/solid";
-import { z } from "zod";
-import { useFieldArray, useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { api_getAllUsersByEstablishment } from "@/services/axios.services";
+import { PencilIcon } from "@heroicons/react/20/solid";
 import { toast } from "react-toastify";
+
+export interface IUser {
+  id: number;
+  username: string;
+  comuna: string;
+  email: string;
+  provider?: string;
+  confirmed: boolean;
+  blocked: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+  second_lastname: string;
+  first_lastname: string;
+  firstname: string;
+  secondname: string;
+  establishment?: number;
+  role?: {
+    id: number;
+    name: string;
+    description: string;
+    type: string;
+    createdAt: string;
+    updatedAt: string;
+  };
+}
 
 export default function Index() {
   const { push } = useRouter();
   const redirect = () => {
     push("administrador/crearusuario");
   };
-  const { user, GetRole, role } = useUserStore();
-  const [metaData, setMetaData] = useState<metaI>({
-    page: 1,
-    pageCount: 0,
-    pageSize: 0,
-    total: 0,
-  });
+  const { user, GetRole } = useUserStore();
+  const [data, setData] = useState<IUser[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
+  const usersPerPage = 10;
 
-  const [data, setData] = useState<surveyInterface[]>([]);
   const getData = async () => {
-    
-    try {
-    //   const response = await api_surveys({
-    //     createdBy: user?.id,
-    //     page: metaData.page,
-    //   });
-      //setData((prevData) => [...prevData, ...response.data.data]);
-      //setMetaData(response.data.meta.pagination);
-    } catch (error) {
-      console.log(error);
+    if (user?.establishment?.name) {
+      setIsLoading(true);
+      try {
+        const response = await api_getAllUsersByEstablishment({
+          establishment: user.establishment.name,
+          page: currentPage,
+        });
+        setData(response.data);
+      } catch (error) {
+        console.error(error);
+        toast.error('Error al cargar los usuarios');
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 
   useEffect(() => {
-    if (user?.id !== 0 && GetRole() === "Profesor" || GetRole() === "Encargado de Convivencia Escolar") {
+    if (user?.id !== 0 && GetRole() === "admin") {
       getData();
     }
-  }, [user, metaData.page]);
+  }, [user, currentPage]);
 
-  const handleLoadMore = () => {
-    setMetaData((prevMeta) => ({
-      ...prevMeta,
-      page: prevMeta.page + 1,
-    }));
+  const indexOfLastUser = currentPage * usersPerPage;
+  const indexOfFirstUser = indexOfLastUser - usersPerPage;
+  const currentUsers = data.slice(indexOfFirstUser, indexOfLastUser);
+  const totalPages = Math.ceil(data.length / usersPerPage);
+
+  const handlePageChange = (pageNumber: number) => {
+    setCurrentPage(pageNumber);
   };
 
-
-  if (GetRole() === "admin") {
-    return (
-      <div className="px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between ">
-          <div className="sm:flex-auto">
-            <h1 className="text-base font-semibold leading-6 text-gray-900">
-              Lista de usuarios
-            </h1>
-            <p className="mt-2 text-sm text-gray-700"></p>
-          </div>
-          <div className=" sm:ml-16 sm:mt-0 sm:flex-none">
-            <Button onClick={redirect} color="primary">
-              Crear nuevo usuario
-            </Button>
-          </div>
-        </div>
-        {data.length != 0 ? (
-          <>
-            <div className="mt-8 flow-root">
-              <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-                <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
-                  <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
-                    <Table data={data} />
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className="flex justify-center mt-4">
-
-              {metaData.page < metaData.pageCount ? (
-                <Button onClick={handleLoadMore} color="primary">
-                  Cargar más encuestas
-                </Button>
-              ) : (
-                <p className="text-center text-gray-500">Mostrando todos los usuarios.</p>
-              )}
-            </div>
-          </>
-        ) : <WarningAlert message="No se han encontrado usuarios" />}
-
-      </div>
-    );
-  }
-
-
-
-
-}
-
-interface IPreguntas {
-  id: number;
-  attributes: {
-    Tipo: string;
-    Titulo: string;
-    opciones: [];
-  }
-}
-
-function Table({ data }: { data: surveyInterface[] }) {
   const handleRouter = (id: number) => {
     sessionStorage.setItem("id_survey", id.toString());
-    router.push("/encuestas/visualizar");
+    toast.success('Usuario seleccionado');
+    // Implementar la lógica de redirección aquí
   };
-  return (
-    <>
-      {data.length !== 0 ? (
-        <table className="min-w-full divide-y divide-gray-300">
-          <thead className="bg-gray-50">
-            <tr>
-              <th
-                scope="col"
-                className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6"
-              >
-                #
-              </th>
-              <th
-                scope="col"
-                className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
-              >
-                Nombre Encuesta
-              </th>
-              <th
-                scope="col"
-                className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
-              >
-                Fecha Inicio
-              </th>
-              <th
-                scope="col"
-                className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
-              >
-                Fecha Termino
-              </th>
-              <th
-                scope="col"
-                className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
-              >
-                Ver
-              </th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-200 bg-white">
-            {data.map((survey, index) => (
-              <tr key={index}>
-                <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
-                  {index + 1}
-                </td>
-                <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
-                  {survey.attributes.Titulo}{survey.attributes.descripcion}
-                </td>
-                <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
-                  {survey.attributes.FechaInicio}
-                </td>
-                <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
-                  {survey.attributes.FechaFin}
-                </td>
-                <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
-                  <button onClick={() => handleRouter(survey.id)}>
-                    <EyeIcon className="h-6 w-6" aria-hidden="true" />
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
 
+  if (GetRole() !== "admin") {
+    return <WarningAlert message="No tienes permisos para ver esta página" />;
+  }
+
+  return (
+    <div className="px-4 sm:px-6 lg:px-8">
+      <div className="sm:flex sm:items-center">
+        <div className="sm:flex-auto">
+          <h1 className="text-base font-semibold leading-6 text-gray-900">Lista de usuarios</h1>
+        </div>
+        <div className="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
+          <button onClick={redirect} className="btn btn-primary btn-outline">
+            Crear nuevo usuario
+          </button>
+        </div>
+      </div>
+      {isLoading ? (
+        <p className="text-center mt-4">Cargando usuarios...</p>
+      ) : data.length === 0 ? (
+        <WarningAlert message="No se han encontrado usuarios" />
       ) : (
-        <WarningAlert message="No se han encontrado usuarios." />
+        <>
+          <div className="mt-8 flow-root">
+            <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+              <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
+                <table className="min-w-full divide-y divide-gray-300 border rounded-md">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6">#</th>
+                      <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">ID</th>
+                      <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Nombre</th>
+                      <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Email</th>
+                      <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Editar</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200 bg-white">
+                    {currentUsers.map((user, index) => (
+                      <tr key={user.id}>
+                        <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
+                          {indexOfFirstUser + index + 1}
+                        </td>
+                        <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
+                          {user.id}
+                        </td>
+                        <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
+                          {user.firstname} {user.first_lastname}
+                        </td>
+                        <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
+                          {user.email}
+                        </td>
+                        <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
+                          <button onClick={() => router.push(`/administrador/editarUsuario?id=${user.id}`)}>
+                            <PencilIcon className="h-6 w-6" aria-hidden="true" />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+          <div className="mt-4 flex justify-between">
+            <button 
+              onClick={() => handlePageChange(currentPage - 1)} 
+              disabled={currentPage === 1}
+              className="btn btn-primary btn-outline"
+            >
+              Anterior
+            </button>
+            <span>Página {currentPage} de {totalPages}</span>
+            <button 
+              onClick={() => handlePageChange(currentPage + 1)} 
+              disabled={currentPage === totalPages || totalPages === 0}
+              className="btn btn-primary btn-outline"
+            >
+              Siguiente
+            </button>
+          </div>
+        </>
       )}
-    </>
+    </div>
   );
 }

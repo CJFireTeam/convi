@@ -32,9 +32,16 @@ api.interceptors.response.use(
   }
 );
 
+export function api_postUser(data: any) {
+  return api.post(`professionals`, { data: data })
+}
 export function api_me() {
   return api.get('users/me?populate=*');
 }
+export function api_role() {
+  return api.get(`role-lists`)
+}
+
 export function api_usersByRole(role: number, establishment: number) {
   let query = `populate[users][filters][role]=${role}`
   return api.get(`establishments/${establishment}?${query}`)

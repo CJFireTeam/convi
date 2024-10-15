@@ -34,7 +34,7 @@ export interface IUser {
 export default function Index() {
   const { push } = useRouter();
   const redirect = () => {
-    push("administrador/crearusuario");
+    push("administrador/crearUsuario");
   };
   const { user, GetRole } = useUserStore();
   const [data, setData] = useState<IUser[]>([]);

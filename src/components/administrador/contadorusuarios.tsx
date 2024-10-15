@@ -49,8 +49,10 @@ export default function ContadorUsuarios() {
   };
 
   useEffect(() => {
-    getUsersByEstablishment();
-  }, [user.establishment.id]);
+    if (user.establishment) {
+      getUsersByEstablishment();
+    }
+  }, [user.establishment]);
 
   return (
     <div className="grid grid-cols-3 gap-4 border rounded-lg shadow-md p-4">

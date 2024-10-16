@@ -1,10 +1,11 @@
-import { api_getOneUser } from "@/services/axios.services";
+import { api_getOneUser, api_role, api_updateUser } from "@/services/axios.services";
 import { getComunas, getRegiones } from "@/services/local.services";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useSearchParams } from "next/navigation";
 import router from "next/router";
 import { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
+import { toast } from "react-toastify";
 import { z } from "zod";
 
 interface IUser {
@@ -23,6 +24,10 @@ interface IUser {
     region: string;
     comuna: string;
     phone: string;
+    role: {
+        id: number;
+        name: string;
+    }
 }
 
 interface IFormValue {
@@ -34,41 +39,28 @@ interface IFormValue {
     first_lastname: string;
     firstname: string;
     secondname: string;
-    tipo: string;
+    role: number;
     direccion: string;
     region: string;
     comuna: string;
     phone: string;
 }
 
+interface IRole {
+    id: number;
+    name: string;
+}
+
 export default function EditarUsuario() {
-    const searchParams = useSearchParams();
-    const search = searchParams.get("id");
-    const userId = String(search);
+    const searchParams = useSearchParams()
+    const search = searchParams.get("id")
+    const userId = String(search)
 
-    const [dataUser, setDataUser] = useState<IUser>()
-
-    const getUser = async () => {
-        try {
-            const response = await api_getOneUser(parseInt(userId));
-            setDataUser(response.data);
-        } catch (error) {
-            console.error('Error fetching user data:', error);
-        }
-    };
-
-    useEffect(() => {
-        getUser();
-    }, [search]);
-
+    const [dataUser, setDataUser] = useState<IUser>();
     const [regionList, setRegionList] = useState<string[]>([]);
-    useEffect(() => {
-        const Regiones = async () => {
-            const data = await getRegiones();
-            setRegionList(data.data.data);
-        };
-        Regiones();
-    }, []);
+    const [comunaList, setComunaList] = useState<string[]>([]);
+    const [roleList, setRoleList] = useState<IRole[]>([]);
+
 
     const EditUserSchema = z.object({
         firstname: z.string(),
@@ -77,43 +69,75 @@ export default function EditarUsuario() {
         second_lastname: z.string(),
         username: z.string(),
         email: z.string(),
-        tipo: z.string(),
+        role: z.number({ required_error: 'Campo requerido.' }),
         confirmed: z.boolean(),
         direccion: z.string(),
-        region: z.string(),
-        comuna: z.string(),
+        region: z.string({ required_error: 'Campo requerido.' }),
+        comuna: z.string({ required_error: 'Campo requerido.' }),
         phone: z.string(),
         blocked: z.boolean(),
     });
 
-    const { register, watch, setValue, handleSubmit, formState: { errors } } = useForm<IFormValue>({
+    const { register, watch, setValue, handleSubmit, formState: { errors }, control } = useForm<IFormValue>({
         resolver: zodResolver(EditUserSchema),
     });
 
-    const regionE = watch('region');
-    const [comunaList, setComunaList] = useState<string[]>([]);
-    const getComuna = async (region: string) => {
-        if (region) {
+
+    const regionWatch = watch("region")
+
+    useEffect(() => {
+        const fetchData = async () => {
             try {
-                const comunas = await getComunas(region);
-                setComunaList(comunas.data.data);
+                const userData = await api_getOneUser(parseInt(userId))
+                setDataUser(userData.data[0])
+                const roleData = await api_role()
+                const filteredRoles = roleData.data.roles.filter(
+                    (role:IRole) => role.name === "Encargado de Convivencia Escolar" || role.name === "Profesor"
+                )
+                setRoleList(filteredRoles)
+                const regionData = await getRegiones()
+                setRegionList(regionData.data.data)
             } catch (error) {
-                console.error('Error fetching comunas:', error);
+                console.error('Error fetching data:', error)
             }
         }
-    };
+        fetchData()
+    }, [userId])
 
     useEffect(() => {
-        if (dataUser?.region) {
-            getComuna(dataUser.region);
+        if (dataUser && dataUser.region) {
+            handleChangeRegion(dataUser.region)
         }
-    }, [dataUser]);
+    }, [dataUser])
 
     useEffect(() => {
-        if (regionE) {
-            getComuna(regionE);
+        if (regionWatch) {
+            handleChangeRegion(regionWatch)
         }
-    }, [regionE]);
+    }, [regionWatch])
+
+    const handleChangeRegion = async (region: string) => {
+        setValue("comuna", "")
+        const comunas = await getComunas(region)
+        setComunaList(comunas.data.data)
+    }
+
+    const onSubmit = async (data: IFormValue) => {
+
+        try {
+            // Transformar valores vacíos en undefined
+            const transformedData = {
+                ...data,
+                region: data.region === "" ? undefined : data.region,
+                comuna: data.comuna === "" ? undefined : data.comuna,
+            }
+            await api_updateUser(Number(userId), transformedData)
+            toast.success('Perfil actualizado')
+        } catch (error) {
+            console.error(error)
+            toast.error('Ocurrió un error al procesar tu solicitud. Por favor, inténtalo de nuevo más tarde.')
+        }
+    }
 
     return (
         <>
@@ -130,7 +154,7 @@ export default function EditarUsuario() {
                 </div>
             ) : (
                 <>
-                    <form onSubmit={handleSubmit(() => {/* Handle form submit */ })}>
+                    <form onSubmit={handleSubmit(onSubmit)}>
                         <div className="grid md:grid-cols-12 gap-4 border rounded-md shadow-md p-4">
                             <div className="md:col-start-0 md:col-end-2">
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-12 text-primary hover:text-green-700 cursor-pointer" onClick={() => { router.back() }}>
@@ -175,21 +199,36 @@ export default function EditarUsuario() {
                                         <input type="email" {...register('email')} className="input input-primary w-full" defaultValue={dataUser?.email} />
                                     </div>
 
-                                    {/* tipo */}
+                                    {/* Rol */}
                                     <div className="md:mr-4">
-                                        <label htmlFor="tipo">Tipo: </label>
-                                        <select {...register('tipo')} className="select select-primary w-full" defaultValue={dataUser?.tipo}>
-                                            <option value="alumno">alumno</option>
-                                            <option value="apoderado">apoderado</option>
-                                            <option value="otro">otro</option>
-                                        </select>
+                                        <label htmlFor="role">Rol*: </label>
+                                        <Controller
+                                            name="role"
+                                            control={control}
+                                            defaultValue={dataUser.role.id}
+                                            render={({ field }) => (
+                                                <select
+                                                    {...field}
+                                                    className="select select-primary w-full"
+                                                    onChange={(e) => field.onChange(Number(e.target.value))}
+                                                >
+                                                    <option value="" disabled>Seleccione un rol</option>
+                                                    {roleList.map((role) => (
+                                                        <option key={role.id} value={role.id}>
+                                                            {role.name}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                            )}
+                                        />
                                     </div>
+
 
                                     {/* Confirmado */}
                                     <div className="md:mr-4 my-auto">
                                         <label className="inline-flex items-center">
                                             <span className="mr-2">Confirmado:</span>
-                                            <input type="checkbox" {...register('confirmed')} className="toggle-checkbox checkbox-primary" defaultChecked={dataUser?.confirmed} />
+                                            <input type="checkbox" {...register('confirmed')} className="toggle-checkbox checkbox-primary rounded-full" defaultChecked={dataUser?.confirmed} />
                                         </label>
                                     </div>
 
@@ -201,30 +240,50 @@ export default function EditarUsuario() {
 
                                     {/* Región */}
                                     <div className="md:mr-4">
-                                        <label htmlFor="region">Region:</label>
-                                        <select {...register('region')} className="select select-primary w-full" defaultValue={dataUser?.region}>
-                                            {regionList.map((region: string) => (
-                                                <option value={region} key={region}>
-                                                    {region}
-                                                </option>
-                                            ))}
-                                        </select>
+                                        <label htmlFor="region">Región*: </label>
+                                        <Controller
+                                            name="region"
+                                            control={control}
+                                            defaultValue={dataUser.region}
+                                            render={({ field }) => (
+                                                <select
+                                                    {...field}
+                                                    className="select select-primary w-full"
+                                                >
+                                                    <option value="">Seleccione una región</option>
+                                                    {regionList.map((region) => (
+                                                        <option key={region} value={region}>
+                                                            {region}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                            )}
+                                        />
+                                        {errors.region?.message && (<p className="text-red-600 text-sm mt-1">{errors.region.message}</p>)}
                                     </div>
 
                                     {/* Comuna */}
                                     <div className="md:mr-4">
-                                        <label htmlFor="comuna">Comuna:</label>
-                                        <select
-                                            {...register('comuna')}
-                                            className="select select-primary w-full"
+                                        <label htmlFor="comuna">Comuna*: </label>
+                                        <Controller
+                                            name="comuna"
+                                            control={control}
                                             defaultValue={dataUser.comuna}
-                                        >
-                                            {comunaList.map((comuna: string) => (
-                                                <option value={comuna} key={comuna}>
-                                                    {comuna}
-                                                </option>
-                                            ))}
-                                        </select>
+                                            render={({ field }) => (
+                                                <select
+                                                    {...field}
+                                                    className="select select-primary w-full"
+                                                >
+                                                    <option value="">Seleccione una comuna</option>
+                                                    {comunaList.map((comuna) => (
+                                                        <option key={comuna} value={comuna}>
+                                                            {comuna}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                            )}
+                                        />
+                                        {errors.comuna?.message && (<p className="text-red-600 text-sm mt-1">{errors.comuna.message}</p>)}
                                     </div>
 
                                     {/* Teléfono */}
@@ -237,14 +296,15 @@ export default function EditarUsuario() {
                                     <div className="md:mr-4 my-auto">
                                         <label className="inline-flex items-center">
                                             <span className="mr-2">Bloqueado:</span>
-                                            <input type="checkbox" {...register('blocked')} className="toggle-checkbox checkbox-primary" defaultChecked={dataUser?.blocked} />
+                                            <input type="checkbox" {...register('blocked')} className="toggle-checkbox checkbox-primary rounded-full" defaultChecked={dataUser?.blocked} />
                                         </label>
                                     </div>
-                                </div>
-                                <div className="my-6">
-                                    <button type="submit" className="btn btn-primary">
-                                        Guardar
-                                    </button>
+
+                                    <div className="my-4 md:col-span-4">
+                                        <button type="submit" className="btn btn-primary">
+                                            Guardar
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>

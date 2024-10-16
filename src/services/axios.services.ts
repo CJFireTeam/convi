@@ -39,7 +39,7 @@ export function api_me() {
   return api.get('users/me?populate=*');
 }
 export function api_role() {
-  return api.get(`role-lists`)
+  return api.get(`users-permissions/roles`)
 }
 
 export function api_usersByRole(role: number, establishment: number) {
@@ -210,7 +210,9 @@ export function api_postCase(caseData: {
 }
 
 export function api_getOneUser(userId: number) {
-  return api.get(`users/${userId}`)
+  let query = `?filters[$and][0][id][$eq]=${userId}`
+  query += `&populate[role][fields][0]=*`
+  return api.get(`users${query}`)
 }
 
 
@@ -246,7 +248,9 @@ export function api_GetUsersAlumnosEstablishment(escuelaId: number) {
 
 export function api_getAllUsersByEstablishment({ establishment, page }: { establishment: string, page: number }) {
   let query = `?filters[$and][0][establishment][name][$eq]=${establishment}`
-  query = query + `&pagination[page]=${page}&pagination[pageSize]=10`
-  query = query + `&sort[0]=id:asc`
+  query += `&filters[$or][0][role][name][$eq]=Encargado de Convivencia Escolar`
+  query += `&filters[$or][1][role][name][$eq]=Profesor`
+  query += `&populate[role][fields][0]=name`
+  query += `&sort[0]=id:asc`
   return api.get(`users${query}`)
 }

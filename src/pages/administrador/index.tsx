@@ -21,7 +21,7 @@ export interface IUser {
   firstname: string;
   secondname: string;
   establishment?: number;
-  role?: {
+  role: {
     id: number;
     name: string;
     description: string;
@@ -34,7 +34,7 @@ export interface IUser {
 export default function Index() {
   const { push } = useRouter();
   const redirect = () => {
-    push("administrador/crearUsuario");
+    push("administrador/crearusuario");
   };
   const { user, GetRole } = useUserStore();
   const [data, setData] = useState<IUser[]>([]);
@@ -106,13 +106,15 @@ export default function Index() {
           <div className="mt-8 flow-root">
             <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
               <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
-                <table className="min-w-full divide-y divide-gray-300 border rounded-md">
+                <table className="min-w-full divide-y divide-gray-300 border ">
                   <thead className="bg-gray-50">
                     <tr>
                       <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6">#</th>
                       <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">ID</th>
                       <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Nombre</th>
                       <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Email</th>
+                      <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Comuna</th>
+                      <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Rol</th>
                       <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Editar</th>
                     </tr>
                   </thead>
@@ -131,6 +133,13 @@ export default function Index() {
                         <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
                           {user.email}
                         </td>
+                        <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
+                          {user.comuna}
+                        </td>
+                        <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
+                          {user.role.name}
+                        </td>
+                       
                         <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
                           <button onClick={() => router.push(`/administrador/editarUsuario?id=${user.id}`)}>
                             <PencilIcon className="h-6 w-6" aria-hidden="true" />

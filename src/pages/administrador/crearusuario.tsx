@@ -13,7 +13,7 @@ import axios, { AxiosError } from "axios";
 export interface IUser {
     username: string;
     email: string;
-    role?: number;
+    role?: string;
     first_lastname: string;
     second_lastname: string;
     firstname: string;
@@ -23,6 +23,11 @@ export interface IUser {
     direccion: string;
     phone: string;
     password: string;
+    tipo: string;
+}
+interface IRole {
+    id: number;
+    name: string
 }
 
 function generateRandomPassword() {
@@ -46,18 +51,20 @@ export default function CrearUsuario() {
         const id = toast.loading("Creando...");
     data.username = data.email
     data.password = generateRandomPassword()
+    data.tipo = "otro"
     try {  
         console.log("data enviada al posss", data)
-    //   await axios.post(
-    //     process.env.NEXT_PUBLIC_BACKEND_URL + "auth/local/register",
-    //     data
-    //   );
-    //   toast.update(id, {
-    //     render: "Usuario creado correctamente",
-    //     type: "success",
-    //     isLoading: false,
-    //     autoClose: 3000,
-    //   });
+        const response = await axios.post(
+        process.env.NEXT_PUBLIC_BACKEND_URL + "auth/local/register",
+        data
+      );
+
+      toast.update(id, {
+        render: "Usuario creado correctamente",
+        type: "success",
+        isLoading: false,
+        autoClose: 3000,
+      });
     } catch (error) {
       if (error instanceof AxiosError) {
         if (error.response) {
@@ -109,11 +116,12 @@ export default function CrearUsuario() {
         handleChangeRegion(regionWatch)
     }, [regionWatch])
 
-    const [roleList, setRoleList] = useState<string[]>([]);
+    const [roleList, setRoleList] = useState<IRole[]>([]);
 
     const getRoleList = async () => {
         const role = await api_role();
-        setRoleList(role.data.data);
+        console.log("estos son los roles",role.data.roles)
+        setRoleList(role.data.roles);
     }
 
     useEffect(()=>{
@@ -128,29 +136,29 @@ export default function CrearUsuario() {
                         <ArrowLeftIcon className="h-8 w-8 text-primary "></ArrowLeftIcon>
                     </button>
                 </div>
-        <div className="max-w-2xl mx-auto p-6 bg-white rounded-lg shadow-md">
+        <div className="max-w-2xl mx-auto p-6 bg-white rounded-lg shadow-md border border-primary">
             <h2 className="text-2xl font-bold mb-2">Crear Cuenta de Usuario</h2>
             <p className="text-gray-600 mb-6">Ingrese los detalles del nuevo usuario</p>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                        <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                        <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">Email*</label>
                         <input
                             id="email"
                             type="email"
                             {...register("email", { setValueAs: (value) => value === "" ? undefined : value })}
                             //onChange={handleInputChange}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            className="w-full input input-primary bg-white"
                         />
                         {errors.email?.message && (<p className="text-error text-sm mb-4 text-center">{errors.email.message}</p>)}
                     </div>
                     <div>
-                        <label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-1">Rol</label>
-                        <select {...register("role", { setValueAs: (value) => value === "" ? undefined : Number(value) })} className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-primary sm:text-sm sm:leading-6">
+                        <label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-1">Rol*</label>
+                        <select {...register("role", { setValueAs: (value) => value === "" ? undefined : value })} className="w-full select select-primary bg-white">
                                 <option value={""}>Seleccione el rol del usuario</option>
                                 {roleList.map((role: any) => (
                                     <option value={role.id} key={role.id}>
-                                        {role.attributes.name}
+                                        {role.name}
                                     </option>
                                 ))}
                             </select>
@@ -159,56 +167,56 @@ export default function CrearUsuario() {
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                        <label htmlFor="firstname" className="block text-sm font-medium text-gray-700 mb-1">Primer Nombre</label>
+                        <label htmlFor="firstname" className="block text-sm font-medium text-gray-700 mb-1">Primer Nombre*</label>
                         <input
                             id="firstname"
                             type="text"
                             {...register("firstname", { setValueAs: (value) => value === "" ? undefined : value })}
                             //onChange={handleInputChange}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            className="w-full input input-primary bg-white"
                         />
                         {errors.firstname?.message && (<p className="text-error text-sm mb-4 text-center">{errors.firstname.message}</p>)}
                     </div>
                     <div>
-                        <label htmlFor="secondname" className="block text-sm font-medium text-gray-700 mb-1">Segundo Nombre</label>
+                        <label htmlFor="secondname" className="block text-sm font-medium text-gray-700 mb-1">Segundo Nombre*</label>
                         <input
                             id="secondname"
                             type="text"
                             {...register("secondname", { setValueAs: (value) => value === "" ? undefined : value })}
                             //onChange={handleInputChange}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            className="w-full input input-primary bg-white"
                         />
                         {errors.secondname?.message && (<p className="text-error text-sm mb-4 text-center">{errors.secondname.message}</p>)}
                     </div>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                        <label htmlFor="first_lastname" className="block text-sm font-medium text-gray-700 mb-1">Apellido Paterno</label>
+                        <label htmlFor="first_lastname" className="block text-sm font-medium text-gray-700 mb-1">Apellido Paterno*</label>
                         <input
                             id="first_lastname"
                             type="text"
                             {...register("first_lastname", { setValueAs: (value) => value === "" ? undefined : value })}
                             //onChange={handleInputChange}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            className="w-full input input-primary bg-white"
                         />
                         {errors.first_lastname?.message && (<p className="text-error text-sm mb-4 text-center">{errors.first_lastname.message}</p>)}
                     </div>
                     <div>
-                        <label htmlFor="second_lastname" className="block text-sm font-medium text-gray-700 mb-1">Apellido Materno</label>
+                        <label htmlFor="second_lastname" className="block text-sm font-medium text-gray-700 mb-1">Apellido Materno*</label>
                         <input
                             id="second_lastname"
                             type="text"
                             {...register("second_lastname", { setValueAs: (value) => value === "" ? undefined : value })}
                             //onChange={handleInputChange}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            className="w-full input input-primary bg-white"
                         />
                         {errors.second_lastname?.message && (<p className="text-error text-sm mb-4 text-center">{errors.second_lastname.message}</p>)}
                     </div>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                        <label htmlFor="region" className="block text-sm font-medium text-gray-700 mb-1">Región de Residencia</label>
-                        <select {...register("region", { setValueAs: (value) => value === "" ? undefined : value })} className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-primary sm:text-sm sm:leading-6">
+                        <label htmlFor="region" className="block text-sm font-medium text-gray-700 mb-1">Región de Residencia*</label>
+                        <select {...register("region", { setValueAs: (value) => value === "" ? undefined : value })} className="w-full select select-primary bg-white">
                                 <option value={""}>Seleccione su region de residencia</option>
                                 {regionList.map((region: string) => (
                                     <option value={region} key={region}>
@@ -219,8 +227,8 @@ export default function CrearUsuario() {
                         {errors.region?.message && (<p className="text-error text-sm mb-4 text-center">{errors.region.message}</p>)}
                     </div>
                     <div>
-                        <label htmlFor="comuna" className="block text-sm font-medium text-gray-700 mb-1">Comuna de Residencia</label>
-                        <select {...register("comuna", { setValueAs: (value) => value === "" ? undefined : value })} className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-primary sm:text-sm sm:leading-6">
+                        <label htmlFor="comuna" className="block text-sm font-medium text-gray-700 mb-1">Comuna de Residencia*</label>
+                        <select {...register("comuna", { setValueAs: (value) => value === "" ? undefined : value })} className="w-full select select-primary bg-white">
                                 <option value={""}>Seleccione su comuna de residencia</option>
                                 {comunaList.map((comuna: string) => (
                                     <option value={comuna} key={comuna}>
@@ -232,31 +240,31 @@ export default function CrearUsuario() {
                     </div>
                 </div>
                 <div>
-                    <label htmlFor="direccion" className="block text-sm font-medium text-gray-700 mb-1">Dirección</label>
+                    <label htmlFor="direccion" className="block text-sm font-medium text-gray-700 mb-1">Dirección*</label>
                     <input
                         id="direccion"
                         type="text"
                         {...register("direccion", { setValueAs: (value) => value === "" ? undefined : value })}
                         //onChange={handleInputChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full input input-primary bg-white"
                     />
                     {errors.direccion?.message && (<p className="text-error text-sm mb-4 text-center">{errors.direccion.message}</p>)}
                 </div>
                 <div>
-                    <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
+                    <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">Teléfono*</label>
                     <input
                         id="phone"
                         type="tel"
                         {...register("phone", { setValueAs: (value) => value === "" ? undefined : value })}
                         //onChange={handleInputChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full input input-primary bg-white"
                     />
                     {errors.phone?.message && (<p className="text-error text-sm mb-4 text-center">{errors.phone.message}</p>)}
                 </div>
                 <div>
                     <button
                         type="submit"
-                        className="w-full px-4 py-2 bg-blue-600 text-white font-medium rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                        className="w-full px-4 py-2 bg-primary text-white font-medium rounded-md shadow-sm hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                     >
                         Crear Usuario
                     </button>

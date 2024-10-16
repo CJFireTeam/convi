@@ -143,6 +143,13 @@ const AdministradorMenus: IMenuChildren[] = [
     icon: UsersIcon,
     children: [],
     current: false,
+  },
+  {
+    name: "Configurar Documentos",
+    href: "/administrador/documentos",
+    icon: UsersIcon,
+    children: [],
+    current: false,
   }
 ];
 

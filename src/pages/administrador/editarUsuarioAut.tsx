@@ -1,4 +1,4 @@
-import { api_getOneUser, api_role, api_updateUser } from "@/services/axios.services";
+import { api_getOneUser, api_postCourses, api_role, api_updateUser } from "@/services/axios.services";
 import { getComunas, getRegiones } from "@/services/local.services";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useSearchParams } from "next/navigation";
@@ -24,11 +24,15 @@ interface IUser {
     region: string;
     comuna: string;
     phone: string;
-    role: {
+    establishment: {
         id: number;
         name: string;
     }
-    canUploadDoc:boolean;
+    courses: {
+        id: number;
+        grade: string;
+        letter: string;
+    }[]
 }
 
 interface IFormValue {
@@ -45,15 +49,10 @@ interface IFormValue {
     region: string;
     comuna: string;
     phone: string;
-    canUploadDoc:boolean;
 }
 
-interface IRole {
-    id: number;
-    name: string;
-}
 
-export default function EditarUsuario() {
+export default function EditarUsuarioAut() {
     const searchParams = useSearchParams()
     const search = searchParams.get("id")
     const userId = String(search)
@@ -61,7 +60,6 @@ export default function EditarUsuario() {
     const [dataUser, setDataUser] = useState<IUser>();
     const [regionList, setRegionList] = useState<string[]>([]);
     const [comunaList, setComunaList] = useState<string[]>([]);
-    const [roleList, setRoleList] = useState<IRole[]>([]);
 
 
     const EditUserSchema = z.object({
@@ -71,14 +69,12 @@ export default function EditarUsuario() {
         second_lastname: z.string(),
         username: z.string(),
         email: z.string(),
-        role: z.number({ required_error: 'Campo requerido.' }),
         confirmed: z.boolean(),
         direccion: z.string(),
         region: z.string({ required_error: 'Campo requerido.' }),
         comuna: z.string({ required_error: 'Campo requerido.' }),
         phone: z.string(),
         blocked: z.boolean(),
-        canUploadDoc: z.boolean(),
     });
 
     const { register, watch, setValue, handleSubmit, formState: { errors }, control } = useForm<IFormValue>({
@@ -94,10 +90,6 @@ export default function EditarUsuario() {
                 const userData = await api_getOneUser(parseInt(userId))
                 setDataUser(userData.data[0])
                 const roleData = await api_role()
-                const filteredRoles = roleData.data.roles.filter(
-                    (role: IRole) => role.name === "Encargado de Convivencia Escolar" || role.name === "Profesor"
-                )
-                setRoleList(filteredRoles)
                 const regionData = await getRegiones()
                 setRegionList(regionData.data.data)
             } catch (error) {
@@ -191,7 +183,7 @@ export default function EditarUsuario() {
                                     </div>
                                 </div>
 
-                                <div className="grid md:grid-cols-4 mb-4">
+                                <div className="grid md:grid-cols-3 mb-4">
                                     {/* username */}
                                     <div className="md:mr-4">
                                         <label htmlFor="username">Username: </label>
@@ -202,30 +194,6 @@ export default function EditarUsuario() {
                                     <div className="md:mr-4">
                                         <label htmlFor="email">Correo electronico: </label>
                                         <input type="email" {...register('email')} className="input input-primary w-full" defaultValue={dataUser?.email} />
-                                    </div>
-
-                                    {/* Rol */}
-                                    <div className="md:mr-4">
-                                        <label htmlFor="role">Rol*: </label>
-                                        <Controller
-                                            name="role"
-                                            control={control}
-                                            defaultValue={dataUser.role.id}
-                                            render={({ field }) => (
-                                                <select
-                                                    {...field}
-                                                    className="select select-primary w-full"
-                                                    onChange={(e) => field.onChange(Number(e.target.value))}
-                                                >
-                                                    <option value="" disabled>Seleccione un rol</option>
-                                                    {roleList.map((role) => (
-                                                        <option key={role.id} value={role.id}>
-                                                            {role.name}
-                                                        </option>
-                                                    ))}
-                                                </select>
-                                            )}
-                                        />
                                     </div>
 
                                     {/* Dirección */}
@@ -292,20 +260,12 @@ export default function EditarUsuario() {
                                     </div>
                                 </div>
 
-                                <div className="grid md:grid-cols-3">
+                                <div className="grid md:grid-cols-3 mb-4">
                                     {/* Confirmado */}
                                     <div className="md:mr-4 my-auto">
                                         <label className="inline-flex items-center">
                                             <span className="mr-2">Cuenta Confirmada:</span>
                                             <input type="checkbox" {...register('confirmed')} className="toggle toggle-primary" defaultChecked={dataUser?.confirmed} />
-                                        </label>
-                                    </div>
-
-                                    {/* Documentos */}
-                                    <div className="md:mr-4 my-auto">
-                                        <label className="inline-flex items-center">
-                                            <span className="mr-2">Puede subir documentos:</span>
-                                            <input type="checkbox" {...register('canUploadDoc')} className="toggle toggle-primary" defaultChecked={dataUser?.canUploadDoc} />
                                         </label>
                                     </div>
 
@@ -318,17 +278,218 @@ export default function EditarUsuario() {
                                     </div>
                                 </div>
 
-                                <div className="my-4 md:col-span-4">
-                                    <button type="submit" className="btn btn-primary">
+                                <div className="grid md:grid-cols-4">
+                                    <button type="submit" className="btn btn-primary w-full col-span-1">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+                                        </svg>
                                         Guardar
                                     </button>
                                 </div>
-
                             </div>
                         </div>
                     </form>
+
+                    <div className="grid md:grid-cols-12 gap-4 border rounded-md shadow-md p-4 mt-2">
+                        <div className="md:col-start-1 md:col-end-13">
+                            <InsertCourse
+                                userId={userId}
+                                establishmentId={dataUser.establishment.id}
+                                course={dataUser.courses}
+                                tipo={dataUser.tipo}
+                            />
+                        </div>
+                    </div>
                 </>
             )}
         </>
     )
+}
+
+
+interface IFormCourse {
+    grade: string;
+    letter: string;
+    establishment: number;
+    users: number;
+
+}
+interface IFormCourseAct {
+    grade: string;
+    letter: string;
+    establishment: number;
+    users: number;
+}
+
+
+interface props {
+    userId: string;
+    establishmentId: number;
+    course: {
+        id: number;
+        grade: string;
+        letter: string;
+    }[]
+    tipo: string;
+}
+
+export function InsertCourse(props: props) {
+
+    const CourseSchema = z.object({
+        grade: z.string({ required_error: 'Campo requerido', invalid_type_error: 'Tipo de dato invalido' }),
+        letter: z.string({ required_error: 'Campo requerido', invalid_type_error: 'Tipo de dato invalido' }),
+        establishment: z.number(),
+        users: z.number()
+    });
+
+    const { register, watch, setValue, handleSubmit, formState: { errors }, control } = useForm<IFormCourse>({
+        resolver: zodResolver(CourseSchema),
+    });
+
+    const onSubmit = async (data: IFormCourse) => {
+        try {
+            if (props.tipo == 'alumno' && props.course.length === 0) {
+                const response = await api_postCourses(data);
+                toast.success('Curso agregado correctamente')
+            }
+            if (props.tipo == 'apoderado') {
+                const response = await api_postCourses(data);
+                toast.success('Curso agregado correctamente')
+            }
+            //el id del formulario se lo especifico a la api y luego la data, queda para mañana 
+        }
+        catch (errors) {
+            console.log(errors);
+            toast.error('Ha sucedio un error inesperado.')
+        }
+        console.log('data formulario curso: ', data);
+    }
+
+    useEffect(() => {
+        setValue('establishment', props.establishmentId);
+        setValue('users', parseInt(props.userId));
+    }, [props.establishmentId, props.userId,props.course]);
+
+    return (
+        <>
+            {props.tipo == 'alumno' && props.course.length === 0 &&
+                (
+                    <form onSubmit={handleSubmit(onSubmit)}>
+                        <div className="grid md:grid-cols-4 items-center">
+                            <div>
+                                <p className="text-xl font-bold">AGREGAR CURSO DEL USUARIO:</p>
+                            </div>
+
+                            <div className="md:mr-2">
+                                <label htmlFor="Curso" className="font-semibold">Curso actual: </label>
+                                <input type="text"
+                                    {...register('grade', { setValueAs: (value) => value === '' ? undefined : value })}
+                                    className="input input-primary w-full"
+                                    maxLength={7} />
+                                {errors.grade?.message && (<p className="text-red-600 text-sm mt-1">{errors.grade.message}</p>)}
+                            </div>
+
+                            <div className="md:mr-2">
+                                <label htmlFor="letra" className="font-semibold">Letra: </label>
+                                <input type="text"
+                                    {...register('letter', { setValueAs: (value) => value === '' ? undefined : value })}
+                                    className="input input-primary w-full"
+                                    maxLength={1}
+                                />
+                                {errors.letter?.message && (<p className="text-red-600 text-sm mt-1">{errors.letter.message}</p>)}
+                            </div>
+
+                            <div className="mt-2 md:mt-5">
+                                <button type="submit" className="btn btn-primary w-full row-start-1">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+                                    </svg>
+                                    Guardar
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                )}
+            {props.tipo == 'alumno' && props.course.length !== 0 &&
+                (
+                    <form onSubmit={handleSubmit(onSubmit)}>
+                        <div className="grid md:grid-cols-4 items-center">
+                            <div>
+                                <p className="text-xl font-bold">ACTUALIZAR CURSO DEL USUARIO:</p>
+                            </div>
+
+                            <div className="md:mr-2">
+                                <label htmlFor="Curso" className="font-semibold">Curso actual: </label>
+                                <input type="text"
+                                    {...register('grade', { setValueAs: (value) => value === '' ? undefined : value })}
+                                    className="input input-primary w-full"
+                                    maxLength={7} 
+                                    defaultValue={props.course[0].grade}
+                                    />
+                                {errors.grade?.message && (<p className="text-red-600 text-sm mt-1">{errors.grade.message}</p>)}
+                            </div>
+
+                            <div className="md:mr-2">
+                                <label htmlFor="letra" className="font-semibold">Letra: </label>
+                                <input type="text"
+                                    {...register('letter', { setValueAs: (value) => value === '' ? undefined : value })}
+                                    className="input input-primary w-full"
+                                    maxLength={1}
+                                    defaultValue={props.course[0].letter}
+                                />
+                                {errors.letter?.message && (<p className="text-red-600 text-sm mt-1">{errors.letter.message}</p>)}
+                            </div>
+
+                            <div className="mt-2 md:mt-5">
+                                <button type="submit" className="btn btn-primary w-full row-start-1">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+                                    </svg>
+                                    Guardar
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                )}
+            {props.tipo == 'apoderado' &&
+                (
+                    <form onSubmit={handleSubmit(onSubmit)}>
+                        <div className="grid md:grid-cols-4 items-center">
+                            <div>
+                                <p className="text-xl font-bold">AGREGAR CURSO DEL USUARIO:</p>
+                            </div>
+
+                            <div className="md:mr-2">
+                                <label htmlFor="Curso" className="font-semibold">Curso actual: </label>
+                                <input type="text"
+                                    {...register('grade', { setValueAs: (value) => value === '' ? undefined : value })}
+                                    className="input input-primary w-full"
+                                    maxLength={7} />
+                                {errors.grade?.message && (<p className="text-red-600 text-sm mt-1">{errors.grade.message}</p>)}
+                            </div>
+
+                            <div className="md:mr-2">
+                                <label htmlFor="letra" className="font-semibold">Letra: </label>
+                                <input type="text"
+                                    {...register('letter', { setValueAs: (value) => value === '' ? undefined : value })}
+                                    className="input input-primary w-full"
+                                    maxLength={1}
+                                />
+                                {errors.letter?.message && (<p className="text-red-600 text-sm mt-1">{errors.letter.message}</p>)}
+                            </div>
+
+                            <div className="mt-2 md:mt-5">
+                                <button type="submit" className="btn btn-primary w-full row-start-1">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+                                    </svg>
+                                    Guardar
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                )}
+
+        </>
+    );
 }

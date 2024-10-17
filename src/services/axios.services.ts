@@ -50,6 +50,9 @@ export function api_usersByRole(role: number, establishment: number) {
 export function api_establishmentByComuna(comuna: string) {
   return api.get("establishments?fields[0]=name&filters[Comuna][$eq]=" + comuna)
 }
+export function api_allEstablishment() {
+  return api.get(`establishments`)
+}
 export function api_surveys({ createdBy, userId, page = 1 }: { createdBy: number, userId?: number, page?: number }) {
   let query = `?populate[creador][populate][0]=role`
   query = query + `&filters[creador]=${createdBy}`
@@ -211,7 +214,7 @@ export function api_postCase(caseData: {
 
 export function api_getOneUser(userId: number) {
   let query = `?filters[$and][0][id][$eq]=${userId}`
-  query += `&populate[role][fields][0]=*`
+  query += `&populate=*`
   return api.get(`users${query}`)
 }
 
@@ -246,7 +249,7 @@ export function api_GetUsersAlumnosEstablishment(escuelaId: number) {
   return api.get(`users${query}`)
 }
 
-export function api_getAllUsersByEstablishment({ establishment, page }: { establishment: string, page: number }) {
+export function api_getAllUsersOtrosByEstablishment({ establishment, page }: { establishment: string, page: number }) {
   let query = `?filters[$and][0][establishment][name][$eq]=${establishment}`
   query += `&filters[$or][0][role][name][$eq]=Encargado de Convivencia Escolar`
   query += `&filters[$or][1][role][name][$eq]=Profesor`
@@ -254,3 +257,15 @@ export function api_getAllUsersByEstablishment({ establishment, page }: { establ
   query += `&sort[0]=id:asc`
   return api.get(`users${query}`)
 }
+
+export function api_getAllUsersAutByEstablishment({ establishment, page }: { establishment: string, page: number }) {
+  let query = `?filters[$and][0][establishment][name][$eq]=${establishment}`
+  query += `&filters[$or][0][tipo][$eq]=alumno`
+  query += `&filters[$or][1][tipo][$eq]=apoderado`
+  query += `&sort[0]=tipo:asc`
+  return api.get(`users${query}`)
+}
+
+export function api_postCourses(data: any) {
+  return api.post(`courses`, { data: data })
+};

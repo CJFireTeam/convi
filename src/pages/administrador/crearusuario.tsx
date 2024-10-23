@@ -79,6 +79,13 @@ export default function CrearUsuario() {
             const userId = response.data.user.id;
             await api_updateUser(Number(userId), updateRoleUser);
 
+            const emailResponse = await axios.post(
+                process.env.NEXT_PUBLIC_BACKEND_URL + "send-password-email",
+                {
+                  email: data.email,
+                  password: transformedData.password
+                }
+              );
             toast.update(id, {
                 render: "Usuario creado correctamente",
                 type: "success",
@@ -97,8 +104,6 @@ export default function CrearUsuario() {
                             autoClose: 3000,
 
                         })
-                    router.push({ pathname: "/login" });
-
                 }
             } else {
                 toast.update(id, {

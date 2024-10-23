@@ -1,4 +1,5 @@
-import { api_getOneUser, api_role, api_updateUser } from "@/services/axios.services";
+import WarningAlert from "@/components/alerts/warningAlert";
+import { api_getOneUser, api_postCourses, api_role, api_updateUser } from "@/services/axios.services";
 import { getComunas, getRegiones } from "@/services/local.services";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useSearchParams } from "next/navigation";
@@ -28,7 +29,16 @@ interface IUser {
         id: number;
         name: string;
     }
-    canUploadDoc:boolean;
+    establishment: {
+        id: number;
+        name: string;
+    }
+    courses: {
+        id: number;
+        grade: string;
+        letter: string;
+    }[]
+    canUploadDoc: boolean;
 }
 
 interface IFormValue {
@@ -45,7 +55,7 @@ interface IFormValue {
     region: string;
     comuna: string;
     phone: string;
-    canUploadDoc:boolean;
+    canUploadDoc: boolean;
 }
 
 interface IRole {
@@ -318,17 +328,140 @@ export default function EditarUsuario() {
                                     </div>
                                 </div>
 
-                                <div className="my-4 md:col-span-4">
-                                    <button type="submit" className="btn btn-primary">
+                                <div className="grid md:grid-cols-4 mt-4">
+                                    <button type="submit" className="btn btn-primary w-full col-span-1">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+                                        </svg>
                                         Guardar
                                     </button>
                                 </div>
-
                             </div>
                         </div>
                     </form>
+
+                    <div className="grid md:grid-cols-12 gap-4 border rounded-md shadow-md p-4 mt-2">
+                        <div className="md:col-start-1 md:col-end-13">
+                            <InsertCourse
+                                userId={userId}
+                                establishmentId={dataUser.establishment.id}
+                                course={dataUser.courses}
+                            />
+                        </div>
+                    </div>
                 </>
             )}
         </>
     )
+}
+
+
+
+interface IFormCourse {
+    grade: string;
+    letter: string;
+    establishment: number;
+    users: number;
+}
+
+interface props {
+    userId: string;
+    establishmentId: number;
+    course: {
+        id: number;
+        grade: string;
+        letter: string;
+    }[]
+}
+
+export function InsertCourse(props: props) {
+
+    const CourseSchema = z.object({
+        grade: z.string({ required_error: 'Campo requerido', invalid_type_error: 'Tipo de dato invalido' }),
+        letter: z.string({ required_error: 'Campo requerido', invalid_type_error: 'Tipo de dato invalido' }),
+        establishment: z.number(),
+        users: z.number()
+    });
+
+    const { register, watch, setValue, handleSubmit, formState: { errors }, control } = useForm<IFormCourse>({
+        resolver: zodResolver(CourseSchema),
+    });
+
+    const onSubmit = async (data: IFormCourse) => {
+        try {
+            const response = await api_postCourses(data);
+            toast.success('Curso agregado correctamente')
+            router.back();
+        }
+        catch (errors) {
+            console.log(errors);
+            toast.error('Ha sucedio un error inesperado.')
+        }
+        console.log('data formulario curso: ', data);
+    }
+
+    useEffect(() => {
+        setValue('establishment', props.establishmentId);
+        setValue('users', parseInt(props.userId));
+    }, [props.establishmentId, props.userId, props.course]);
+
+    return (
+        <>
+            <form onSubmit={handleSubmit(onSubmit)}>
+                <div className="grid md:grid-cols-4 items-center border-b-2 border-b-primary">
+                    <div>
+                        <p className="text-xl font-bold">AGREGAR CURSO DEL USUARIO:</p>
+                    </div>
+
+                    <div className="md:mr-2">
+                        <label htmlFor="Curso" className="font-semibold">Curso actual: </label>
+                        <input type="text"
+                            {...register('grade', { setValueAs: (value) => value === '' ? undefined : value })}
+                            className="input input-primary w-full"
+                            maxLength={7}
+                            placeholder="ejemplo: 1°medio" />
+                        {errors.grade?.message && (<p className="text-red-600 text-sm mt-1">{errors.grade.message}</p>)}
+                    </div>
+
+                    <div className="md:mr-2">
+                        <label htmlFor="letra" className="font-semibold">Letra: </label>
+                        <input type="text"
+                            {...register('letter', { setValueAs: (value) => value === '' ? undefined : value })}
+                            className="input input-primary w-full"
+                            maxLength={1}
+                            placeholder="ejemplo: B"
+                        />
+                        {errors.letter?.message && (<p className="text-red-600 text-sm mt-1">{errors.letter.message}</p>)}
+                    </div>
+
+                    <div className="mt-2 md:mt-11 mb-6">
+                        <button type="submit" className="btn btn-primary w-full ">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+                            </svg>
+                            Guardar
+                        </button>
+                    </div>
+                </div>
+            </form>
+            {props.course.length !== 0 ? (
+                <div className="grid md:grid-cols-4 items-center text-center mt-4">
+                    <div className="md:col-span-4">
+                        <p className="text-xl font-bold">Cursos relacionados a este usuario</p>
+                    </div>
+                    {props.course.map((c, index) => (
+                        <div key={index} className="my-2">
+                            <span className="font-semibold">{c.grade + " " + c.letter}</span>
+                        </div>
+                    ))}
+                </div>
+            ) : (
+                <div className="grid md:grid-cols-4 items-center">
+                    <div className="col-span-4">
+                        <WarningAlert message={'Sin cursos relacionados.'} />
+                    </div>
+                </div>
+            )}
+        </>
+    );
 }

@@ -269,3 +269,26 @@ export function api_getAllUsersAutByEstablishment({ establishment, page }: { est
 export function api_postCourses(data: any) {
   return api.post(`courses`, { data: data })
 };
+
+export function api_updateCourses(id: number, data: any) {
+  return api.put(`courses/${id}`, { data: data })
+}
+
+export function api_postDocument(data: any) {
+  return api.post(`documents`, { data: data })
+}
+
+export function api_uploadFiles(formData: FormData) {
+  return api.post('upload', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+}
+
+export function api_getAllDocumentbyEstablishment(escuelaId: number) {
+  let query = `?filters[$and][0][establishmentId][id][$eq]=${escuelaId}`
+  query += `&populate=*`
+  return api.get(`documents${query}`)
+}
+

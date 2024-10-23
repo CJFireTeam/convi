@@ -1,4 +1,4 @@
-import { api_getOneUser, api_postCourses, api_role, api_updateUser } from "@/services/axios.services";
+import { api_getOneUser, api_postCourses, api_role, api_updateCourses, api_updateUser } from "@/services/axios.services";
 import { getComunas, getRegiones } from "@/services/local.services";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useSearchParams } from "next/navigation";
@@ -314,13 +314,6 @@ interface IFormCourse {
     users: number;
 
 }
-interface IFormCourseAct {
-    grade: string;
-    letter: string;
-    establishment: number;
-    users: number;
-}
-
 
 interface props {
     userId: string;
@@ -350,13 +343,20 @@ export function InsertCourse(props: props) {
         try {
             if (props.tipo == 'alumno' && props.course.length === 0) {
                 const response = await api_postCourses(data);
-                toast.success('Curso agregado correctamente')
+                toast.success('Curso agregado correctamente');
+                router.back();
+            }
+            if (props.tipo == 'alumno' && props.course.length !== 0) {
+                const response = await api_updateCourses(props.course[0].id, data);
+                toast.success('Curso actualizado correctamente')
+                router.back();
             }
             if (props.tipo == 'apoderado') {
                 const response = await api_postCourses(data);
                 toast.success('Curso agregado correctamente')
+                router.back();
             }
-            //el id del formulario se lo especifico a la api y luego la data, queda para mañana 
+
         }
         catch (errors) {
             console.log(errors);
@@ -368,7 +368,7 @@ export function InsertCourse(props: props) {
     useEffect(() => {
         setValue('establishment', props.establishmentId);
         setValue('users', parseInt(props.userId));
-    }, [props.establishmentId, props.userId,props.course]);
+    }, [props.establishmentId, props.userId, props.course]);
 
     return (
         <>
@@ -423,9 +423,9 @@ export function InsertCourse(props: props) {
                                 <input type="text"
                                     {...register('grade', { setValueAs: (value) => value === '' ? undefined : value })}
                                     className="input input-primary w-full"
-                                    maxLength={7} 
+                                    maxLength={7}
                                     defaultValue={props.course[0].grade}
-                                    />
+                                />
                                 {errors.grade?.message && (<p className="text-red-600 text-sm mt-1">{errors.grade.message}</p>)}
                             </div>
 

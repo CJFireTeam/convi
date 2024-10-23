@@ -56,6 +56,13 @@ const AuthenticatedMenus: IMenuChildren[] = [
     children: [],
     current: false,
   },
+  {
+    name: "Documentos",
+    href: "/documentos",
+    icon: FolderIcon,
+    children: [],
+    current: false,
+  },
 ];
 
 const EncargadoMenus: IMenuChildren[] = [
@@ -130,6 +137,13 @@ const ProfesorMenus: IMenuChildren[] = [
   {
     name: "Reunion",
     href: "/meeting",
+    icon: FolderIcon,
+    children: [],
+    current: false,
+  },
+  {
+    name: "Documentos",
+    href: "/documentos",
     icon: FolderIcon,
     children: [],
     current: false,

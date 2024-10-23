@@ -71,7 +71,7 @@ export default function Login() {
         if (error.response) {
           if (error.response.data.error.message)
             if (error.response.data.error.message === "Your account email is not confirmed") toast.update(id, {
-              render: "Aún no has confirmado tu correo electrónico.",
+              render: "Aún no has confirmado tu correo electrónico, Revisa tu correo electronico.",
               type: "error",
               isLoading: false,
               autoClose: 3000,

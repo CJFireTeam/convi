@@ -55,8 +55,8 @@ export default function ContadorUsuarios() {
   }, [user.establishment]);
 
   return (
-    <div className="grid grid-cols-3 gap-4 border rounded-lg shadow-md p-4">
-      <div className="col-span-3 text-center">
+    <div className="grid md:grid-cols-3 gap-4 border rounded-lg shadow-md p-4">
+      <div className="md:col-span-3 text-center">
         <span className="font-semibold text-2xl">
           Bienvenido administrador {user.firstname + " " + user.first_lastname}
         </span>
@@ -66,7 +66,7 @@ export default function ContadorUsuarios() {
         </span>
       </div>
 
-      <div className="col-span-3">
+      <div className="md:col-span-3">
         {loading ? ( // Show loading indicator while data is being fetched
           <div className="flex justify-center">
             <svg
@@ -91,7 +91,7 @@ export default function ContadorUsuarios() {
             </svg>
           </div>
         ) : (
-          <div className="grid grid-cols-5 gap-2">
+          <div className="grid md:grid-cols-5 gap-2">
             <div className="bg-indigo-200 p-4 rounded-lg">
               <h3 className="font-semibold">Encargados de Convivencia</h3>
               <p className="text-2xl">{userCounts.encargado}</p>

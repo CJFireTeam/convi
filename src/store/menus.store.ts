@@ -158,13 +158,6 @@ const AdministradorMenus: IMenuChildren[] = [
     children: [],
     current: false,
   },
-  {
-    name: "Configurar Documentos",
-    href: "/administrador/documentos",
-    icon: UsersIcon,
-    children: [],
-    current: false,
-  }
 ];
 
 type Actions = {

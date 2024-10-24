@@ -68,8 +68,9 @@ interface IDocument {
             data: {
                 attributes: {
                     url: string;
+                    name: string;
                 }
-            }
+            }[]
         }
     }
 }
@@ -133,7 +134,7 @@ export default function Index() {
         setValue('lastNameUser', user.first_lastname);
         setValue('userId', user.id);
         setValue('establishmentId', user.establishment.id);
-    }, []);
+    }, [user]);
 
     const [isSubmitting, setIsSubmitting] = useState(false);
     const onSubmit = async (data: FormValues) => {
@@ -208,7 +209,7 @@ export default function Index() {
             }
         }
         dataDocuments()
-    }, []);
+    }, [user]);
 
     const [filteredDocuments, setFilteredDocuments] = useState<IDocument[]>([]);
     useEffect(() => {
@@ -241,6 +242,7 @@ export default function Index() {
     console.log("contenido de matching", matchingDocuments);
 
 
+
     //select para mostrar la cantidad de curso que tienes y enviarle el id del course.
     //luego mostrarle a los alumnos al profe y encargado solo si tiene el nombre y letter del course
     if (GetRole() === "admin" || GetRole() === "Encargado de Convivencia Escolar" || GetRole() === "Profesor" && dataUser?.canUploadDoc == true && dataUser.courses.length == 0) {
@@ -256,59 +258,70 @@ export default function Index() {
 
         return (
             <>
-                <div className="grid md:grid-cols-2 gap-2 mx-auto w-full">
-                    <form onSubmit={handleSubmit(onSubmit)} className="w-full border rounded-lg shadow-md p-4 items-center text-center">
-                        <div>
-                            <span className="text-2xl font-bold">Subir Documentos:</span>
-                        </div>
 
-                        <div className="flex flex-col items-center mb-4">
-                            <label htmlFor="curso" className="font-semibold">Seleccion un curso: </label>
-                            <select {...register('courseId', { setValueAs: (value) => value === "" ? undefined : Number(value) })}
-                                className="select select-primary">
-                                <option value="" selected>Seleccione una opcion</option>
-                                {dataUser?.courses.map((c, index) => (
-                                    <option value={c.id} key={index}>{c.grade + " " + c.letter}</option>
-                                ))}
-                            </select>
-                            {errors.courseId?.message && (<p className="text-red-600 text-sm mt-1">{errors.courseId.message}</p>)}
-                        </div>
-
-                        <div className="mb-4">
-                            <input type="file" id="fileInput" multiple {...register("document", { setValueAs: (value) => value === "" ? undefined : value })}
-                                className="file-input file-input-primary w-full lg:w-auto" />
-                            {errors.document?.message && (<p className="text-red-600 text-sm mt-1">{errors.document.message}</p>)}
-                        </div>
-
-                        <div className="">
-                            <label htmlFor="descripcion" className="font-semibold">Descripción del archivo:</label>
-                            <textarea className="textarea textarea-primary w-full bg-white" {...register("descriptionDoc", { setValueAs: (value) => value === "" ? undefined : value })} />
-                            {errors.descriptionDoc?.message && (<p className="text-red-600 text-sm mt-1">{errors.descriptionDoc.message}</p>)}
-                        </div>
-
-                        <div className="">
-                            <Button type="submit" disabled={isSubmitting}>
-                                {isSubmitting ? 'Subiendo...' : 'Guardar'}
-                            </Button>
-                        </div>
-                    </form>
-
-                    <div className="border rounded-lg shadow-md p-4 items-center">
-                        {filteredDocuments.length > 0 ? (
-                            filteredDocuments.map((doc, index) => (
-                                <div key={index} className="grid grid-cols-12 gap-4 border border-gray-100 hover:border-2 hover:border-primary p-2">
-                                    <div className="col-span-4">
-                                        <span className="font-semibold">{doc.attributes.descriptionDoc}</span>
-                                    </div>
-                                    <div>
-
-                                    </div>
-                                </div>
-                            ))
-                        ) : (
-                            <h1>No hay documentos creados por este usuario.</h1>
-                        )}
+                <form onSubmit={handleSubmit(onSubmit)} className="grid md:grid-cols-1 gap-2 mx-auto mb-4 w-full md:w-1/2 border rounded-lg shadow-md p-4 items-center text-center">
+                    <div>
+                        <span className="text-2xl font-bold">Subir Documentos:</span>
                     </div>
+
+                    <div className="flex flex-col items-center mb-4">
+                        <label htmlFor="curso" className="font-semibold">Seleccion un curso: </label>
+                        <select {...register('courseId', { setValueAs: (value) => value === "" ? undefined : Number(value) })}
+                            className="select select-primary">
+                            <option value="" selected>Seleccione una opcion</option>
+                            {dataUser?.courses.map((c, index) => (
+                                <option value={c.id} key={index}>{c.grade + " " + c.letter}</option>
+                            ))}
+                        </select>
+                        {errors.courseId?.message && (<p className="text-red-600 text-sm mt-1">{errors.courseId.message}</p>)}
+                    </div>
+
+                    <div className="mb-4">
+                        <input type="file" id="fileInput" multiple {...register("document", { setValueAs: (value) => value === "" ? undefined : value })}
+                            className="file-input file-input-primary w-full lg:w-auto" />
+                        {errors.document?.message && (<p className="text-red-600 text-sm mt-1">{errors.document.message}</p>)}
+                    </div>
+
+                    <div className="">
+                        <label htmlFor="descripcion" className="font-semibold">Descripción del archivo:</label>
+                        <textarea className="textarea textarea-primary w-full bg-white" {...register("descriptionDoc", { setValueAs: (value) => value === "" ? undefined : value })} />
+                        {errors.descriptionDoc?.message && (<p className="text-red-600 text-sm mt-1">{errors.descriptionDoc.message}</p>)}
+                    </div>
+
+                    <div className="">
+                        <Button type="submit" disabled={isSubmitting}>
+                            {isSubmitting ? 'Subiendo...' : 'Guardar'}
+                        </Button>
+                    </div>
+                </form>
+
+                <div className="border rounded-lg shadow-md p-4 items-center">
+                    {filteredDocuments.length > 0 ? (
+                        filteredDocuments.map((doc, index) => (
+                            <div key={index} className="grid md:grid-cols-1 gap-4 border border-gray-100 hover:border-2 hover:border-primary p-2">
+                                <div className="flex flex-col items-center">
+                                    <p><span className="font-semibold">Descripcion: </span>{doc.attributes.descriptionDoc}</p>
+                                    <p><span className="font-semibold">Curso: </span>{doc.attributes.courseId.data.attributes.grade + " " + doc.attributes.courseId.data.attributes.letter}</p>
+                                </div>
+                                <div className="flex flex-col items-center lg:justify-center lg:flex-row">
+                                    {doc.attributes.document.data.map((archivo, index) => (<>
+                                        <a
+                                            key={index}
+                                            href={process.env.NEXT_PUBLIC_BACKEND_ACCES + archivo.attributes.url}
+                                            download={archivo.attributes.name}
+                                            className="btn btn-outline btn-primary w-auto mb-2 lg:mb-0 md:mr-2"
+                                        >
+                                            <ArrowDownTrayIcon className="mr-2 h-4 w-4" aria-hidden="true" />
+                                            Archivo {index + 1}
+                                        </a>
+                                    </>))}
+                                </div>
+
+                            </div>
+                        ))
+                    ) : (
+                        <h1>No hay documentos creados por este usuario.</h1>
+                    )}
                 </div>
 
             </>
@@ -332,7 +345,7 @@ export default function Index() {
 
     if (GetRole() === "Authenticated" && dataUser?.tipo === 'alumno' && dataUser.courses.length > 0) {
 
-        if (matchingDocuments.length == 0) {
+        if (matchingDocuments.length != 0) {
             // Lógica a ejecutar si existen documentos correspondientes
             return (
                 <div className="w-full max-w-4xl mx-auto p-4">
@@ -351,7 +364,7 @@ export default function Index() {
                                 {matchingDocuments.map((doc) => (
                                     <tr className="hover:bg-green-50 transition-colors duration-200">
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{doc.attributes.descriptionDoc}</td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900"></td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{ }</td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900"></td>
                                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                             <a

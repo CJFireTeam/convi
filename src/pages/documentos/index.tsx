@@ -9,6 +9,9 @@ import { Button } from "react-daisyui";
 import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
 import { z } from "zod";
+import { saveAs } from 'file-saver';
+
+
 
 interface IUser {
     id: number;
@@ -52,7 +55,7 @@ interface IDocument {
         descriptionDoc: string;
         courseId: {
             data: {
-                id: 3;
+                id: number;
                 attributes: {
                     grade: string;
                     letter: string;
@@ -130,10 +133,25 @@ export default function Index() {
     });
 
     useEffect(() => {
-        setValue('nameUser', user.firstname);
-        setValue('lastNameUser', user.first_lastname);
+        setValue('nameUser', user.firstname||'');
+        setValue('lastNameUser', user.first_lastname||'');
         setValue('userId', user.id);
-        setValue('establishmentId', user.establishment.id);
+        setValue('establishmentId', user.establishment.id || 0);
+    }, [user, setValue]);
+
+    const [dataDocument, setDataDocument] = useState<IDocument[]>([]);
+
+    const dataDocuments = async () => {
+        try {
+            const data = await api_getAllDocumentbyEstablishment(user.establishment.id);
+            setDataDocument(data.data.data);
+        } catch (error) {
+            console.error('Error fetching data:', error)
+        }
+    }
+
+    useEffect(() => {
+        dataDocuments()
     }, [user]);
 
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -189,6 +207,7 @@ export default function Index() {
 
             toast.success('Documentos subidos con éxito.');
             reset();
+            dataDocuments()
         } catch (error) {
             console.error('Error al subir los documentos:', error);
             toast.error('Ha ocurrido un error inesperado.')
@@ -197,19 +216,7 @@ export default function Index() {
         }
     };
 
-    const [dataDocument, setDataDocument] = useState<IDocument[]>([]);
 
-    useEffect(() => {
-        const dataDocuments = async () => {
-            try {
-                const data = await api_getAllDocumentbyEstablishment(user.establishment.id);
-                setDataDocument(data.data.data);
-            } catch (error) {
-                console.error('Error fetching data:', error)
-            }
-        }
-        dataDocuments()
-    }, [user]);
 
     const [filteredDocuments, setFilteredDocuments] = useState<IDocument[]>([]);
     useEffect(() => {
@@ -224,14 +231,7 @@ export default function Index() {
     // Filtra los documentos que coinciden con el curso del usuario
     const [matchingDocuments, setMatchingDocuments] = useState<IDocument[]>([]);
 
-    useEffect(() => {
-        console.log("data user curso id", dataUser?.courses[0].id)
-        console.log("data user curso id", dataDocument.filter(doc => doc.attributes.courseId.data.id == dataUser?.courses[0].id))
-        if (dataDocument.length > 0 && dataUser) {
-            const userDocuments = dataDocument.filter(doc => doc.attributes.courseId.data.id === dataUser.courses[0].id);
-            setMatchingDocuments(userDocuments);
-        }
-    }, [dataDocument, dataUser]);
+
 
     // const matchingDocuments = dataDocument.filter(doc => {
     //     const courseId = doc.attributes.courseId.data.attributes;
@@ -241,20 +241,27 @@ export default function Index() {
     console.log("contenido de datadocument", dataDocument);
     console.log("contenido de matching", matchingDocuments);
 
+    useEffect(() => {
+        if (dataDocument.length != 0 && dataUser) {
+            const userDocuments = dataDocument.filter(doc => doc.attributes.courseId.data.attributes.grade === dataUser.courses[0].grade && doc.attributes.courseId.data.attributes.letter === dataUser.courses[0].letter );
+            setMatchingDocuments(userDocuments);
+        }
+    }, [dataDocument, dataUser]);
 
 
     //select para mostrar la cantidad de curso que tienes y enviarle el id del course.
     //luego mostrarle a los alumnos al profe y encargado solo si tiene el nombre y letter del course
     if (GetRole() === "admin" || GetRole() === "Encargado de Convivencia Escolar" || GetRole() === "Profesor" && dataUser?.canUploadDoc == true && dataUser.courses.length == 0) {
         return (
-            <div>
-                <h1>Sin cursos asignados.</h1>
+            <div className="flex flex-col items-center">
+                <WarningAlert message={'Sin cursos asignados.'} />
             </div>
         );
     }
 
     if (GetRole() === "admin" || GetRole() === "Encargado de Convivencia Escolar" || GetRole() === "Profesor" && dataUser?.canUploadDoc == true) {
 
+        
 
         return (
             <>
@@ -305,22 +312,25 @@ export default function Index() {
                                 </div>
                                 <div className="flex flex-col items-center lg:justify-center lg:flex-row">
                                     {doc.attributes.document.data.map((archivo, index) => (<>
-                                        <a
+                                        <button
                                             key={index}
-                                            href={process.env.NEXT_PUBLIC_BACKEND_ACCES + archivo.attributes.url}
-                                            download={archivo.attributes.name}
                                             className="btn btn-outline btn-primary w-auto mb-2 lg:mb-0 md:mr-2"
+                                            onClick={() => {
+                                                saveAs(process.env.NEXT_PUBLIC_BACKEND_ACCES + archivo.attributes.url, archivo.attributes.name);
+                                            }}
                                         >
                                             <ArrowDownTrayIcon className="mr-2 h-4 w-4" aria-hidden="true" />
                                             Archivo {index + 1}
-                                        </a>
+                                        </button>
                                     </>))}
                                 </div>
 
                             </div>
                         ))
                     ) : (
-                        <h1>No hay documentos creados por este usuario.</h1>
+                        <div className="flex flex-col items-center">
+                            <WarningAlert message={'Sin documentos'} />
+                        </div>
                     )}
                 </div>
 
@@ -343,7 +353,7 @@ export default function Index() {
         );
     }
 
-    if (GetRole() === "Authenticated" && dataUser?.tipo === 'alumno' && dataUser.courses.length > 0) {
+    if (GetRole() === "Authenticated" && dataUser?.tipo === 'alumno') {
 
         if (matchingDocuments.length != 0) {
             // Lógica a ejecutar si existen documentos correspondientes
@@ -385,7 +395,10 @@ export default function Index() {
             );
         } else {
             // Lógica a ejecutar si no existen documentos correspondientes
-            return <div>No hay documentos para tu curso.</div>;
+            return <div className="flex flex-col items-center">
+                <WarningAlert message={'No hay documentos para tu curso.'} />
+            </div>
+
         }
 
 

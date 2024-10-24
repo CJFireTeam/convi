@@ -288,6 +288,7 @@ export function api_uploadFiles(formData: FormData) {
 
 export function api_getAllDocumentbyEstablishment(escuelaId: number) {
   let query = `?filters[$and][0][establishmentId][id][$eq]=${escuelaId}`
+  query += `&filters[$and][1][Eliminado][$eq]=false`
   query += `&populate=*`
   return api.get(`documents${query}`)
 }

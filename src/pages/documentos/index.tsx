@@ -1,8 +1,8 @@
 import WarningAlert from "@/components/alerts/warningAlert";
 import { data } from "@/components/encargado/grafico1";
-import { api_getAllDocumentbyEstablishment, api_getOneUser, api_postDocument, api_uploadFiles } from "@/services/axios.services";
+import { api_getAllDocumentbyEstablishment, api_getOneUser, api_postDocument, api_putDocument, api_uploadFiles } from "@/services/axios.services";
 import { useUserStore } from "@/store/userStore";
-import { ArrowDownTrayIcon } from "@heroicons/react/20/solid";
+import { ArrowDownTrayIcon, ChevronDownIcon } from "@heroicons/react/20/solid";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useState } from "react";
 import { Button } from "react-daisyui";
@@ -10,6 +10,8 @@ import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
 import { z } from "zod";
 import { saveAs } from 'file-saver';
+import { TrashIcon } from "@heroicons/react/24/outline";
+import { Menu } from '@headlessui/react'
 
 
 
@@ -53,6 +55,8 @@ interface IDocument {
     id: number;
     attributes: {
         descriptionDoc: string;
+        nameUser: string;
+        lastNameUser: string;
         courseId: {
             data: {
                 id: number;
@@ -70,9 +74,11 @@ interface IDocument {
         document: {
             data: {
                 attributes: {
+                    createdAt: Date;
                     url: string;
                     name: string;
                 }
+                id: number;
             }[]
         }
     }
@@ -122,10 +128,10 @@ export default function Index() {
             }, "Se requiere al menos un archivo")
             .refine((files) => {
                 if (typeof window !== "undefined" && files instanceof FileList) {
-                    return files.length <= 5;
+                    return files.length <= 4;
                 }
                 return true;
-            }, "No se pueden subir más de 5 archivos"),
+            }, "No se pueden subir más de 4 archivos"),
     });
 
     const { register, watch, setValue, control, reset, handleSubmit, formState: { errors } } = useForm<FormValues>({
@@ -133,8 +139,8 @@ export default function Index() {
     });
 
     useEffect(() => {
-        setValue('nameUser', user.firstname||'');
-        setValue('lastNameUser', user.first_lastname||'');
+        setValue('nameUser', user.firstname || '');
+        setValue('lastNameUser', user.first_lastname || '');
         setValue('userId', user.id);
         setValue('establishmentId', user.establishment.id || 0);
     }, [user, setValue]);
@@ -230,23 +236,41 @@ export default function Index() {
 
     // Filtra los documentos que coinciden con el curso del usuario
     const [matchingDocuments, setMatchingDocuments] = useState<IDocument[]>([]);
+    const [displayedDocuments, setDisplayedDocuments] = useState<IDocument[]>([]);
+    const [currentPage, setCurrentPage] = useState(1);
+    const documentsPerPage = 5;
+    const loadMoreDocuments = () => {
+        const nextPage = currentPage + 1;
+        const startIndex = (nextPage - 1) * documentsPerPage;
+        const endIndex = startIndex + documentsPerPage;
+        const newDocuments = matchingDocuments.slice(startIndex, endIndex);
+        setDisplayedDocuments([...displayedDocuments, ...newDocuments]);
+        setCurrentPage(nextPage);
+    };
+    
 
-
-
-    // const matchingDocuments = dataDocument.filter(doc => {
-    //     const courseId = doc.attributes.courseId.data.attributes;
-    //     const documentCourseIdentifier = courseId.grade + courseId.letter;
-    //     //return documentCourseIdentifier === userCourseIdentifier;
-    // });
-    console.log("contenido de datadocument", dataDocument);
-    console.log("contenido de matching", matchingDocuments);
 
     useEffect(() => {
-        if (dataDocument.length != 0 && dataUser) {
-            const userDocuments = dataDocument.filter(doc => doc.attributes.courseId.data.attributes.grade === dataUser.courses[0].grade && doc.attributes.courseId.data.attributes.letter === dataUser.courses[0].letter );
+        if (dataDocument.length !== 0 && dataUser && dataUser.courses.length > 0) {
+            const userDocuments = dataDocument.filter(doc =>
+                doc.attributes.courseId.data.attributes.grade === dataUser.courses[0].grade &&
+                doc.attributes.courseId.data.attributes.letter === dataUser.courses[0].letter
+            );
             setMatchingDocuments(userDocuments);
+            setDisplayedDocuments(userDocuments.slice(0, documentsPerPage));
         }
     }, [dataDocument, dataUser]);
+
+    const handleDeleteDocument = async (documentId: number) => {
+        try {
+            const response = await api_putDocument(documentId, true); // Establece 'Eliminado' en true
+            // Aquí puedes manejar el estado de tu aplicación, como actualizar la lista de documentos
+            toast.success('Documento eliminado exitosamente.')
+            dataDocuments()
+        } catch (error) {
+            console.error('Error al eliminar el documento:', error);
+        }
+    };
 
 
     //select para mostrar la cantidad de curso que tienes y enviarle el id del course.
@@ -261,7 +285,7 @@ export default function Index() {
 
     if (GetRole() === "admin" || GetRole() === "Encargado de Convivencia Escolar" || GetRole() === "Profesor" && dataUser?.canUploadDoc == true) {
 
-        
+
 
         return (
             <>
@@ -291,7 +315,7 @@ export default function Index() {
 
                     <div className="">
                         <label htmlFor="descripcion" className="font-semibold">Descripción del archivo:</label>
-                        <textarea className="textarea textarea-primary w-full bg-white" {...register("descriptionDoc", { setValueAs: (value) => value === "" ? undefined : value })} />
+                        <textarea className="textarea textarea-primary w-full bg-white" placeholder="ingrese una breve descripcion.." {...register("descriptionDoc", { setValueAs: (value) => value === "" ? undefined : value })} />
                         {errors.descriptionDoc?.message && (<p className="text-red-600 text-sm mt-1">{errors.descriptionDoc.message}</p>)}
                     </div>
 
@@ -305,16 +329,16 @@ export default function Index() {
                 <div className="border rounded-lg shadow-md p-4 items-center">
                     {filteredDocuments.length > 0 ? (
                         filteredDocuments.map((doc, index) => (
-                            <div key={index} className="grid md:grid-cols-1 gap-4 border border-gray-100 hover:border-2 hover:border-primary p-2">
+                            <div key={index} className="grid md:grid-cols-3 gap-4 border border-gray-100 hover:border-2 hover:border-primary p-2 mb-1">
                                 <div className="flex flex-col items-center">
                                     <p><span className="font-semibold">Descripcion: </span>{doc.attributes.descriptionDoc}</p>
                                     <p><span className="font-semibold">Curso: </span>{doc.attributes.courseId.data.attributes.grade + " " + doc.attributes.courseId.data.attributes.letter}</p>
                                 </div>
-                                <div className="flex flex-col items-center lg:justify-center lg:flex-row">
+                                <div className="flex flex-col items-center lg:flex-row">
                                     {doc.attributes.document.data.map((archivo, index) => (<>
                                         <button
-                                            key={index}
-                                            className="btn btn-outline btn-primary w-auto mb-2 lg:mb-0 md:mr-2"
+                                            type="button"
+                                            className="btn btn-outline btn-primary mb-2 lg:mb-0 lg:mr-2"
                                             onClick={() => {
                                                 saveAs(process.env.NEXT_PUBLIC_BACKEND_ACCES + archivo.attributes.url, archivo.attributes.name);
                                             }}
@@ -322,9 +346,17 @@ export default function Index() {
                                             <ArrowDownTrayIcon className="mr-2 h-4 w-4" aria-hidden="true" />
                                             Archivo {index + 1}
                                         </button>
+
                                     </>))}
                                 </div>
-
+                                <div className="flex flex-row justify-end">
+                                    <button
+                                        type="button"
+                                        onClick={() => handleDeleteDocument(doc.id)}
+                                    >
+                                        <TrashIcon className="h-4 w-4 text-red-500 mr-2" aria-hidden="true" />
+                                    </button>
+                                </div>
                             </div>
                         ))
                     ) : (
@@ -371,26 +403,67 @@ export default function Index() {
                                 </tr>
                             </thead>
                             <tbody className="bg-white divide-y divide-green-200">
-                                {matchingDocuments.map((doc) => (
+                                {displayedDocuments.map((doc) => (
                                     <tr className="hover:bg-green-50 transition-colors duration-200">
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{doc.attributes.descriptionDoc}</td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{ }</td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900"></td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{doc.attributes.nameUser + " " + doc.attributes.lastNameUser}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{new Date(doc.attributes.document.data[0].attributes.createdAt).toLocaleDateString()}</td>
                                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                            <a
-                                                href=""
-                                                download
-                                                className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors duration-200"
-                                            >
-                                                <ArrowDownTrayIcon className="mr-2 h-4 w-4" aria-hidden="true" />
-                                                Descargar
-                                            </a>
+                                            {doc.attributes.document.data.length === 1 ? (
+                                                <button
+                                                    className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors duration-200"
+                                                    onClick={() => {
+                                                        saveAs(process.env.NEXT_PUBLIC_BACKEND_ACCES + doc.attributes.document.data[0].attributes.url, doc.attributes.document.data[0].attributes.name);
+                                                    }}
+                                                >
+                                                    <ArrowDownTrayIcon className="mr-2 h-4 w-4" aria-hidden="true" />
+                                                    Descargar Archivo
+                                                </button>
+                                            ) : (
+                                                <Menu as="div" className="relative inline-block text-left">
+                                                    <Menu.Button className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors duration-200">
+                                                        <ArrowDownTrayIcon className="mr-2 h-4 w-4" aria-hidden="true" />
+                                                        Descargar Archivos
+                                                        <ChevronDownIcon className="ml-2 h-4 w-4" aria-hidden="true" />
+                                                    </Menu.Button>
+                                                    <Menu.Items className="absolute right-0 mt-2 w-56 origin-top-right bg-white divide-y divide-gray-100 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                                                        <div className="px-1 py-1">
+                                                            {doc.attributes.document.data.map((archivo, index) => (
+                                                                <Menu.Item key={index}>
+                                                                    {({ active }) => (
+                                                                        <button
+                                                                            className={`${active ? 'bg-green-500 text-white' : 'text-gray-900'
+                                                                                } group flex rounded-md items-center w-full px-2 py-2 text-sm`}
+                                                                            onClick={() => {
+                                                                                saveAs(process.env.NEXT_PUBLIC_BACKEND_ACCES + archivo.attributes.url, archivo.attributes.name);
+                                                                            }}
+                                                                        >
+                                                                            <ArrowDownTrayIcon className="mr-2 h-4 w-4" aria-hidden="true" />
+                                                                            Archivo {index + 1}
+                                                                        </button>
+                                                                    )}
+                                                                </Menu.Item>
+                                                            ))}
+                                                        </div>
+                                                    </Menu.Items>
+                                                </Menu>
+                                            )}
                                         </td>
                                     </tr>
                                 ))}
                             </tbody>
                         </table>
                     </div>
+                    {displayedDocuments.length < matchingDocuments.length && (
+                        <div className="mt-4 text-center">
+                            <button
+                                onClick={loadMoreDocuments}
+                                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors duration-200"
+                            >
+                                Cargar más documentos
+                            </button>
+                        </div>
+                    )}
                 </div >
             );
         } else {

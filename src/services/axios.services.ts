@@ -293,3 +293,9 @@ export function api_getAllDocumentbyEstablishment(escuelaId: number) {
   return api.get(`documents${query}`)
 }
 
+export function api_putDocument(documentId: number, isDeleted: boolean) {
+  // Define la URL del documento que deseas actualizar
+  const url = `documents/${documentId}`; // Asegúrate de que la URL sea correcta
+  // Realiza la solicitud PUT para actualizar el campo 'Eliminado'
+  return api.put(url, { data: { Eliminado: isDeleted } });
+}

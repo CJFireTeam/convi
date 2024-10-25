@@ -12,6 +12,8 @@ import { z } from "zod";
 import { saveAs } from 'file-saver';
 import { TrashIcon } from "@heroicons/react/24/outline";
 import { Menu } from '@headlessui/react'
+import { getFile } from "../../services/images.service";
+import router from "next/router";
 
 
 
@@ -212,7 +214,7 @@ export default function Index() {
             const response = await api_postDocument(documentData);
 
             toast.success('Documentos subidos con éxito.');
-            reset();
+            router.reload();
             dataDocuments()
         } catch (error) {
             console.error('Error al subir los documentos:', error);
@@ -254,7 +256,7 @@ export default function Index() {
         if (dataDocument.length !== 0 && dataUser && dataUser.courses.length > 0) {
             const userDocuments = dataDocument.filter(doc =>
                 doc.attributes.courseId.data.attributes.grade === dataUser.courses[0].grade &&
-                doc.attributes.courseId.data.attributes.letter === dataUser.courses[0].letter
+                doc.attributes.courseId.data.attributes.letter === dataUser.courses[0].letter 
             );
             setMatchingDocuments(userDocuments);
             setDisplayedDocuments(userDocuments.slice(0, documentsPerPage));
@@ -340,7 +342,7 @@ export default function Index() {
                                             type="button"
                                             className="btn btn-outline btn-primary mb-2 lg:mb-0 lg:mr-2"
                                             onClick={() => {
-                                                saveAs(process.env.NEXT_PUBLIC_BACKEND_ACCES + archivo.attributes.url, archivo.attributes.name);
+                                                saveAs(getFile(archivo.attributes.url),archivo.attributes.name);
                                             }}
                                         >
                                             <ArrowDownTrayIcon className="mr-2 h-4 w-4" aria-hidden="true" />

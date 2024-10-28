@@ -5,6 +5,7 @@ import { useUserStore } from "@/store/userStore";
 import { PencilIcon } from "@heroicons/react/20/solid";
 import { toast } from "react-toastify";
 import { api_getAllUsersAutByEstablishment, api_getAllUsersOtrosByEstablishment } from "@/services/axios.services";
+import Head from "next/head";
 
 export interface IUser {
   id: number;
@@ -36,6 +37,7 @@ export default function Index() {
   const redirect = () => {
     push("administrador/crearusuario");
   };
+  
   const { user, GetRole } = useUserStore();
   const [data, setData] = useState<IUser[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -100,6 +102,10 @@ export default function Index() {
 
   return (
     <>
+    <Head>
+      <title>Administrar usuarios</title>
+      <meta name="viewport" content="initial-scale=1.0, width=device-width" />
+    </Head>
       <div className="px-4 sm:px-6 lg:px-8">
         <div className="sm:flex sm:items-center">
           <div className="sm:flex-auto">

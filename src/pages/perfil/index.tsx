@@ -8,6 +8,7 @@ enum UserTypes {
     "apoderado" = "Apoderado",
     "alumno" = "Alumno",
     "otro" = "",
+    "admin" ="Administrador de establecimiento"
 }
 export default function Perfil() {
 

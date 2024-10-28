@@ -19,7 +19,9 @@ export default function Home() {
     <>
       {role.name === "Authenticated" && <><Greetings_Authenticated /><CasesAuthenticated /></>}
       {role.name === "Encargado de Convivencia Escolar" && <><Grafico /></>}
-      {role.name === "admin" && <><ContadorUsuarios/></>}
+      {role.name === "admin" && <div className="h-full">
+      <ContadorUsuarios/>
+      </div>}
     </>
   );
 }

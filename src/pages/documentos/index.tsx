@@ -1,6 +1,6 @@
 import WarningAlert from "@/components/alerts/warningAlert";
 import { data } from "@/components/encargado/grafico1";
-import { api_getAllDocumentbyEstablishment, api_getOneUser, api_postDocument, api_putDocument, api_uploadFiles } from "@/services/axios.services";
+import { api_getAllDocumentbyEstablishment, api_getAllUserByEstablishment, api_getOneUser, api_postDocument, api_putDocument, api_uploadFiles } from "@/services/axios.services";
 import { useUserStore } from "@/store/userStore";
 import { ArrowDownTrayIcon, ChevronDownIcon } from "@heroicons/react/20/solid";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -87,13 +87,12 @@ interface IDocument {
 }
 
 interface FormValues {
-    nameUser: string;
-    lastNameUser: string;
     descriptionDoc: string;
     userId: number;
     establishmentId: number;
-    courseId: number;
+    courseId?: number;
     document: FileList;
+    user_destiny?:number;
 }
 
 export default function Index() {
@@ -112,14 +111,27 @@ export default function Index() {
         fetchData()
     }, [user.id]);
 
+
+
+    const getAllUserByEstablishment = async () => {
+        try{
+            const data = await api_getAllUserByEstablishment(user.establishment.id) ;
+
+        }catch(error){
+            console.log(error);
+        }
+    };
+
+    useEffect(()=>{
+        getAllUserByEstablishment();
+    },[])
+
     const DocumentSchema = z.object({
-        nameUser: z.string({ required_error: 'Campo requerido', invalid_type_error: 'Tipo invalido' }),
-        lastNameUser: z.string({ required_error: 'Campo requerido', invalid_type_error: 'Tipo invalido' }),
-        userId: z.number({ required_error: 'Campo requerido', invalid_type_error: 'Tipo invalido' }),
-        establishmentId: z.number({ required_error: 'Campo requerido', invalid_type_error: 'Tipo invalido' }),
-        courseId: z.number({ required_error: 'Campo requerido', invalid_type_error: 'Tipo inválido' }),
         descriptionDoc: z.string({ required_error: 'Campo requerido', invalid_type_error: 'Tipo inválido' })
             .min(1, { message: 'La descripción no puede estar vacía' }),
+        userId: z.number({ required_error: 'Campo requerido', invalid_type_error: 'Tipo invalido' }),
+        establishmentId: z.number({ required_error: 'Campo requerido', invalid_type_error: 'Tipo invalido' }),
+        courseId: z.number({ required_error: 'Campo requerido', invalid_type_error: 'Tipo inválido' }).optional(),
         document: z
             .any()
             .refine((files) => {
@@ -134,6 +146,7 @@ export default function Index() {
                 }
                 return true;
             }, "No se pueden subir más de 4 archivos"),
+            user_destinity:z.number().optional()
     });
 
     const { register, watch, setValue, control, reset, handleSubmit, formState: { errors } } = useForm<FormValues>({
@@ -141,8 +154,6 @@ export default function Index() {
     });
 
     useEffect(() => {
-        setValue('nameUser', user.firstname || '');
-        setValue('lastNameUser', user.first_lastname || '');
         setValue('userId', user.id);
         setValue('establishmentId', user.establishment.id || 0);
     }, [user, setValue]);
@@ -201,8 +212,6 @@ export default function Index() {
 
             // Crear el objeto de documento con la referencia a los archivos
             const documentData = {
-                nameUser: data.nameUser,
-                lastNameUser: data.lastNameUser,
                 userId: data.userId,
                 establishmentId: data.establishmentId,
                 courseId: data.courseId,
@@ -256,7 +265,7 @@ export default function Index() {
         if (dataDocument.length !== 0 && dataUser && dataUser.courses.length > 0) {
             const userDocuments = dataDocument.filter(doc =>
                 doc.attributes.courseId.data.attributes.grade === dataUser.courses[0].grade &&
-                doc.attributes.courseId.data.attributes.letter === dataUser.courses[0].letter 
+                doc.attributes.courseId.data.attributes.letter === dataUser.courses[0].letter
             );
             setMatchingDocuments(userDocuments);
             setDisplayedDocuments(userDocuments.slice(0, documentsPerPage));
@@ -292,13 +301,26 @@ export default function Index() {
         return (
             <>
 
-                <form onSubmit={handleSubmit(onSubmit)} className="grid md:grid-cols-1 gap-2 mx-auto mb-4 w-full md:w-1/2 border rounded-lg shadow-md p-4 items-center text-center">
+                <form onSubmit={handleSubmit(onSubmit)} className="grid md:grid-cols-1 gap-2 mx-auto mb-4 w-full border rounded-lg shadow-md p-4 items-center text-center">
                     <div>
                         <span className="text-2xl font-bold">Subir Documentos:</span>
                     </div>
 
                     <div className="flex flex-col items-center mb-4">
                         <label htmlFor="curso" className="font-semibold">Seleccion un curso: </label>
+                        <select {...register('courseId', { setValueAs: (value) => value === "" ? undefined : Number(value) })}
+                            className="select select-primary">
+                            <option value="" selected>Seleccione una opcion</option>
+                            {dataUser?.courses.map((c, index) => (
+                                <option value={c.id} key={index}>{c.grade + " " + c.letter}</option>
+                            ))}
+                        </select>
+                        {errors.courseId?.message && (<p className="text-red-600 text-sm mt-1">{errors.courseId.message}</p>)}
+                    </div>
+
+                        //modifcar para traer todos los usuarios
+                    <div className="flex flex-col items-center mb-4">
+                        <label htmlFor="curso" className="font-semibold">Seleccione un usuario: </label>
                         <select {...register('courseId', { setValueAs: (value) => value === "" ? undefined : Number(value) })}
                             className="select select-primary">
                             <option value="" selected>Seleccione una opcion</option>

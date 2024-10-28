@@ -258,6 +258,13 @@ export function api_getAllUsersOtrosByEstablishment({ establishment, page }: { e
   return api.get(`users${query}`)
 }
 
+export function api_getAllUserByEstablishment(establishment:number){
+  let query = `?filters[$and][0][establishment][id][$eq]=${establishment}`
+  query += `&filters[$and][1][role][name][$ne]=admin`
+  return api.get(`users${query}`)
+}
+
+
 export function api_getAllUsersAutByEstablishment({ establishment, page }: { establishment: string, page: number }) {
   let query = `?filters[$and][0][establishment][name][$eq]=${establishment}`
   query += `&filters[$or][0][tipo][$eq]=alumno`

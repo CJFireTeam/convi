@@ -21,7 +21,7 @@ export interface Imenus {
     } & React.RefAttributes<SVGSVGElement>
   >;
 }
-interface IMenuChildren extends Imenus {
+export interface IMenuChildren extends Imenus {
   children: Imenus[];
 }
 

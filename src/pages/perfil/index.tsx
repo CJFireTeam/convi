@@ -2,6 +2,7 @@ import { useUserStore } from "@/store/userStore";
 import {
     UserIcon
 } from "@heroicons/react/20/solid";
+import Head from "next/head";
 import { useRouter } from "next/router";
 
 enum UserTypes {
@@ -24,6 +25,12 @@ export default function Perfil() {
     }
 
     return (
+        <>
+            <Head>
+      <title>Mi perfil</title>
+      <meta name="viewport" content="initial-scale=1.0, width=device-width" />
+    </Head>
+        
         <div className="flex flex-col items-center">
             <div className="flex flex-col sm:flex-row rounded-lg border shadow-lg animate-fadein p-4 md:p-10 lg:p-10">
 
@@ -69,5 +76,6 @@ export default function Perfil() {
                 </div>
             </div>
         </div>
+        </>
     );
 }

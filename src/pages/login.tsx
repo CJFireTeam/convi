@@ -9,7 +9,7 @@ import { ExclamationTriangleIcon } from "@heroicons/react/24/outline";
 import  {useUserStore} from "../store/userStore";
 import { Button } from "@/components/ui/button"
 import { Input } from "../components/ui/input";
-
+import '../styles/login.module.css'
 export default function Login() {
   const router = useRouter();
   const {setUser,setBearer} = useUserStore()
@@ -122,7 +122,7 @@ export default function Login() {
   return (
     <>
       <div
-        className={`flex min-h-full flex-1 flex-col justify-center px-6 py-12 lg:px-8 transition-transform ${
+        className={`flex min-h-full h-dvh	 bg-white flex-1 flex-col justify-center px-6 py-12 lg:px-8 transition-transform ${
           isVisible ? "animate-fadein" : "animate-fadeout"
         }`}
       >

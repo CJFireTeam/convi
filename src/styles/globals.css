@@ -179,103 +179,50 @@
 }
 @layer base {
   :root {
-    /* Name: custom color palette
-       Author: Ilias Ism
-       URL: https://gradient.page */
-
-    /* CSS: .bg-gradient { background: var(--gradient) } */
-    --gradient: linear-gradient(to top left,#CCCCB2,#757519);
-
-    --background: 64 13% 6%;
-    --foreground: 64 2% 98.75%;
-
-    --muted: 64 10% 22.5%;
-    --muted-foreground: 64 2% 57.5%;
-
-    --popover: 64 61% 9.75%;
-    --popover-foreground: 64 2% 98.75%;
-
-    --card: 64 61% 9.75%;
-    --card-foreground: 64 2% 98.75%;
-
-    --border: 64 10% 22.5%;
-    --input: 64 10% 22.5%;
-
-    --primary: 64 20% 75%;
-    --primary-foreground: 64 2% 7.5%;
-
-    --secondary: 64 10% 22.5%;
-    --secondary-foreground: 64 2% 98.75%;
-
-    --accent: 64 10% 22.5%;
-    --accent-foreground: 64 2% 98.75%;
-
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 64 2% 98.75%;
-
-    --ring: 64 20% 75%;
-  }
-}
-@layer base {
-  :root {
-    --background: 210 25% 98%;
-    --foreground: 234 10% 37%;
-    --muted: 210 12% 90%;
-    --muted-foreground: 210 12% 30%;
-    --popover: 210 25% 95%;
-    --popover-foreground: 234 10% 27%;
-    --card: 210 25% 96%;
-    --card-foreground: 234 10% 32%;
-    --border: 210 15% 93%;
-    --input: 210 15% 90%;
-    --primary: 140 59% 43%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 140 30% 75%;
-    --secondary-foreground: 140 30% 15%;
-    --accent: 210 25% 83%;
-    --accent-foreground: 210 25% 23%;
-    --destructive: 8 93% 44%;
+    --background: 126 35% 99%;
+    --foreground: 126 50% 3%;
+    --muted: 126 13% 91%;
+    --muted-foreground: 126 10% 36%;
+    --popover: 126 35% 99%;
+    --popover-foreground: 126 50% 3%;
+    --card: 126 35% 99%;
+    --card-foreground: 126 50% 3%;
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --primary: 126 69% 63%;
+    --primary-foreground: 126 69% 3%;
+    --secondary: 126 11% 92%;
+    --secondary-foreground: 126 11% 32%;
+    --accent: 126 11% 92%;
+    --accent-foreground: 126 11% 32%;
+    --destructive: 22 85% 40%;
     --destructive-foreground: 0 0% 100%;
-    --ring: 140 59% 43%;
+    --ring: 126 69% 63%;
     --radius: 0.5rem;
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 240 5.9% 10%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
   }
 
   .dark {
-    --background: 210 25% 98%;
-    --foreground: 234 10% 37%;
-    --muted: 210 12% 90%;
-    --muted-foreground: 210 12% 30%;
-    --popover: 210 25% 95%;
-    --popover-foreground: 234 10% 27%;
-    --card: 210 25% 96%;
-    --card-foreground: 234 10% 32%;
-    --border: 210 15% 93%;
-    --input: 210 15% 90%;
-    --primary: 140 59% 43%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 140 30% 75%;
-    --secondary-foreground: 140 30% 15%;
-    --accent: 210 25% 83%;
-    --accent-foreground: 210 25% 23%;
-    --destructive: 8 93% 44%;
-    --destructive-foreground: 0 0% 100%;
-    --ring: 140 59% 43%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --background: 126 58% 1%;
+    --foreground: 126 12% 98%;
+    --muted: 126 13% 9%;
+    --muted-foreground: 126 10% 64%;
+    --popover: 126 58% 1%;
+    --popover-foreground: 126 12% 98%;
+    --card: 126 58% 1%;
+    --card-foreground: 126 12% 98%;
+    --border: 215 27.9% 16.9%;
+    --input: 215 27.9% 16.9%;
+    --primary: 126 69% 63%;
+    --primary-foreground: 126 69% 3%;
+    --secondary: 126 5% 15%;
+    --secondary-foreground: 126 5% 75%;
+    --accent: 126 5% 15%;
+    --accent-foreground: 126 5% 75%;
+    --destructive: 22 85% 53%;
+    --destructive-foreground: 0 0% 0%;
+    --ring: 126 69% 63%;
   }
 }
+
+  
 

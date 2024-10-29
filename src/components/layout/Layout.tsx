@@ -155,7 +155,7 @@ export default function Layout(props: LayoutProps) {
       
     // </>
 
-    <SidebarProvider>
+    <SidebarProvider color="">
     <div className="flex h-screen">
       <AppSidebar items={useMenuStore.getState().menus} firstName={user.firstname} lastName={user.first_lastname}/>
       <SidebarInset className="flex-1">
@@ -207,8 +207,8 @@ function AppSidebar({items,firstName,lastName}:{items:IMenuChildren[],firstName:
                   <User className="mr-2 h-4 w-4" />
                   Mi perfil
                 </DropdownMenuItem>
-                <DropdownMenuItem className="text-red-500 focus:text-red-500 focus:bg-red-100 dark:focus:bg-red-900">
-                  <LogOut className="mr-2 h-4 w-4"  onClick={() => logout()}/>
+                <DropdownMenuItem className="text-red-500 focus:text-red-500 focus:bg-red-100 dark:focus:bg-red-900" onClick={() => logout()}>
+                  <LogOut className="mr-2 h-4 w-4" />
                   Desconectar
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -232,40 +232,5 @@ function AppSidebar({items,firstName,lastName}:{items:IMenuChildren[],firstName:
       </SidebarContent>
       <SidebarRail />
     </Sidebar>
-  //   <Sidebar>
-  //   <SidebarContent>
-  //     <SidebarGroup>
-  //       <SidebarGroupLabel>Menu</SidebarGroupLabel>
-  //       <SidebarGroupContent>
-
-  //       </SidebarGroupContent>
-  //     </SidebarGroup>
-  //   </SidebarContent>
-  //   <SidebarFooter>
-  //         <SidebarMenu>
-  //           <SidebarMenuItem>
-  //             <DropdownMenu>
-  //               <DropdownMenuTrigger asChild>
-  //                 <SidebarMenuButton>
-  //                   <User2 /> {firstName} {lastName}
-  //                   <ChevronUp className="ml-auto" />
-  //                 </SidebarMenuButton>
-  //               </DropdownMenuTrigger>
-  //               <DropdownMenuContent
-  //                 side="top"
-  //                 className="w-[--radix-popper-anchor-width]"
-  //               >
-  //                 <DropdownMenuItem onClick={() => push("/perfil")}>
-  //                   <span>Mi perfil</span>
-  //                 </DropdownMenuItem>
-  //                 <DropdownMenuItem onClick={() => logout()}>
-  //                   <span>Desconectar</span>
-  //                 </DropdownMenuItem>
-  //               </DropdownMenuContent>
-  //             </DropdownMenu>
-  //           </SidebarMenuItem>
-  //         </SidebarMenu>
-  //       </SidebarFooter>
-  // </Sidebar>
   )
 }

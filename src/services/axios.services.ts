@@ -258,9 +258,10 @@ export function api_getAllUsersOtrosByEstablishment({ establishment, page }: { e
   return api.get(`users${query}`)
 }
 
-export function api_getAllUserByEstablishment(establishment:number){
+export function api_getAllUserByEstablishment(establishment: number) {
   let query = `?filters[$and][0][establishment][id][$eq]=${establishment}`
   query += `&filters[$and][1][role][name][$ne]=admin`
+  query += `&populate=*`
   return api.get(`users${query}`)
 }
 
@@ -293,10 +294,12 @@ export function api_uploadFiles(formData: FormData) {
   });
 }
 
-export function api_getAllDocumentbyEstablishment(escuelaId: number) {
-  let query = `?filters[$and][0][establishmentId][id][$eq]=${escuelaId}`
-  query += `&filters[$and][1][Eliminado][$eq]=false`
+export function api_getDocumentUserCreated(escuelaId: number, userId: number, page: number) {
+  let query = `?filter[$and][0][establishmentId][id][$eq]=${escuelaId}`
+  query += `&filters[$and][1][userId][id][$eq]=${userId}`
+  query += `&filters[$and][2][Eliminado][$eq]=false`
   query += `&populate=*`
+  query += `&pagination[page]=${page}&pagination[pageSize]=5`
   return api.get(`documents${query}`)
 }
 
@@ -305,4 +308,32 @@ export function api_putDocument(documentId: number, isDeleted: boolean) {
   const url = `documents/${documentId}`; // Asegúrate de que la URL sea correcta
   // Realiza la solicitud PUT para actualizar el campo 'Eliminado'
   return api.put(url, { data: { Eliminado: isDeleted } });
+}
+
+//Peticiones para traer los documentos
+export function api_getDocumentsByEstablishment(establishmentId: number) {
+  let query = `?filters[$and][0][establishmentId][id][$eq]=${establishmentId}`
+  query += `&filters[$and][1][courseId][id][$null]=true`
+  query += `&filters[$and][2][user_destiny][id][$null]=true`
+  query += `&filters[$and][3][Eliminado][$eq]=false`
+  query += `&populate=*`
+  return api.get(`documents${query}`)
+}
+
+export function api_getDocumentsByCourse(establishmentId: number, courseGrade: string, courseLetter: string) {
+  let query = `?filters[$and][0][establishmentId][id][$eq]=${establishmentId}`
+  query += `&filters[$and][1][courseId][grade][$eq]=${courseGrade}`
+  query += `&filters[$and][2][courseId][letter][$eq]=${courseLetter}`
+  query += `&filters[$and][3][user_destiny][id][$null]=true`
+  query += `&filters[$and][4][Eliminado][$eq]=false`
+  query += `&populate=*`
+  return api.get(`documents${query}`)
+}
+
+export function api_getDocumentsByUserDestinity(establishmentId: number, userId: number) {
+  let query = `?filters[$and][0][establishmentId][id][$eq]=${establishmentId}`
+  query += `&filters[$and][1][user_destiny][id][$eq]=${userId}`
+  query += `&filters[$and][2][Eliminado][$eq]=false`
+  query += `&populate=*`
+  return api.get(`documents${query}`)
 }

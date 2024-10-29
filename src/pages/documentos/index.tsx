@@ -1,12 +1,12 @@
 import WarningAlert from "@/components/alerts/warningAlert";
 import { data } from "@/components/encargado/grafico1";
-import { api_getAllDocumentbyEstablishment, api_getAllUserByEstablishment, api_getOneUser, api_postDocument, api_putDocument, api_uploadFiles } from "@/services/axios.services";
+import { api_getAllUserByEstablishment, api_getDocumentsByCourse, api_getDocumentsByEstablishment, api_getDocumentsByUserDestinity, api_getDocumentUserCreated, api_getOneUser, api_postDocument, api_putDocument, api_uploadFiles } from "@/services/axios.services";
 import { useUserStore } from "@/store/userStore";
-import { ArrowDownTrayIcon, ChevronDownIcon } from "@heroicons/react/20/solid";
+import { ArrowDownTrayIcon, ChevronDownIcon, ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/20/solid";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useState } from "react";
 import { Button } from "react-daisyui";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { toast } from "react-toastify";
 import { z } from "zod";
 import { saveAs } from 'file-saver';
@@ -14,6 +14,8 @@ import { TrashIcon } from "@heroicons/react/24/outline";
 import { Menu } from '@headlessui/react'
 import { getFile } from "../../services/images.service";
 import router from "next/router";
+import Select from "react-select";
+import metaI from "@/interfaces/meta.interface";
 
 
 
@@ -56,9 +58,7 @@ interface IUser {
 interface IDocument {
     id: number;
     attributes: {
-        descriptionDoc: string;
-        nameUser: string;
-        lastNameUser: string;
+        Eliminado: boolean;
         courseId: {
             data: {
                 id: number;
@@ -68,11 +68,7 @@ interface IDocument {
                 }
             }
         }
-        userId: {
-            data: {
-                id: number;
-            }
-        }
+        descriptionDoc: string;
         document: {
             data: {
                 attributes: {
@@ -83,6 +79,32 @@ interface IDocument {
                 id: number;
             }[]
         }
+        establishmentId: {
+            data: {
+                attributes: {
+                    name: string;
+                }
+                id: number;
+            }
+        }
+        userId: {
+            data: {
+                id: number;
+                attributes: {
+                    firstname: string;
+                    first_lastname: string;
+                }
+            }
+        }
+        user_destiny: {
+            data: {
+                id: number;
+                attributes: {
+                    firstname: string;
+                    first_lastname: string;
+                }
+            }
+        }
     }
 }
 
@@ -92,12 +114,13 @@ interface FormValues {
     establishmentId: number;
     courseId?: number;
     document: FileList;
-    user_destiny?:number;
+    user_destiny?: number;
 }
 
 export default function Index() {
     const { user, GetRole } = useUserStore();
     const [dataUser, setDataUser] = useState<IUser>();
+
 
     useEffect(() => {
         const fetchData = async () => {
@@ -112,19 +135,80 @@ export default function Index() {
     }, [user.id]);
 
 
-
+    const [userEstablishment, setUserEstablishment] = useState<IUser[]>([]);
     const getAllUserByEstablishment = async () => {
-        try{
-            const data = await api_getAllUserByEstablishment(user.establishment.id) ;
-
-        }catch(error){
+        try {
+            const data = await api_getAllUserByEstablishment(user.establishment.id);
+            setUserEstablishment(data.data);
+        } catch (error) {
             console.log(error);
         }
     };
 
-    useEffect(()=>{
+    useEffect(() => {
         getAllUserByEstablishment();
-    },[])
+    }, [user]);
+
+    const [documentCreate, setDocumentCreate] = useState<IDocument[]>([]);
+    const [metaData, setMetaData] = useState<metaI>({ page: 1, pageCount: 0, pageSize: 0, total: 0 });
+    const dataDocumentByCreate = async () => {
+        try {
+            const data = await api_getDocumentUserCreated(user.establishment.id, user.id, metaData.page);
+            setDocumentCreate(data.data.data);
+            setMetaData(data.data.meta.pagination);
+        } catch (error) {
+            console.error('Error fetching data:', error)
+        }
+    }
+
+    useEffect(() => {
+        dataDocumentByCreate()
+    }, [user]);
+
+    const [documents, setDocuments] = useState<IDocument[]>([])
+    const [displayedDocuments, setDisplayedDocuments] = useState<IDocument[]>([])
+    const [currentPage, setCurrentPage] = useState(1);
+    const documentsPerPage = 5;
+
+    const loadMoreDocuments = () => {
+        const nextPage = currentPage + 1
+        const startIndex = (nextPage - 1) * documentsPerPage
+        const endIndex = startIndex + documentsPerPage
+        const newDocuments = documents.slice(startIndex, endIndex)
+        setDisplayedDocuments([...displayedDocuments, ...newDocuments])
+        setCurrentPage(nextPage)
+    }
+
+    useEffect(() => {
+        const fetchDocuments = async () => {
+            if (dataUser) {
+                try {
+                    const [establishmentDocs, courseDocs, userDocs] = await Promise.all([
+                        api_getDocumentsByEstablishment(user.establishment.id),
+                        dataUser.courses.length > 0
+                            ? api_getDocumentsByCourse(user.establishment.id, dataUser.courses[0].grade, dataUser.courses[0].letter)
+                            : Promise.resolve({ data: { data: [] } }),
+                        api_getDocumentsByUserDestinity(user.establishment.id, user.id)
+                    ])
+
+                    const allDocs = [
+                        ...establishmentDocs.data.data,
+                        ...courseDocs.data.data,
+                        ...userDocs.data.data
+                    ]
+
+                    setDocuments(allDocs)
+                    setDisplayedDocuments(allDocs.slice(0, documentsPerPage))
+                } catch (error) {
+                    console.error('Error al obtener documentos:', error)
+                }
+            }
+        }
+
+        if (dataUser) {
+            fetchDocuments()
+        }
+    }, [user.establishment.id, user.id, dataUser])
 
     const DocumentSchema = z.object({
         descriptionDoc: z.string({ required_error: 'Campo requerido', invalid_type_error: 'Tipo inválido' })
@@ -146,7 +230,7 @@ export default function Index() {
                 }
                 return true;
             }, "No se pueden subir más de 4 archivos"),
-            user_destinity:z.number().optional()
+        user_destiny: z.number().optional()
     });
 
     const { register, watch, setValue, control, reset, handleSubmit, formState: { errors } } = useForm<FormValues>({
@@ -158,20 +242,18 @@ export default function Index() {
         setValue('establishmentId', user.establishment.id || 0);
     }, [user, setValue]);
 
-    const [dataDocument, setDataDocument] = useState<IDocument[]>([]);
+    const customReset = () => {
+        reset({
+            descriptionDoc: '',
+            courseId: undefined,
+            user_destiny: undefined,
+            document: undefined,
+        }, {
+            keepValues: true,
+            keepDirtyValues: false,
+        });
+    };
 
-    const dataDocuments = async () => {
-        try {
-            const data = await api_getAllDocumentbyEstablishment(user.establishment.id);
-            setDataDocument(data.data.data);
-        } catch (error) {
-            console.error('Error fetching data:', error)
-        }
-    }
-
-    useEffect(() => {
-        dataDocuments()
-    }, [user]);
 
     const [isSubmitting, setIsSubmitting] = useState(false);
     const onSubmit = async (data: FormValues) => {
@@ -212,19 +294,22 @@ export default function Index() {
 
             // Crear el objeto de documento con la referencia a los archivos
             const documentData = {
+                descriptionDoc: data.descriptionDoc,
                 userId: data.userId,
                 establishmentId: data.establishmentId,
                 courseId: data.courseId,
-                descriptionDoc: data.descriptionDoc,
-                document: fileArray // Enviar el array de archivos
+                document: fileArray, // Enviar el array de archivos
+                user_destiny: data.user_destiny,
             };
 
             // Crear el documento en Strapi
             const response = await api_postDocument(documentData);
 
+            console.log(response);
+
             toast.success('Documentos subidos con éxito.');
-            router.reload();
-            dataDocuments()
+            customReset();
+            dataDocumentByCreate()
         } catch (error) {
             console.error('Error al subir los documentos:', error);
             toast.error('Ha ocurrido un error inesperado.')
@@ -233,59 +318,26 @@ export default function Index() {
         }
     };
 
-
-
-    const [filteredDocuments, setFilteredDocuments] = useState<IDocument[]>([]);
-    useEffect(() => {
-        if (dataDocument.length > 0 && dataUser) {
-            const userDocuments = dataDocument.filter(doc => doc.attributes.userId.data.id === user.id);
-            setFilteredDocuments(userDocuments);
-        }
-    }, [dataDocument, dataUser]);
-
-    //const userCourseIdentifier = dataUser?.courses[0].grade + dataUser.courses[0].letter;
-
-    // Filtra los documentos que coinciden con el curso del usuario
-    const [matchingDocuments, setMatchingDocuments] = useState<IDocument[]>([]);
-    const [displayedDocuments, setDisplayedDocuments] = useState<IDocument[]>([]);
-    const [currentPage, setCurrentPage] = useState(1);
-    const documentsPerPage = 5;
-    const loadMoreDocuments = () => {
-        const nextPage = currentPage + 1;
-        const startIndex = (nextPage - 1) * documentsPerPage;
-        const endIndex = startIndex + documentsPerPage;
-        const newDocuments = matchingDocuments.slice(startIndex, endIndex);
-        setDisplayedDocuments([...displayedDocuments, ...newDocuments]);
-        setCurrentPage(nextPage);
-    };
-    
-
-
-    useEffect(() => {
-        if (dataDocument.length !== 0 && dataUser && dataUser.courses.length > 0) {
-            const userDocuments = dataDocument.filter(doc =>
-                doc.attributes.courseId.data.attributes.grade === dataUser.courses[0].grade &&
-                doc.attributes.courseId.data.attributes.letter === dataUser.courses[0].letter
-            );
-            setMatchingDocuments(userDocuments);
-            setDisplayedDocuments(userDocuments.slice(0, documentsPerPage));
-        }
-    }, [dataDocument, dataUser]);
-
     const handleDeleteDocument = async (documentId: number) => {
         try {
             const response = await api_putDocument(documentId, true); // Establece 'Eliminado' en true
             // Aquí puedes manejar el estado de tu aplicación, como actualizar la lista de documentos
             toast.success('Documento eliminado exitosamente.')
-            dataDocuments()
+            dataDocumentByCreate()
         } catch (error) {
             console.error('Error al eliminar el documento:', error);
         }
     };
 
+    const updatePage = (number: number) => {
+        metaData.page = number;
+        metaData.pageCount = metaData.pageCount
+        metaData.pageSize = metaData.pageSize
+        metaData.total = metaData.total
+        setMetaData(metaData);
+        dataDocumentByCreate()
+    }
 
-    //select para mostrar la cantidad de curso que tienes y enviarle el id del course.
-    //luego mostrarle a los alumnos al profe y encargado solo si tiene el nombre y letter del course
     if (GetRole() === "admin" || GetRole() === "Encargado de Convivencia Escolar" || GetRole() === "Profesor" && dataUser?.canUploadDoc == true && dataUser.courses.length == 0) {
         return (
             <div className="flex flex-col items-center">
@@ -296,39 +348,61 @@ export default function Index() {
 
     if (GetRole() === "admin" || GetRole() === "Encargado de Convivencia Escolar" || GetRole() === "Profesor" && dataUser?.canUploadDoc == true) {
 
-
-
         return (
             <>
-
                 <form onSubmit={handleSubmit(onSubmit)} className="grid md:grid-cols-1 gap-2 mx-auto mb-4 w-full border rounded-lg shadow-md p-4 items-center text-center">
                     <div>
                         <span className="text-2xl font-bold">Subir Documentos:</span>
                     </div>
 
                     <div className="flex flex-col items-center mb-4">
-                        <label htmlFor="curso" className="font-semibold">Seleccion un curso: </label>
-                        <select {...register('courseId', { setValueAs: (value) => value === "" ? undefined : Number(value) })}
-                            className="select select-primary">
-                            <option value="" selected>Seleccione una opcion</option>
-                            {dataUser?.courses.map((c, index) => (
-                                <option value={c.id} key={index}>{c.grade + " " + c.letter}</option>
-                            ))}
-                        </select>
+                        <label htmlFor="curso" className="font-semibold">Seleccione un curso: </label>
+                        < Controller
+                            control={control}
+                            name="courseId"
+                            render={({ field: { onChange, value, name, ref } }) => (
+                                <Select
+                                    placeholder="Seleccione curso (opcional)"
+                                    getOptionValue={(option) => option.id.toString()}
+                                    getOptionLabel={(option) => option.grade + " " + option.letter}
+                                    value={dataUser?.courses.find((e) => e.id === value) || null}
+                                    options={dataUser?.courses}
+                                    onChange={(val) =>
+                                        setValue("courseId", Number(val?.id))
+                                    }
+                                    menuPortalTarget={document.body}
+                                    loadingMessage={() => "Cargando opciones..."}
+                                    isLoading={dataUser?.courses.length === 0}
+                                    isClearable
+                                />
+                            )}
+                        />
                         {errors.courseId?.message && (<p className="text-red-600 text-sm mt-1">{errors.courseId.message}</p>)}
                     </div>
 
-                        //modifcar para traer todos los usuarios
                     <div className="flex flex-col items-center mb-4">
                         <label htmlFor="curso" className="font-semibold">Seleccione un usuario: </label>
-                        <select {...register('courseId', { setValueAs: (value) => value === "" ? undefined : Number(value) })}
-                            className="select select-primary">
-                            <option value="" selected>Seleccione una opcion</option>
-                            {dataUser?.courses.map((c, index) => (
-                                <option value={c.id} key={index}>{c.grade + " " + c.letter}</option>
-                            ))}
-                        </select>
-                        {errors.courseId?.message && (<p className="text-red-600 text-sm mt-1">{errors.courseId.message}</p>)}
+                        < Controller
+                            control={control}
+                            name="user_destiny"
+                            render={({ field: { onChange, value, name, ref } }) => (
+                                <Select
+                                    placeholder="Seleccione usuario (opcional)"
+                                    getOptionValue={(option) => option.id.toString()}
+                                    getOptionLabel={(option) => option.firstname + " " + option.first_lastname}
+                                    value={userEstablishment.find((e) => e.id === value)}
+                                    options={userEstablishment}
+                                    onChange={(val) =>
+                                        setValue("user_destiny", Number(val?.id))
+                                    }
+                                    menuPortalTarget={document.body}
+                                    loadingMessage={() => "Cargando opciones..."}
+                                    isLoading={userEstablishment.length === 0}
+                                    isClearable
+                                />
+                            )}
+                        />
+                        {errors.user_destiny?.message && (<p className="text-red-600 text-sm mt-1">{errors.user_destiny.message}</p>)}
                     </div>
 
                     <div className="mb-4">
@@ -351,45 +425,69 @@ export default function Index() {
                 </form>
 
                 <div className="border rounded-lg shadow-md p-4 items-center">
-                    {filteredDocuments.length > 0 ? (
-                        filteredDocuments.map((doc, index) => (
-                            <div key={index} className="grid md:grid-cols-3 gap-4 border border-gray-100 hover:border-2 hover:border-primary p-2 mb-1">
-                                <div className="flex flex-col items-center">
-                                    <p><span className="font-semibold">Descripcion: </span>{doc.attributes.descriptionDoc}</p>
-                                    <p><span className="font-semibold">Curso: </span>{doc.attributes.courseId.data.attributes.grade + " " + doc.attributes.courseId.data.attributes.letter}</p>
-                                </div>
-                                <div className="flex flex-col items-center lg:flex-row">
-                                    {doc.attributes.document.data.map((archivo, index) => (<>
-                                        <button
-                                            type="button"
-                                            className="btn btn-outline btn-primary mb-2 lg:mb-0 lg:mr-2"
-                                            onClick={() => {
-                                                saveAs(getFile(archivo.attributes.url),archivo.attributes.name);
-                                            }}
-                                        >
-                                            <ArrowDownTrayIcon className="mr-2 h-4 w-4" aria-hidden="true" />
-                                            Archivo {index + 1}
-                                        </button>
+                    <div className="flex flex-col md:flex-row">
+                        <p className="font-bold text-2xl mb-2">Documentos Creados: </p>
+                    </div>
+                    {documentCreate.length > 0 ?
+                        (<>
+                            {documentCreate.map((doc, index) => (
+                                <>
+                                    <div key={index} className="grid md:grid-cols-3 gap-4 border border-gray-100 hover:border-2 hover:border-primary p-2 mb-1">
+                                        <div className="flex flex-col items-center">
+                                            <p><span className="font-semibold">Descripcion: </span>{doc.attributes.descriptionDoc}</p>
+                                            {doc.attributes.courseId.data && (
+                                                <p><span className="font-semibold">Curso: </span>{doc.attributes.courseId.data?.attributes.grade + " " + doc.attributes.courseId.data?.attributes.letter}</p>
+                                            )}
+                                            {doc.attributes.user_destiny.data && (
+                                                <p><span className="font-semibold">Destinatario: </span>{doc.attributes.user_destiny.data.attributes.firstname + " " + doc.attributes.user_destiny.data.attributes.first_lastname}</p>
+                                            )}
+                                            {!doc.attributes.courseId.data && (
+                                                <></>
+                                            )}
+                                            {!doc.attributes.user_destiny.data && (
+                                                <></>
+                                            )}
+                                        </div>
+                                        <div className="flex flex-col items-center lg:flex-row">
+                                            {doc.attributes.document.data.map((archivo, index) => (<>
+                                                <button
+                                                    type="button"
+                                                    className="btn btn-outline btn-primary mb-2 lg:mb-0 lg:mr-2"
+                                                    onClick={() => {
+                                                        saveAs(getFile(archivo.attributes.url), archivo.attributes.name);
+                                                    }}
+                                                >
+                                                    <ArrowDownTrayIcon className="mr-2 h-4 w-4" aria-hidden="true" />
+                                                    Archivo {index + 1}
+                                                </button>
 
-                                    </>))}
-                                </div>
-                                <div className="flex flex-row justify-end">
-                                    <button
-                                        type="button"
-                                        onClick={() => handleDeleteDocument(doc.id)}
-                                    >
-                                        <TrashIcon className="h-4 w-4 text-red-500 mr-2" aria-hidden="true" />
-                                    </button>
-                                </div>
+                                            </>))}
+                                        </div>
+                                        <div className="flex flex-row justify-end">
+                                            <button
+                                                type="button"
+                                                onClick={() => handleDeleteDocument(doc.id)}
+                                            >
+                                                <TrashIcon className="h-4 w-4 text-red-500 mr-2" aria-hidden="true" />
+                                            </button>
+                                        </div>
+                                    </div>
+                                </>
+                            ))}
+                            <PaginatorCreator metadata={metaData} setMetaData={updatePage} />
+                        </>)
+                        :
+                        (
+                            <div className="flex flex-col items-center">
+                                <WarningAlert message={'Sin documentos'} />
                             </div>
-                        ))
-                    ) : (
-                        <div className="flex flex-col items-center">
-                            <WarningAlert message={'Sin documentos'} />
-                        </div>
-                    )}
+                        )}
                 </div>
-
+                <div className="border rounded-lg shadow-md p-4 items-center">
+                    <div className="flex flex-col md:flex-row">
+                        <p className="font-bold text-2xl mb-2">Documentos Recibidos: </p>
+                    </div>
+                </div>
             </>
         );
     }
@@ -411,7 +509,7 @@ export default function Index() {
 
     if (GetRole() === "Authenticated" && dataUser?.tipo === 'alumno') {
 
-        if (matchingDocuments.length != 0) {
+        if (documents.length != 0) {
             // Lógica a ejecutar si existen documentos correspondientes
             return (
                 <div className="w-full max-w-4xl mx-auto p-4">
@@ -421,7 +519,7 @@ export default function Index() {
                             <thead>
                                 <tr className="bg-green-700 text-white">
                                     <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Asunto</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Creado por</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Subido por</th>
                                     <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Fecha</th>
                                     <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider">Archivo</th>
                                 </tr>
@@ -430,7 +528,7 @@ export default function Index() {
                                 {displayedDocuments.map((doc) => (
                                     <tr className="hover:bg-green-50 transition-colors duration-200">
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{doc.attributes.descriptionDoc}</td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{doc.attributes.nameUser + " " + doc.attributes.lastNameUser}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{doc.attributes.userId.data.attributes.firstname + " " + doc.attributes.userId.data.attributes.first_lastname}</td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{new Date(doc.attributes.document.data[0].attributes.createdAt).toLocaleDateString()}</td>
                                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                             {doc.attributes.document.data.length === 1 ? (
@@ -478,7 +576,7 @@ export default function Index() {
                             </tbody>
                         </table>
                     </div>
-                    {displayedDocuments.length < matchingDocuments.length && (
+                    {displayedDocuments.length < documents.length && (
                         <div className="mt-4 text-center">
                             <button
                                 onClick={loadMoreDocuments}
@@ -500,4 +598,69 @@ export default function Index() {
 
 
     }
+}
+
+function PaginatorCreator({ metadata, setMetaData }: { metadata: metaI, setMetaData: (numero: number) => void }) {
+    const changePage = async (number: number) => {
+        if (number > metadata.pageCount) return;
+        if (number <= 0) return;
+        setMetaData(number);
+    }
+    return (
+        <div className="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6">
+            <div className="flex flex-1 justify-between sm:hidden">
+                <a
+                    onClick={() => changePage(metadata.page - 1)}
+                    className=" inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                >
+                    Pagina Anterior
+                </a>
+                <a
+                    onClick={() => changePage(metadata.page + 1)}
+                    className="ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                >
+                    Proxima Pagina
+                </a>
+            </div>
+            <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+                <div>
+                    <p className="text-sm text-gray-700">Mostrando <span className="font-medium">{Math.min(Number(metadata.pageSize) * metadata.page, metadata.total)}</span> de{" "}
+                        <span className="font-medium">{metadata.total}</span> resultados
+                    </p>
+                </div>
+                <div>
+                    <nav
+                        className="isolate inline-flex -space-x-px rounded-md shadow-sm"
+                        aria-label="Pagination"
+                    >
+                        <a
+                            onClick={() => changePage(metadata.page - 1)}
+                            className="cursor-pointer inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:outline-offset-0"
+                        >
+                            <span className="sr-only">Previous</span>
+                            <ChevronLeftIcon className="h-5 w-5" aria-hidden="true" />
+                        </a>
+                        {/* Current: "z-10 bg-indigo-600 text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600", Default: "text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:outline-offset-0" */}
+                        {[...Array.from(Array(metadata.pageCount).keys())].map((num, i) => (
+                            <a
+                                key={i}
+                                onClick={() => changePage(num + 1)}
+                                aria-current="page"
+                                className={` cursor-pointer relative hidden items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300  focus:z-20 focus:outline-offset-0 md:inline-flex ${(num + 1) === metadata.page ? 'hover:brightness-90 bg-primary text-white shadow' : ''}`}
+                            >
+                                {num + 1}
+                            </a>
+                        ))}
+                        <a
+                            onClick={() => changePage(metadata.page + 1)}
+                            className="cursor-pointer relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0"
+                        >
+                            <span className="sr-only">Next</span>
+                            <ChevronRightIcon className="h-5 w-5" aria-hidden="true" />
+                        </a>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    );
 }

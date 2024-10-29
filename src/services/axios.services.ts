@@ -320,6 +320,17 @@ export function api_getDocumentsByEstablishment(establishmentId: number) {
   return api.get(`documents${query}`)
 }
 
+export function api_getDocumentsByEstablishment2(establishmentId: number,userId:number,page:number) {
+  let query = `?filters[$and][0][establishmentId][id][$eq]=${establishmentId}`
+  query += `&filters[$and][1][courseId][id][$null]=true`
+  query += `&filters[$and][2][user_destiny][id][$null]=true`
+  query += `&filters[$and][3][Eliminado][$eq]=false`
+  query += `&filters[$and][4][userId][id][$ne]=${userId}`
+  query += `&populate=*`
+  query += `&pagination[page]=${page}&pagination[pageSize]=5`
+  return api.get(`documents${query}`)
+}
+
 export function api_getDocumentsByCourse(establishmentId: number, courseGrade: string, courseLetter: string) {
   let query = `?filters[$and][0][establishmentId][id][$eq]=${establishmentId}`
   query += `&filters[$and][1][courseId][grade][$eq]=${courseGrade}`

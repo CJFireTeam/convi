@@ -1,6 +1,6 @@
 import WarningAlert from "@/components/alerts/warningAlert";
 import { data } from "@/components/encargado/grafico1";
-import { api_getAllUserByEstablishment, api_getDocumentsByCourse, api_getDocumentsByEstablishment, api_getDocumentsByUserDestinity, api_getDocumentUserCreated, api_getOneUser, api_postDocument, api_putDocument, api_uploadFiles } from "@/services/axios.services";
+import { api_getAllUserByEstablishment, api_getDocumentsByCourse, api_getDocumentsByEstablishment, api_getDocumentsByEstablishment2, api_getDocumentsByUserDestinity, api_getDocumentUserCreated, api_getOneUser, api_postDocument, api_putDocument, api_uploadFiles } from "@/services/axios.services";
 import { useUserStore } from "@/store/userStore";
 import { ArrowDownTrayIcon, ChevronDownIcon, ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/20/solid";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -164,6 +164,22 @@ export default function Index() {
     useEffect(() => {
         dataDocumentByCreate()
     }, [user]);
+
+    const [documentEstablishment, setDocumentEstablishment]=useState<IDocument[]>([]);
+    const [metaData2, setMetaData2] = useState<metaI>({ page: 1, pageCount: 0, pageSize: 0, total: 0 });
+    /* const dataDocumentByEstablishment = async () => {
+        try {
+            const data = await api_getDocumentsByEstablishment2(user.establishment.id,,metaData2.page);
+            setDocumentEstablishment(data.data.data);
+            setMetaData2(data.data.meta.pagination);
+        } catch (error) {
+            console.error('Error fetching data:', error)
+        }
+    } */
+
+   /*  useEffect(() => {
+        dataDocumentByEstablishment()
+    }, [user]); */
 
     const [documents, setDocuments] = useState<IDocument[]>([])
     const [displayedDocuments, setDisplayedDocuments] = useState<IDocument[]>([])

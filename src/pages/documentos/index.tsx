@@ -132,7 +132,7 @@ export default function Index() {
             }
         }
         fetchData()
-    }, [user.id]);
+    }, [user]);
 
 
     const [userEstablishment, setUserEstablishment] = useState<IUser[]>([]);
@@ -208,7 +208,7 @@ export default function Index() {
         if (dataUser) {
             fetchDocuments()
         }
-    }, [user.establishment.id, user.id, dataUser])
+    }, [user, dataUser])
 
     const DocumentSchema = z.object({
         descriptionDoc: z.string({ required_error: 'Campo requerido', invalid_type_error: 'Tipo inválido' })
@@ -484,6 +484,7 @@ export default function Index() {
                         )}
                 </div>
                 <div className="border rounded-lg shadow-md p-4 items-center">
+                    {}
                     <div className="flex flex-col md:flex-row">
                         <p className="font-bold text-2xl mb-2">Documentos Recibidos: </p>
                     </div>

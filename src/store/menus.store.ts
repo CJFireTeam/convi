@@ -69,7 +69,7 @@ const EncargadoMenus: IMenuChildren[] = [
   { name: "Home", href: "/", icon: HomeIcon, children: [], current: false },
   {
     name: "Gestion De Casos",
-    href: "/gestion",
+    href: "/casos",
     children: [
       {
         name: "Denuncias",

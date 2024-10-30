@@ -10,6 +10,7 @@ import { routeModule } from "next/dist/build/templates/app-page";
 import CasesAuthenticated from "../components/authenticated/CasesAuthenticated";
 import ModalWhoIS from "../components/authenticated/modalWhoIs";
 import ContadorUsuarios from "@/components/administrador/contadorusuarios";
+import Head from "next/head";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -17,10 +18,14 @@ export default function Home() {
   const { bearer, setRole, user, isLoading, role } = useUserStore();
   return (
     <>
+      <Head>
+        <title>Home</title>
+        <meta name="viewport" content="initial-scale=1.0, width=device-width" />
+      </Head>
       {role.name === "Authenticated" && <><Greetings_Authenticated /><CasesAuthenticated /></>}
       {role.name === "Encargado de Convivencia Escolar" && <><Grafico /></>}
       {role.name === "admin" && <div className="h-full">
-      <ContadorUsuarios/>
+        <ContadorUsuarios />
       </div>}
     </>
   );

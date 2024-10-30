@@ -12,6 +12,7 @@ import {
   api_usersByRole,
 } from "../../services/axios.services";
 import { useRouter } from "next/router";
+import Head from "next/head";
 
 
 
@@ -128,6 +129,10 @@ export default function Denuncia() {
 
   return (
     <>
+      <Head>
+        <title>Denuncia</title>
+        <meta name="viewport" content="initial-scale=1.0, width=device-width" />
+      </Head>
       <FormProvider {...methods}>
         <form onSubmit={methods.handleSubmit(onSubmit)}>
           <div className="space-y-4 divide-y divide-gray-900/10">

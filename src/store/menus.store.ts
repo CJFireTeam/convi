@@ -35,7 +35,7 @@ const AuthenticatedMenus: IMenuChildren[] = [
     specialStyle: true,
   },
   {
-    name: "Dashboard",
+    name: "Casos",
     href: "/",
     icon: HomeIcon,
     current: false,
@@ -82,7 +82,7 @@ const EncargadoMenus: IMenuChildren[] = [
     current: false,
   },
   {
-    name: "Configuracion",
+    name: "Configuración",
     href: "/configuracion",
     icon: Cog6ToothIcon,
     children: [],
@@ -96,7 +96,7 @@ const EncargadoMenus: IMenuChildren[] = [
     current: false,
   },
   {
-    name: "Reunion",
+    name: "Reunión",
     href: "/meeting",
     icon: FolderIcon,
     children: [],

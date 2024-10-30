@@ -14,6 +14,7 @@ import router from 'next/router';
 import axios, { AxiosError } from "axios";
 import Cookies from "js-cookie";
 import { useUserStore } from '@/store/userStore';
+import Head from 'next/head';
 
 
 interface Inputs {
@@ -83,52 +84,58 @@ function Colegio({ errors }: props) {
     }, []);
 
     return (
-        <div className="grid grid-flow-col justify-stretch animate-fadein">
+        <>
+            <Head>
+                <title>Consulta y Sugerencia</title>
+                <meta name="viewport" content="initial-scale=1.0, width=device-width" />
+            </Head>
+            <div className="grid grid-flow-col justify-stretch animate-fadein">
 
-            <div>
-                <label className="block mb-2 text-sm font-medium text-gray-900 ">Región:</label>
-                <select id="region" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-10/12 p-2.5"
-                    value={regionSelected}
-                    onChange={handleChangeRegion}>
-                    <option value={0}>Seleccione la region:</option>
-                    {regionList.map((region: string) => (
-                        <option value={region} key={region}>
-                            {region}
-                        </option>
-                    ))}
-                </select>
-            </div>
-            <div>
-                <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Comuna:</label>
-                <select value={comunaSelected}
-                    onChange={handleChangeComuna}
-                    id="comuna" className="bg-gray-50 border border-gregisterray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-10/12 p-2.5">
-                    <option value={""}>Seleccione la comuna: </option>
-                    {comunaList.map((comuna: string) => (
-                        <option value={comuna} key={comuna}>
-                            {comuna}
-                        </option>
-                    ))}
+                <div>
+                    <label className="block mb-2 text-sm font-medium text-gray-900 ">Región:</label>
+                    <select id="region" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-10/12 p-2.5"
+                        value={regionSelected}
+                        onChange={handleChangeRegion}>
+                        <option value={0}>Seleccione la region:</option>
+                        {regionList.map((region: string) => (
+                            <option value={region} key={region}>
+                                {region}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+                <div>
+                    <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Comuna:</label>
+                    <select value={comunaSelected}
+                        onChange={handleChangeComuna}
+                        id="comuna" className="bg-gray-50 border border-gregisterray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-10/12 p-2.5">
+                        <option value={""}>Seleccione la comuna: </option>
+                        {comunaList.map((comuna: string) => (
+                            <option value={comuna} key={comuna}>
+                                {comuna}
+                            </option>
+                        ))}
 
-                </select>
+                    </select>
+                </div>
+                <div>
+                    <label className="block mb-2 text-sm font-medium text-gray-900 ">Colegio:</label>
+                    <select  {...register('establishment', {
+                        setValueAs: (value) => value === "" ? undefined : value
+                    })}
+                        id="establishment" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-10/12 p-2.5">
+                        <option value="">Seleccione el establecimiento: {getValues("establishment")}</option>
+                        {establecimientoList.map((stablishment: stablishmentI) => (
+                            <option value={stablishment.id} key={stablishment.id}>
+                                {stablishment.attributes.name}
+                                {JSON.stringify(stablishment.id)}
+                            </option>
+                        ))}
+                    </select>
+                    <p className="text-error text-sm mt-1 text-wei font-semibold">{errors.establishment ? errors.establishment.message : ""}</p>
+                </div>
             </div>
-            <div>
-                <label className="block mb-2 text-sm font-medium text-gray-900 ">Colegio:</label>
-                <select  {...register('establishment', {
-                    setValueAs: (value) => value === "" ? undefined : value
-                })}
-                    id="establishment" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-10/12 p-2.5">
-                    <option value="">Seleccione el establecimiento: {getValues("establishment")}</option>
-                    {establecimientoList.map((stablishment: stablishmentI) => (
-                        <option value={stablishment.id} key={stablishment.id}>
-                            {stablishment.attributes.name}
-                            {JSON.stringify(stablishment.id)}
-                        </option>
-                    ))}
-                </select>
-                <p className="text-error text-sm mt-1 text-wei font-semibold">{errors.establishment ? errors.establishment.message : ""}</p>
-            </div>
-        </div>
+        </>
 
     )
 };
@@ -139,6 +146,10 @@ function SugerenciaText({ errors }: props) {
 
     return (
         <>
+            <Head>
+                <title>Consulta y Sugerencia</title>
+                <meta name="viewport" content="initial-scale=1.0, width=device-width" />
+            </Head>
             <div className="flex items-center justify-center mb-4 ">
                 <div className="mx-4 w-full">
                     <span>Escriba su consulta o sugerencia en el siguiente cuadro de texto</span>
@@ -173,13 +184,13 @@ export default function Sugerencia() {
         resolver: zodResolver(suggestionSchema),
     });
 
-    
+
     const { user } = useUserStore()
 
     const onSubmit = async (data: any) => {
 
         try {
-            const response = await axios.post(`${process.env.NEXT_PUBLIC_BACKEND_URL}suggestions`, {data : data},
+            const response = await axios.post(`${process.env.NEXT_PUBLIC_BACKEND_URL}suggestions`, { data: data },
                 { headers: { Authorization: "Bearer " + Cookies.get("bearer") } }
             );
             toast.success('Se envio la sugerencia correctamente');
@@ -203,8 +214,8 @@ export default function Sugerencia() {
 
     useEffect(() => {
         console.log(user.id);
-       setValue('created',user.id);
-    }, [user]); 
+        setValue('created', user.id);
+    }, [user]);
 
 
     const [seleccion, setSeleccion] = useState('');
@@ -224,6 +235,10 @@ export default function Sugerencia() {
 
     return (
         <>
+            <Head>
+                <title>Consulta y Sugerencia</title>
+                <meta name="viewport" content="initial-scale=1.0, width=device-width" />
+            </Head>
             <div className="divide-y divide-gray-200 overflow-hidden rounded-lg bg-white shadow">
                 <div className="px-4 py-3 sm:px-6">
                     <h6 className="font-bold md:text-lg text-sm">

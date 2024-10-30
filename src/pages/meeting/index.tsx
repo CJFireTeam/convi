@@ -5,6 +5,7 @@ import { useUserStore } from '@/store/userStore';
 import { useRouter } from 'next/router'; // Importa useRouter
 import { api_postSendMeeting } from '@/services/axios.services';
 import { Bounce, toast } from "react-toastify";
+import Head from 'next/head';
 
 export default function MeetingPage() {
     const [roomName, setRoomName] = useState('');
@@ -23,7 +24,7 @@ export default function MeetingPage() {
                 alert('Por favor, ingrese un nombre para la sala.');
                 return;
             }
-            
+
             localStorage.setItem('currentRoom', formattedRoomName); // Usa el nombre de sala formateado
 
             const displayName = `${user.firstname} ${user.first_lastname} ${user.second_lastname}`;
@@ -38,14 +39,14 @@ export default function MeetingPage() {
             toast.loading('Creando reunión...');
             const data = await api_postSendMeeting({
                 CreationDate: currentTime,
-                RoomName:formattedRoomName,
-                RoomUrl:baseUrl,
+                RoomName: formattedRoomName,
+                RoomUrl: baseUrl,
                 Establishment: user.establishment.id,
-                CreatorUser:user.id
+                CreatorUser: user.id
             });
 
             setRoomStatus(true);
-            toast.dismiss(); 
+            toast.dismiss();
             toast.success('Reunión creada correctamente');
             // Abrir la reunión en una nueva pestaña y
             const newWindow = window.open(roomUrl, '_blank');
@@ -76,6 +77,10 @@ export default function MeetingPage() {
     if (GetRole() === "Profesor" || GetRole() === "Encargado de Convivencia Escolar") {
         return (
             <>
+                <Head>
+                    <title>Reunión</title>
+                    <meta name="viewport" content="initial-scale=1.0, width=device-width" />
+                </Head>
                 <div className="w-full md:w-1/2 h-screen mx-auto">
                     {!roomStatus && (
                         <div className="grid md:grid-cols-12 w-full border border-gray-400 rounded shadow-md p-4">
@@ -111,7 +116,7 @@ export default function MeetingPage() {
                         <div className="grid md:grid-cols-12 w-full border border-gray-400 rounded shadow-md p-4">
                             <div className='col-span-6 flex flex-col items-center my-auto text-center'>
                                 <h1 className='font-semibold text-xl'>Sala</h1>
-                                <h1 className='font-bold text-xl'>'{roomName}'</h1>
+                                <h1 className='font-bold text-xl'>{roomName}</h1>
                                 <h1 className='font-semibold text-xl'>en Reunion</h1>
                             </div>
 

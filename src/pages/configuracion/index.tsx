@@ -9,13 +9,14 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "react-toastify";
 import { ArrowDownCircleIcon } from "@heroicons/react/24/outline";
+import Head from "next/head";
 interface ProfessionalI {
   names: string;
   surnames: string;
   position: number;
   establishment: number;
   status: boolean;
-  email:string;
+  email: string;
 }
 
 interface tableProfessionalI {
@@ -44,7 +45,7 @@ function Cargos() {
     establishment: z.number(),
     status: z.boolean().default(true),
     position: z.number(),
-    email:z.string(),
+    email: z.string(),
   })
   const {
     register,
@@ -164,34 +165,39 @@ function Cargos() {
 
 
   return (
-    <div className="container-md flex justify-center p-4 md:mx-20 lg:mx-18">
-      <div className="p-5 flex-col container">
-        <div className="px-4 sm:px-6 lg:px-8 border rounded-lg shadow mb-4">
-          <div className="flex flex-row justify-between max-w-2xl text-base font-semibold leading-6 text-gray-900 lg:mx-0 lg:max-w-none">
-            <h2 className="m-3 order-1">Cargos</h2>
-            <button onClick={handleShow} className="m-3 order-2">
-              <PlusIcon className="h-6 w-6 text-primary" />
-            </button>
+    <>
+      <Head>
+        <title>Configuración</title>
+        <meta name="viewport" content="initial-scale=1.0, width=device-width" />
+      </Head>
+      <div className="container-md flex justify-center p-4 md:mx-20 lg:mx-18">
+        <div className="p-5 flex-col container">
+          <div className="px-4 sm:px-6 lg:px-8 border rounded-lg shadow mb-4">
+            <div className="flex flex-row justify-between max-w-2xl text-base font-semibold leading-6 text-gray-900 lg:mx-0 lg:max-w-none">
+              <h2 className="m-3 order-1">Cargos</h2>
+              <button onClick={handleShow} className="m-3 order-2">
+                <PlusIcon className="h-6 w-6 text-primary" />
+              </button>
+            </div>
           </div>
-        </div>
 
-        <div className=" overflow-hidden">
-          <div className="max-w-2xl text-base font-semibold leading-6 text-gray-900 lg:mx-0 lg:max-w-none">
-            <div className="mx-auto max-w-2xl lg:mx-0 lg:max-w-none">
-              <table className="w-full text-left">
-                <thead className="sr-only">
-                  <tr>
-                    <th>Amount</th>
-                    <th className="hidden sm:table-cell">Client</th>
-                    <th>More details</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {data.map((element, index) => (
-                    <Fragment key={index}>
-                      <Profesional handleShow={handleShowProfesional} id={element.id} name={element.attributes.name} />
+          <div className=" overflow-hidden">
+            <div className="max-w-2xl text-base font-semibold leading-6 text-gray-900 lg:mx-0 lg:max-w-none">
+              <div className="mx-auto max-w-2xl lg:mx-0 lg:max-w-none">
+                <table className="w-full text-left">
+                  <thead className="sr-only">
+                    <tr>
+                      <th>Amount</th>
+                      <th className="hidden sm:table-cell">Client</th>
+                      <th>More details</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {data.map((element, index) => (
+                      <Fragment key={index}>
+                        <Profesional handleShow={handleShowProfesional} id={element.id} name={element.attributes.name} />
 
-                      {/* {day.transactions.map((transaction) => (
+                        {/* {day.transactions.map((transaction) => (
                         <tr key={transaction.id}>
                           <td className="relative py-5 pr-6">
                             <div className="flex gap-x-6">
@@ -240,78 +246,79 @@ function Cargos() {
                           </td>
                         </tr>
                       ))} */}
-                    </Fragment>
-                  ))}
-                </tbody>
-              </table>
+                      </Fragment>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         </div>
-      </div>
-      <Modal ref={ref}>
-        <Modal.Header>
-          <span className="font-bold flex justify-center text-primary mt-4">Creacion de cargo</span>
-          <Button onClick={hadleClose} size="sm" color="ghost" shape="circle" className="text-base font-semibold absolute right-2 top-2">
-            X
-          </Button>
-        </Modal.Header>
-        <Modal.Body>
-          <form className="flex flex-col p-4" onSubmit={handleSubmit(onSubmit)}>
-            <div className="flex-col rounded-md shadow-sm">
-              <span className="text-base font-semibold leading-6 text-gray-900 order-1 ">
-                Nombre del cargo:
-              </span>
-              <input
-                type="text"
-                {...register("name")}
-                className="order-2 mt-1 w-full rounded-md text-base font-semibold leading-6 text-gray-900 ring-1 ring-primary focus:ring-2 focus:ring-primary "
-              />
-            </div>
-            <Button color="primary" animation className="order-3 mt-4 md:mx-20 lg:mx-20" disabled={isLoading} type="submit" loading={isLoading} >Guardar</Button>
-          </form>
-        </Modal.Body>
-      </Modal>
+        <Modal ref={ref}>
+          <Modal.Header>
+            <span className="font-bold flex justify-center text-primary mt-4">Creacion de cargo</span>
+            <Button onClick={hadleClose} size="sm" color="ghost" shape="circle" className="text-base font-semibold absolute right-2 top-2">
+              X
+            </Button>
+          </Modal.Header>
+          <Modal.Body>
+            <form className="flex flex-col p-4" onSubmit={handleSubmit(onSubmit)}>
+              <div className="flex-col rounded-md shadow-sm">
+                <span className="text-base font-semibold leading-6 text-gray-900 order-1 ">
+                  Nombre del cargo:
+                </span>
+                <input
+                  type="text"
+                  {...register("name")}
+                  className="order-2 mt-1 w-full rounded-md text-base font-semibold leading-6 text-gray-900 ring-1 ring-primary focus:ring-2 focus:ring-primary "
+                />
+              </div>
+              <Button color="primary" animation className="order-3 mt-4 md:mx-20 lg:mx-20" disabled={isLoading} type="submit" loading={isLoading} >Guardar</Button>
+            </form>
+          </Modal.Body>
+        </Modal>
 
-      <Modal ref={refProfesional}>
-        <Modal.Header>
-          <span className="font-bold flex justify-center text-primary mt-4">Creacion de profesional</span>
-          <Button onClick={hadleCloseProfesional} size="sm" color="ghost" shape="circle" className="text-base font-semibold absolute right-2 top-2">
-            X
-          </Button>
-        </Modal.Header>
-        <Modal.Body>
-          <form className="flex flex-col p-4" onSubmit={handleSubmitProfessional(onSubmitProfessional)}>
-            <div className="flex-col rounded-md shadow-sm">
-              <span className="text-base font-semibold leading-6 text-gray-900 order-1">
-                Nombres:
-              </span>
-              <input
-                type="text"
-                {...registerProfessional("names")}
-                className="order-2 mt-1 mb-1 w-full rounded-md text-base font-semibold leading-6 text-gray-900 ring-1 ring-primary focus:ring-2 focus:ring-primary "
-              />
-              <span className="text-base font-semibold leading-6 text-gray-900 order-3">
-                Apellidos:
-              </span>
-              <input
-                type="text"
-                {...registerProfessional("surnames")}
-                className="order-4 mt-1 w-full rounded-md text-base font-semibold leading-6 text-gray-900 ring-1 ring-primary focus:ring-2 focus:ring-primary "
-              />
-              <span className="text-base font-semibold leading-6 text-gray-900 order-3">
-                Correo Electronico:
-              </span>
-              <input
-                type="text"
-                {...registerProfessional("email")}
-                className="order-4 mt-1 w-full rounded-md text-base font-semibold leading-6 text-gray-900 ring-1 ring-primary focus:ring-2 focus:ring-primary "
-              />
-            </div>
-            <Button color="primary" animation className="order-3 mt-4 md:mx-20 lg:mx-20" disabled={isLoading} type="submit" loading={isLoading} >Guardar</Button>
-          </form>
-        </Modal.Body>
-      </Modal>
-    </div>
+        <Modal ref={refProfesional}>
+          <Modal.Header>
+            <span className="font-bold flex justify-center text-primary mt-4">Creacion de profesional</span>
+            <Button onClick={hadleCloseProfesional} size="sm" color="ghost" shape="circle" className="text-base font-semibold absolute right-2 top-2">
+              X
+            </Button>
+          </Modal.Header>
+          <Modal.Body>
+            <form className="flex flex-col p-4" onSubmit={handleSubmitProfessional(onSubmitProfessional)}>
+              <div className="flex-col rounded-md shadow-sm">
+                <span className="text-base font-semibold leading-6 text-gray-900 order-1">
+                  Nombres:
+                </span>
+                <input
+                  type="text"
+                  {...registerProfessional("names")}
+                  className="order-2 mt-1 mb-1 w-full rounded-md text-base font-semibold leading-6 text-gray-900 ring-1 ring-primary focus:ring-2 focus:ring-primary "
+                />
+                <span className="text-base font-semibold leading-6 text-gray-900 order-3">
+                  Apellidos:
+                </span>
+                <input
+                  type="text"
+                  {...registerProfessional("surnames")}
+                  className="order-4 mt-1 w-full rounded-md text-base font-semibold leading-6 text-gray-900 ring-1 ring-primary focus:ring-2 focus:ring-primary "
+                />
+                <span className="text-base font-semibold leading-6 text-gray-900 order-3">
+                  Correo Electronico:
+                </span>
+                <input
+                  type="text"
+                  {...registerProfessional("email")}
+                  className="order-4 mt-1 w-full rounded-md text-base font-semibold leading-6 text-gray-900 ring-1 ring-primary focus:ring-2 focus:ring-primary "
+                />
+              </div>
+              <Button color="primary" animation className="order-3 mt-4 md:mx-20 lg:mx-20" disabled={isLoading} type="submit" loading={isLoading} >Guardar</Button>
+            </form>
+          </Modal.Body>
+        </Modal>
+      </div>
+    </>
   )
 }
 
@@ -339,11 +346,11 @@ function Profesional({ id, name, handleShow }: { id: number, name: string, handl
   const toggleStatus = async (professionalId: number, currentStatus: boolean) => {
     try {
       setIsLoading(true);
-      const newStatus = !currentStatus; 
-      
+      const newStatus = !currentStatus;
+
       // Enviar la actualización al servidor
       await api_putProfessionals(professionalId, { data: { status: newStatus } });
-      
+
       // Actualizar el estado del profesional localmente después de recibir la respuesta del servidor
       const updatedData = data.map(professional => {
         if (professional.id === professionalId) {
@@ -358,7 +365,7 @@ function Profesional({ id, name, handleShow }: { id: number, name: string, handl
         return professional;
       });
       setData(updatedData);
-      
+
       setIsLoading(false);
       toast.success('Se actualizó el estado correctamente');
     } catch (error) {
@@ -367,10 +374,14 @@ function Profesional({ id, name, handleShow }: { id: number, name: string, handl
       setIsLoading(false);
     }
   };
-  
+
 
   return (
     <>
+    <Head>
+        <title>Configuración</title>
+        <meta name="viewport" content="initial-scale=1.0, width=device-width" />
+      </Head>
       <tr className="bg-gray-50 text-sm leading-6 text-gray-900">
         <th className="flex flex-row justify-between border rounded-lg p-2">
           <span className="ml-3">{name}</span>
@@ -385,7 +396,7 @@ function Profesional({ id, name, handleShow }: { id: number, name: string, handl
             <span className="order-1 flex-1"> Nombre: {profesional.attributes.names} {profesional.attributes.surnames}</span>
             <span className="order-2 flex-1"> Correo electronico: {profesional.attributes.email}</span>
             <button className="order-3 flex-none" onClick={() => toggleStatus(profesional.id, profesional.attributes.status)}>
-              {profesional.attributes.status ? <LockOpenIcon className=" w-7 h-7"/>: <LockClosedIcon className=" w-7 h-7"/>}
+              {profesional.attributes.status ? <LockOpenIcon className=" w-7 h-7" /> : <LockClosedIcon className=" w-7 h-7" />}
             </button>
           </td>
         </tr>

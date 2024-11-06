@@ -13,6 +13,7 @@ import { z } from "zod";
 import { useFieldArray, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "react-toastify";
+import Head from "next/head";
 interface questionaryI {
   id: number;
   attributes: {
@@ -93,45 +94,51 @@ export default function Index() {
 
   if (GetRole() === "Profesor" || GetRole() === "Encargado de Convivencia Escolar") {
     return (
-      <div className="px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between ">
-          <div className="sm:flex-auto">
-            <h1 className="text-base font-semibold leading-6 text-gray-900">
-              Mis Encuestas
-            </h1>
-            <p className="mt-2 text-sm text-gray-700"></p>
+      <>
+        <Head>
+          <title>Encuestas</title>
+          <meta name="viewport" content="initial-scale=1.0, width=device-width" />
+        </Head>
+        <div className="px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between ">
+            <div className="sm:flex-auto">
+              <h1 className="text-base font-semibold leading-6 text-gray-900">
+                Mis Encuestas
+              </h1>
+              <p className="mt-2 text-sm text-gray-700"></p>
+            </div>
+            <div className=" sm:ml-16 sm:mt-0 sm:flex-none">
+              <Button onClick={redirect} color="primary">
+                Crear encuesta
+              </Button>
+            </div>
           </div>
-          <div className=" sm:ml-16 sm:mt-0 sm:flex-none">
-            <Button onClick={redirect} color="primary">
-              Crear encuesta
-            </Button>
-          </div>
-        </div>
-        {data.length != 0 ? (
-          <>
-            <div className="mt-8 flow-root">
-              <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-                <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
-                  <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
-                    <Table data={data} />
+          {data.length != 0 ? (
+            <>
+              <div className="mt-8 flow-root">
+                <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+                  <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
+                    <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
+                      <Table data={data} />
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-            <div className="flex justify-center mt-4">
+              <div className="flex justify-center mt-4">
 
-              {metaData.page < metaData.pageCount ? (
-                <Button onClick={handleLoadMore} color="primary">
-                  Cargar más encuestas
-                </Button>
-              ) : (
-                <p className="text-center text-gray-500">Mostrando todas las encuestas.</p>
-              )}
-            </div>
-          </>
-        ) : <WarningAlert message="Aun no has creado una encuesta" />}
+                {metaData.page < metaData.pageCount ? (
+                  <Button onClick={handleLoadMore} color="primary">
+                    Cargar más encuestas
+                  </Button>
+                ) : (
+                  <p className="text-center text-gray-500">Mostrando todas las encuestas.</p>
+                )}
+              </div>
+            </>
+          ) : <WarningAlert message="Aun no has creado una encuesta" />}
 
-      </div>
+        </div>
+      </>
     );
   }
 
@@ -146,6 +153,10 @@ export default function Index() {
 
     return (
       <>
+        <Head>
+          <title>Encuestas</title>
+          <meta name="viewport" content="initial-scale=1.0, width=device-width" />
+        </Head>
         {!form && dataQuestionary.length > 0 && (
           <>
             <div className="w-4/5 mx-auto">

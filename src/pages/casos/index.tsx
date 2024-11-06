@@ -11,6 +11,7 @@ import { api_cases } from "../../services/axios.services";
 import { EyeIcon, PencilIcon } from "@heroicons/react/24/outline";
 import { useMenuStore } from "../../store/menus.store";
 import { Button, Divider, Modal } from "react-daisyui";
+import Head from "next/head";
 enum UserTypes {
   "apoderado" = "Apoderado",
   "alumno" = "Alumno",
@@ -85,10 +86,14 @@ function Table({ data }: { data: caseInterface[] }) {
     ;
   }
 
-  
+
 
   return (
     <>
+      <Head>
+        <title>Casos</title>
+        <meta name="viewport" content="initial-scale=1.0, width=device-width" />
+      </Head>
       <table className="min-w-full divide-y divide-gray-300 text-center">
         <thead className="bg-gray-50">
           <tr>
@@ -410,6 +415,10 @@ export default function Casos() {
   }
   return (
     <>
+      <Head>
+        <title>Casos</title>
+        <meta name="viewport" content="initial-scale=1.0, width=device-width" />
+      </Head>
       {role.name !== "Authenticated" && (
         <div className="px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between ">

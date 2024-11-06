@@ -148,7 +148,7 @@ export default function Register() {
   const onSubmits = handleSubmit((data) => Submit(data))
 
   return (
-    <>
+    <div className="bg-white">
       <Modal
         isOpen={modalIsOpen}
         onRequestClose={closeModal}
@@ -200,7 +200,7 @@ export default function Register() {
         </div>
 
         <div className="mt-3 sm:mx-auto sm:w-full sm:max-w-sm">
-          <form className="space-y-6" method="POST" onSubmit={onSubmits}>
+          <form className="bg-white space-y-6" method="POST" onSubmit={onSubmits}>
             <div className="space-y-12">
               <div className="border-b border-gray-900/10 pb-12">
                 <h2 className="text-base font-semibold leading-7 text-gray-900">
@@ -433,6 +433,6 @@ export default function Register() {
           </form>
         </div>
       </div>
-    </>
+    </div>
   );
 }

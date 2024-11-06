@@ -6,6 +6,7 @@ import { Cog8ToothIcon } from "@heroicons/react/24/outline";
 import { ToastContainer, toast } from "react-toastify";
 import { SchoolComponent } from "../components/case/school.component";
 import { useUserStore } from "../store/userStore";
+import Head from "next/head";
 
 interface valueInterface {
   title: string;
@@ -32,7 +33,7 @@ interface SchoolCase {
   story: string;
   measures: string;
   directed: number;
-  created:number;
+  created: number;
 }
 
 
@@ -207,14 +208,14 @@ const Form: React.FC<{
       />
     </div>
     <div className="flex flex-col md:flex-row">
-         <SchoolComponent
-          form={fields[5]}
-          setOwner={setElement}
-          OwnerString="directed"
-          setSite={setElement}
-          OwnerSite="establishment"
-        />
-      
+      <SchoolComponent
+        form={fields[5]}
+        setOwner={setElement}
+        OwnerString="directed"
+        setSite={setElement}
+        OwnerSite="establishment"
+      />
+
     </div>
     <div className="flex flex-col md:flex-row items-center justify-center m-2">
       <button
@@ -236,15 +237,15 @@ const Form: React.FC<{
 
 export default function CrearCasos() {
   const [creating, setCreating] = useState(false);
-  const {bearer,setRole,GetRole,user,isLoading,role} = useUserStore()
+  const { bearer, setRole, GetRole, user, isLoading, role } = useUserStore()
 
   useEffect(() => {
-    if (user.id === 0) return ;
+    if (user.id === 0) return;
     if (GetRole() !== "Authenticated") schoolCase.establishment = user.establishment.id;
     if (GetRole() === "Authenticated" && user.tipo === "alumno") schoolCase.establishment = user.establishment_authenticateds[0].id
     schoolCase.created = user.id;
-    
-  },[user])
+
+  }, [user])
 
   const router = useRouter();
 
@@ -274,7 +275,7 @@ export default function CrearCasos() {
       return;
     }
     const id = toast.loading("Guardando...");
-    
+
     setCreating(true);
     try {
       const data = await axios.post(
@@ -308,22 +309,28 @@ export default function CrearCasos() {
     setSchoolCase((prev) => ({ ...prev, [element]: newElement }));
   };
   return (
-    <div className="divide-y divide-gray-200 overflow-hidden rounded-lg bg-white shadow">
-      <div className="px-4 py-3 sm:px-6">
-        <h6 className="font-bold md:text-lg text-sm">
-          Completa la siguiente información sobre el hecho que quieres
-          denunciar.
-        </h6>
+    <>
+      <Head>
+        <title>Te escuchamos</title>
+        <meta name="viewport" content="initial-scale=1.0, width=device-width" />
+      </Head>
+      <div className="divide-y divide-gray-200 overflow-hidden rounded-lg bg-white shadow">
+        <div className="px-4 py-3 sm:px-6">
+          <h6 className="font-bold md:text-lg text-sm">
+            Completa la siguiente información sobre el hecho que quieres
+            denunciar.
+          </h6>
+        </div>
+        <div className="px-4 py-5 sm:p-6 bg-slate-50">
+          <Form
+            fields={formInitial}
+            setArray={setArray}
+            setElement={setOne}
+            create={create}
+            creating={creating}
+          />
+        </div>
       </div>
-      <div className="px-4 py-5 sm:p-6 bg-slate-50">
-        <Form
-          fields={formInitial}
-          setArray={setArray}
-          setElement={setOne}
-          create={create}
-          creating={creating}
-        />
-      </div>
-    </div>
+    </>
   );
 }

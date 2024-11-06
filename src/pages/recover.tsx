@@ -178,7 +178,7 @@ export default function Recover() {
 
 
   return (
-    <div className="flex min-h-full flex-1 flex-col justify-center px-6 py-12 lg:px-8 transition-transform">
+    <div className="h-dvh	 bg-white flex min-h-full flex-1 flex-col justify-center px-6 py-12 lg:px-8 transition-transform">
       <div className="sm:mx-auto sm:w-full sm:max-w-sm">
         <Image
           className="dark:drop-shadow-[0_0_0.3rem_#ffffff70]"

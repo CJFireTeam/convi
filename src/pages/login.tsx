@@ -7,7 +7,9 @@ import convi from "./convi.jpg";
 import { Bounce, toast } from "react-toastify";
 import { ExclamationTriangleIcon } from "@heroicons/react/24/outline";
 import  {useUserStore} from "../store/userStore";
-
+import { Button } from "@/components/ui/button"
+import { Input } from "../components/ui/input";
+import '../styles/login.module.css'
 export default function Login() {
   const router = useRouter();
   const {setUser,setBearer} = useUserStore()
@@ -120,7 +122,7 @@ export default function Login() {
   return (
     <>
       <div
-        className={`flex min-h-full flex-1 flex-col justify-center px-6 py-12 lg:px-8 transition-transform ${
+        className={`flex min-h-full h-dvh	 bg-white flex-1 flex-col justify-center px-6 py-12 lg:px-8 transition-transform ${
           isVisible ? "animate-fadein" : "animate-fadeout"
         }`}
       >
@@ -131,9 +133,7 @@ export default function Login() {
             alt="Convi"
             priority
           />
-          <h2 className="mt-10 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900">
-            Entra a tu cuenta
-          </h2>
+
         </div>
 
         <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm ">
@@ -146,13 +146,13 @@ export default function Login() {
                 Correo electronico
               </label>
               <div className="mt-2">
-                <input
+                <Input
                   id="email"
                   name="email"
                   type="email"
                   autoComplete="email"
                   required
-                  className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-info sm:text-sm sm:leading-6"
+                  className="block w-full rounded-md border-0 py-1.5 font-semibold  shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-info sm:text-sm sm:leading-6"
                 />
               </div>
             </div>
@@ -166,17 +166,12 @@ export default function Login() {
                   Contraseña
                 </label>
                 <div className="text-sm">
-                  <a
-                    href="#"
-                    className="font-semibold text-primary hover:text-info"
-                    onClick={recover}
-                  >
-                    Olvide mi contraseña
-                  </a>
+                <Button type="button" onClick={recover} variant="link" className="font-semibold">Olvide mi contraseña</Button>
+                  
                 </div>
               </div>
               <div className="mt-2">
-                <input
+                <Input
                   id="password"
                   name="password"
                   type="password"
@@ -188,13 +183,17 @@ export default function Login() {
             </div>
 
             <div>
-              <button
+            <Button className="flex w-full justify-center">
+            {error && (<ExclamationTriangleIcon className="w-6 text-white" aria-hidden="true" />)}
+            Conectar</Button>
+
+              {/* <button
                 type="submit"
                 className={`flex w-full justify-center rounded-md ${error ? `bg-primary` : `bg-primary hover:bg-accent`} px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600`}
               >
               {error && (<ExclamationTriangleIcon className="w-6 text-white" aria-hidden="true" />)}
                 Conectar
-              </button>
+              </button> */}
             </div>
           </form>
           <div className="flex justify-center m-1">

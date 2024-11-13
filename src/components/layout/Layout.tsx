@@ -33,7 +33,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { ChevronUp, HelpCircle, Home, LogOut, Menu, Settings, User, User2 } from "lucide-react";
 import { Button } from "../ui/button";
- 
+
 type LayoutProps = {
   children: ReactNode;
 };
@@ -89,7 +89,7 @@ export default function Layout(props: LayoutProps) {
   }, [useUserStore.getState().GetRole(), pathname]);
 
   useEffect(() => {
-    (async () => {})();
+    (async () => { })();
     const me = async () => {
       try {
         const data = await api_me();
@@ -126,7 +126,7 @@ export default function Layout(props: LayoutProps) {
     // Listen for title changes
     const targetNode = document.head || document.documentElement
     const config = { subtree: true, childList: true, characterData: true }
-    
+
     const observer = new MutationObserver((mutationsList) => {
       for (let mutation of mutationsList) {
         if (mutation.type === 'childList' || mutation.type === 'characterData') {
@@ -152,27 +152,27 @@ export default function Layout(props: LayoutProps) {
     //   </main>
     //     {/* {props.children} */}
     // </SidebarProvider>
-      
+
     // </>
 
     <SidebarProvider color="">
-    <div className="flex h-screen">
-      <AppSidebar items={useMenuStore.getState().menus} firstName={user.firstname} lastName={user.first_lastname}/>
-      <SidebarInset className="flex-1">
-        <header className="flex h-16 items-center gap-4 border-b px-6">
-          <SidebarTrigger />
-          <h1 className="text-xl font-semibold">{title}</h1>
-        </header>
-        <main className="flex-1 overflow-auto p-6">
-        {props.children}
-        </main>
-      </SidebarInset>
-    </div>
-  </SidebarProvider>
+      <div className="flex h-screen overflow-y-hidden">
+        <AppSidebar items={useMenuStore.getState().menus} firstName={user.firstname} lastName={user.first_lastname} />
+        <SidebarInset className="flex-1">
+          <header className="flex h-16 items-center gap-4 border-b px-6">
+            <SidebarTrigger />
+            <h1 className="text-xl font-semibold">{title}</h1>
+          </header>
+          <main className="flex-1 overflow-auto p-6">
+            {props.children}
+          </main>
+        </SidebarInset>
+      </div>
+    </SidebarProvider>
   );
 }
 
-function AppSidebar({items,firstName,lastName}:{items:IMenuChildren[],firstName:string,lastName: string}) {
+function AppSidebar({ items, firstName, lastName }: { items: IMenuChildren[], firstName: string, lastName: string }) {
   const {
     desconectar,
   } = useUserStore();
@@ -188,7 +188,7 @@ function AppSidebar({items,firstName,lastName}:{items:IMenuChildren[],firstName:
   return (
 
     <Sidebar>
-<SidebarHeader>
+      <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
             <DropdownMenu>
@@ -217,18 +217,18 @@ function AppSidebar({items,firstName,lastName}:{items:IMenuChildren[],firstName:
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-               <SidebarMenu>
-             {items.map((item) => (
-              <SidebarMenuItem key={item.name}>
-                <SidebarMenuButton asChild className="select-none	cursor-pointer">
-                  <a onClick={() => push(item.href)}>
-                    <item.icon />
-                    <span>{item.name}</span>
-                  </a>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            ))}
-          </SidebarMenu>
+        <SidebarMenu>
+          {items.map((item) => (
+            <SidebarMenuItem key={item.name}>
+              <SidebarMenuButton asChild className="select-none	cursor-pointer">
+                <a onClick={() => push(item.href)}>
+                  <item.icon />
+                  <span>{item.name}</span>
+                </a>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          ))}
+        </SidebarMenu>
       </SidebarContent>
       <SidebarRail />
     </Sidebar>

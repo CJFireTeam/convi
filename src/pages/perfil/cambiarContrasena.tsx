@@ -7,6 +7,7 @@ import router from "next/router";
 import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
 import { ArrowLeftIcon } from "@heroicons/react/20/solid";
+import Head from "next/head";
 
 type Inputs = {
     currentPassword: string;
@@ -47,7 +48,10 @@ export default function CambiarContrasena() {
 
 
     return (<>
-
+    <Head>
+        <title>Cambiar contraseña</title>
+        <meta name="viewport" content="initial-scale=1.0, width=device-width" />
+      </Head>
         <div className="flex flex-col items-center">
             <div className="flex flex-col rounded-lg border shadow-2xl animate-fadein mb-4 p-10">
                 <div className="mb-4">

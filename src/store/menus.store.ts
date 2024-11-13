@@ -8,6 +8,7 @@ import {
   LightBulbIcon,
   UsersIcon,
   FolderIcon,
+  PencilIcon
 } from "@heroicons/react/20/solid";
 export interface Imenus {
   name: string;
@@ -155,6 +156,13 @@ const AdministradorMenus: IMenuChildren[] = [
     name: "Administrar Usuarios",
     href: "/administrador",
     icon: UsersIcon,
+    children: [],
+    current: false,
+  },
+  {
+    name: "Cursos",
+    href: "/administrador/cursos",
+    icon: PencilIcon,
     children: [],
     current: false,
   },

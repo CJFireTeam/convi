@@ -9,6 +9,7 @@ import { ArrowLeftIcon } from "@heroicons/react/20/solid";
 import { useEffect, useState } from "react";
 import { getComunas, getRegiones } from "@/services/local.services";
 import { editProfileSchema } from "@/validations/editProfileSchema";
+import Head from "next/head";
 
 interface Inputs {
     first_lastname: string;
@@ -86,7 +87,10 @@ export default function CambiarContrasena() {
 
 
     return (<>
-
+        <Head>
+        <title>Actualizar información</title>
+        <meta name="viewport" content="initial-scale=1.0, width=device-width" />
+      </Head>
         <div className="flex flex-col items-center">
             <div className="flex flex-col rounded-lg border shadow-2xl animate-fadein mb-4 p-10">
                 <div className="mb-4">

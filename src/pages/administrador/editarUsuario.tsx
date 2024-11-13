@@ -453,6 +453,7 @@ export function InsertCourse(props: props) {
             const response = await api_postCourses(data);
             toast.success('Curso agregado correctamente');
             getCoursesByUser()
+            getCoursesEstablishment()
         }
         catch (errors) {
             console.log(errors);
@@ -522,7 +523,7 @@ export function InsertCourse(props: props) {
         if (props.establishmentId || props.userId) {
             getCoursesByUser()
         }
-    }, [props.establishmentId])
+    }, [props.establishmentId,metaData.page])
 
     const eliminarclick = async (CourseEsId: number) => {
         try {

@@ -296,12 +296,21 @@ export function api_uploadFiles(formData: FormData) {
 }
 
 export function api_getDocumentUserCreated(escuelaId: number, userId: number, page: number) {
-  let query = `?filter[$and][0][establishmentId][id][$eq]=${escuelaId}`
-  query += `&filters[$and][1][userId][id][$eq]=${userId}`
-  query += `&filters[$and][2][Eliminado][$eq]=false`
-  query += `&populate=*&sort=createdAt:desc`
-  query += `&pagination[page]=${page}&pagination[pageSize]=3`
-  return api.get(`documents${query}`)
+  let query = `?filters[$and][0][establishmentId][id][$eq]=${escuelaId}`;
+  query += `&filters[$and][1][userId][id][$eq]=${userId}`;
+  query += `&filters[$and][2][Eliminado][$eq]=false`;
+  
+  // Poblar todas las relaciones necesarias
+  query += `&populate[userId]=*`; // Poblar el usuario
+  query += `&populate[establishmentId]=*`; // Poblar el establecimiento
+  query += `&populate[courseId][populate][establishment_courses]=*`; // Poblar establishment_courses a través de courseId
+  query += `&populate[document]=*`; // Poblar documentos
+  query += `&populate[user_destiny]=*`; // Poblar el destino del usuario
+  
+  query += `&sort=createdAt:desc`;
+  query += `&pagination[page]=${page}&pagination[pageSize]=3`;
+
+  return api.get(`documents${query}`);
 }
 
 export function api_putDocument(documentId: number, isDeleted: boolean) {
@@ -332,10 +341,9 @@ export function api_getDocumentsByEstablishment2(establishmentId: number, userId
   return api.get(`documents${query}`)
 }
 
-export function api_getDocumentsByCourse(establishmentId: number, courseGrade: string, courseLetter: string) {
+export function api_getDocumentsByCourse(establishmentId: number, courseId: number) {
   let query = `?filters[$and][0][establishmentId][id][$eq]=${establishmentId}`
-  query += `&filters[$and][1][courseId][grade][$eq]=${courseGrade}`
-  query += `&filters[$and][2][courseId][letter][$eq]=${courseLetter}`
+  query += `&filters[$and][1][courseId][id][$eq]=${courseId}`
   query += `&filters[$and][3][user_destiny][id][$null]=true`
   query += `&filters[$and][4][Eliminado][$eq]=false`
   query += `&populate=*&sort=createdAt:desc`
@@ -377,7 +385,7 @@ export function api_getCourses(establishment: number) {
   return api.get(`courses${query}`)
 }
 
-export function api_getCoursesByUser (establishment: number, userId: number, page: number) {
+export function api_getCoursesByUser(establishment: number, userId: number, page: number) {
   let query = `?filter[$and][0][establishment][id][$eq]=${establishment}`;
   query += `&filters[$and][1][users][id][$eq]=${userId}`;
   query += `&filters[$and][2][establishment_courses][Eliminado][$eq]=false`; // Filtrar cursos donde Eliminado es false
@@ -386,6 +394,15 @@ export function api_getCoursesByUser (establishment: number, userId: number, pag
   query += `&sort=createdAt:desc`; // Ordenar por el campo 'createdAt' en orden descendente
   query += `&pagination[page]=${page}&pagination[pageSize]=12`;
   
+  return api.get(`courses${query}`);
+}
+export function api_getCoursesByUserSinPag(establishment: number, userId: number) {
+  let query = `?filter[$and][0][establishment][id][$eq]=${establishment}`;
+  query += `&filters[$and][1][users][id][$eq]=${userId}`;
+  query += `&filters[$and][2][establishment_courses][Eliminado][$eq]=false`; // Filtrar cursos donde Eliminado es false
+  query += `&populate[0]=establishment_courses`; // Poblar establishment_courses
+  query += `&populate[establishment_courses][filters][Eliminado][$eq]=false`; // Aplica el filtro Eliminado=false
+  query += `&sort=createdAt:desc`; // Ordenar por el campo 'createdAt' en orden descendente
   return api.get(`courses${query}`);
 }
 

@@ -415,7 +415,7 @@ export function InsertCourse(props: props) {
         if (props.establishmentId || props.userId) {
             getCoursesByUser()
         }
-    }, [props.establishmentId])
+    }, [props.establishmentId,,metaData.page])
 
     const CourseSchema = z.object({
         establishment_courses: z.number({ required_error: 'Campo requerido', invalid_type_error: 'Tipo de dato invalido' }),
@@ -430,10 +430,19 @@ export function InsertCourse(props: props) {
     const [coursesEs, setCoursesEs] = useState<ICoursesEstablishment[]>([])
     const getCoursesEstablishment = async () => {
         try {
-            const data = await api_getEstablishmentCoursesSinPag(props.establishmentId)
-            setCoursesEs(data.data.data)
+            const data = await api_getEstablishmentCoursesSinPag(props.establishmentId);
+            const establishmentCourses = data.data.data;
+
+            // Filtrar los cursos para que solo se incluyan aquellos que el usuario no tiene inscritos
+            const userCourseIds = courseByUser.map(course => course.attributes.establishment_courses.data[0]?.id);
+
+            const filteredCourses = establishmentCourses.filter((course: any) =>
+                !userCourseIds.includes(course.id) && !course.attributes.Eliminado // Asegúrate de que el curso no esté marcado como eliminado
+            );
+
+            setCoursesEs(filteredCourses);
         } catch (error) {
-            console.error(error)
+            console.error(error);
         }
     }
 
@@ -452,18 +461,21 @@ export function InsertCourse(props: props) {
                 const response = await api_postCourses(data);
                 toast.success('Curso agregado correctamente');
                 getCoursesByUser();
+                getCoursesEstablishment();
             }
             if (props.tipo == 'alumno' && courseByUser.length !== 0) {
                 setLoadingButton(true)
                 const response = await api_updateCourses(courseByUser[0].id, data);
                 toast.success('Curso actualizado correctamente')
-                getCoursesByUser()
+                getCoursesByUser();
+                getCoursesEstablishment();
             }
             if (props.tipo == 'apoderado') {
                 setLoadingButton(true)
                 const response = await api_postCourses(data);
                 toast.success('Curso agregado correctamente')
-                getCoursesByUser()
+                getCoursesByUser();
+                getCoursesEstablishment();
             }
         }
         catch (errors) {

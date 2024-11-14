@@ -220,9 +220,8 @@ export function api_getOneUser(userId: number) {
 
 
 export function api_getUsersEstablishment(escuelaId: number) {
-  let query = `?filters[$and][0][role][name][$eq]=Profesor&filters[$and][1][establishment][id][$eq]=${escuelaId}`
-  query = query + `&filters[$and][0][role][name][$eq]=Encargado de Convivencia Escolar&filters[$and][1][establishment][id][$eq]=${escuelaId}`
-  query = query + `&filters[$and][0][role][name][$eq]=Authenticated&filters[$and][1][tipo][$eq]=alumno[$and][2][establishment_authenticateds][id][$eq]=${escuelaId}`
+  let query = `?filters[$and][0][establishment][id][$eq]=${escuelaId}`
+   query += `&filters[$and][1][role][name][$ne]=admin`
   return api.get(`users${query}`)
 }
 
@@ -378,11 +377,6 @@ export function api_getDocumentsByUserDestinity2(establishmentId: number, userId
   query += `&populate=*&sort=createdAt:desc`
   query += `&pagination[page]=${page}&pagination[pageSize]=3`
   return api.get(`documents${query}`)
-}
-
-export function api_getCourses(establishment: number) {
-  let query = `?filter[$and][0][establishment][id][$eq]=${establishment}`
-  return api.get(`courses${query}`)
 }
 
 export function api_getCoursesByUser(establishment: number, userId: number, page: number) {

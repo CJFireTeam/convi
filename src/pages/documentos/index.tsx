@@ -60,8 +60,15 @@ interface IDocument {
             data: {
                 id: number;
                 attributes: {
-                    grade: string;
-                    letter: string;
+                    establishment_courses: {
+                        data: {
+                            id: number;
+                            attributes: {
+                                Letter: string;
+                                Grade: string;
+                            }
+                        }[]
+                    }
                 }
             }
         }
@@ -283,7 +290,7 @@ export default function Index() {
         return doc.attributes.user_destiny?.data
             ? `${doc.attributes.user_destiny.data.attributes.firstname} ${doc.attributes.user_destiny.data.attributes.first_lastname}`
             : doc.attributes.courseId?.data
-                ? `${doc.attributes.courseId.data.attributes.grade} ${doc.attributes.courseId.data.attributes.letter}`
+                ? `${doc.attributes.courseId.data.attributes.establishment_courses.data[0]?.attributes.Grade} ${doc.attributes.courseId.data.attributes.establishment_courses.data[0]?.attributes.Letter}`
                 : doc.attributes.establishmentId?.data
                     ? doc.attributes.establishmentId.data.attributes.name
                     : 'No especificado';
@@ -584,30 +591,30 @@ export default function Index() {
                 </form >
 
                 <div className="border rounded-lg shadow-md p-4 items-center mb-4">
-                    <div className="flex flex-col md:flex-row">
+                    <div className="flex flex-col lg:flex-row">
                         <p className="font-bold text-2xl mb-2">Documentos Creados: </p>
                     </div>
                     {documentCreate.length > 0 ?
                         (<>
                             {documentCreate.map((doc, index) => (
                                 <>
-                                    <div key={index} className="grid md:grid-cols-3 gap-4 border rounded-md border-gray-100 hover:border-2 hover:border-primary p-2 mb-1">
+                                    <div key={index} className="grid lg:grid-cols-3 gap-4 border rounded-md border-gray-100 hover:border-2 hover:border-primary p-2 mb-1">
                                         <div className="flex flex-col text-left">
                                             <p><span className="font-semibold">Descripcion: </span>{doc.attributes.descriptionDoc}</p>
-                                            {/* {!doc.attributes.courseId.data && (
+                                            {!doc.attributes.courseId.data && (
                                                 <></>
                                             )}
                                             {doc.attributes.courseId.data && (
-                                                <p><span className="font-semibold">Curso: </span>{doc.attributes.courseId.data?.attributes.grade + " " + doc.attributes.courseId.data?.attributes.letter}</p>
+                                                <p><span className="font-semibold">Curso: </span>{doc.attributes.courseId.data.attributes.establishment_courses.data[0]?.attributes.Grade + " " + doc.attributes.courseId.data.attributes.establishment_courses.data[0]?.attributes.Letter}</p>
                                             )}
                                             {!doc.attributes.user_destiny.data && (
                                                 <></>
                                             )}
                                             {doc.attributes.user_destiny.data && (
                                                 <p><span className="font-semibold">Destinatario: </span>{doc.attributes.user_destiny.data.attributes.firstname + " " + doc.attributes.user_destiny.data.attributes.first_lastname}</p>
-                                            )} */}
+                                            )}
                                         </div>
-                                        <div className="flex flex-col items-center lg:flex-row">
+                                        <div className="grid lg:grid-cols-3">
                                             {doc.attributes.document.data.map((archivo, index) => (<>
                                                 <button
                                                     type="button"
@@ -616,7 +623,7 @@ export default function Index() {
                                                         saveAs(getFile(archivo.attributes.url), archivo.attributes.name);
                                                     }}
                                                 >
-                                                    <ArrowDownTrayIcon className="mr-2 h-4 w-4" aria-hidden="true" />
+                                                    <ArrowDownTrayIcon className="h-3 w-3" aria-hidden="true" />
                                                     Archivo {index + 1}
                                                 </button>
 
@@ -644,7 +651,7 @@ export default function Index() {
                 </div>
 
                 <div className="border rounded-lg shadow-md p-4 items-center w-full mb-4">
-                    <div className="flex flex-col md:flex-row">
+                    <div className="flex flex-col lg:flex-row">
                         <p className="font-bold text-2xl mb-2">Documentos Recibidos: </p>
                     </div>
 
@@ -652,23 +659,23 @@ export default function Index() {
                         (<>
                             {documentDestiny.map((doc, index) => (
                                 <>
-                                    <div key={index} className="grid md:grid-cols-3 gap-4 border border-gray-100 hover:border-2 hover:border-primary p-2 mb-1">
+                                    <div key={index} className="grid lg:grid-cols-3 gap-4 border border-gray-100 hover:border-2 hover:border-primary p-2 mb-1">
                                         <div className="flex flex-col text-left">
                                             <p><span className="font-semibold">Descripcion: </span>{doc.attributes.descriptionDoc}</p>
-                                            {doc.attributes.courseId.data && (
-                                                <p><span className="font-semibold">Curso: </span>{doc.attributes.courseId.data?.attributes.grade + " " + doc.attributes.courseId.data?.attributes.letter}</p>
-                                            )}
-                                            {doc.attributes.user_destiny.data && (
-                                                <p><span className="font-semibold">creado: </span>{doc.attributes.userId.data.attributes.firstname + " " + doc.attributes.userId.data.attributes.first_lastname}</p>
-                                            )}
                                             {!doc.attributes.courseId.data && (
                                                 <></>
                                             )}
-                                            {!doc.attributes.user_destiny.data && (
+                                            {doc.attributes.courseId.data && (
+                                                <p><span className="font-semibold">Curso: </span>{doc.attributes.courseId.data.attributes.establishment_courses.data[0]?.attributes.Grade + " " + doc.attributes.courseId.data.attributes.establishment_courses.data[0]?.attributes.Letter}</p>
+                                            )}
+                                            {!doc.attributes.userId.data && (
                                                 <></>
                                             )}
+                                            {doc.attributes.userId.data && (
+                                                <p><span className="font-semibold">creador: </span>{doc.attributes.userId.data.attributes.firstname + " " + doc.attributes.userId.data.attributes.first_lastname}</p>
+                                            )}
                                         </div>
-                                        <div className="flex flex-col items-center lg:flex-row">
+                                        <div className="grid lg:grid-cols-3">
                                             {doc.attributes.document.data.map((archivo, index) => (<>
                                                 <button
                                                     type="button"
@@ -697,7 +704,7 @@ export default function Index() {
                 </div>
 
                 <div className="border rounded-lg shadow-md p-4 items-center w-full mb-4">
-                    <div className="flex flex-col md:flex-row">
+                    <div className="flex flex-col lg:flex-row">
                         <p className="font-bold text-2xl mb-2">Documentos Establecimiento: </p>
                     </div>
 
@@ -705,23 +712,24 @@ export default function Index() {
                         (<>
                             {documentEstablishment.map((doc, index) => (
                                 <>
-                                    <div key={index} className="grid md:grid-cols-3 gap-4 border border-gray-100 hover:border-2 hover:border-primary p-2 mb-1">
+                                    <div key={index} className="grid lg:grid-cols-3 gap-4 border border-gray-100 hover:border-2 hover:border-primary p-2 mb-1">
                                         <div className="flex flex-col text-left">
                                             <p><span className="font-semibold">Descripcion: </span>{doc.attributes.descriptionDoc}</p>
-                                            {doc.attributes.courseId.data && (
-                                                <p><span className="font-semibold">Curso: </span>{doc.attributes.courseId.data?.attributes.grade + " " + doc.attributes.courseId.data?.attributes.letter}</p>
-                                            )}
-                                            {doc.attributes.user_destiny.data && (
-                                                <p><span className="font-semibold">Destinatario: </span>{doc.attributes.user_destiny.data.attributes.firstname + " " + doc.attributes.user_destiny.data.attributes.first_lastname}</p>
-                                            )}
                                             {!doc.attributes.courseId.data && (
                                                 <></>
                                             )}
-                                            {!doc.attributes.user_destiny.data && (
+                                            {doc.attributes.courseId.data && (
+                                                <p><span className="font-semibold">Curso: </span>{doc.attributes.courseId.data.attributes.establishment_courses.data[0]?.attributes.Grade + " " + doc.attributes.courseId.data.attributes.establishment_courses.data[0]?.attributes.Letter}</p>
+                                            )}
+                                            {!doc.attributes.userId.data && (
                                                 <></>
                                             )}
+                                            {doc.attributes.userId.data && (
+                                                <p><span className="font-semibold">Creador: </span>{doc.attributes.userId.data.attributes.firstname + " " + doc.attributes.userId.data.attributes.first_lastname}</p>
+                                            )}
+
                                         </div>
-                                        <div className="flex flex-col items-center lg:flex-row">
+                                        <div className="grid lg:grid-cols-3">
                                             {doc.attributes.document.data.map((archivo, index) => (<>
                                                 <button
                                                     type="button"

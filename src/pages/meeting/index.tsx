@@ -1,33 +1,44 @@
 import React, { useEffect, useState } from 'react';
 import { useUserStore } from '@/store/userStore';
 import { useRouter } from 'next/router'; // Importa useRouter
-import { api_getCourses, api_getUsersEstablishment, api_postSendMeeting } from '@/services/axios.services';
+import { api_getEstablishmentCoursesSinPag, api_getUsersEstablishment, api_postSendMeeting } from '@/services/axios.services';
 import { Bounce, toast } from "react-toastify";
 import Head from 'next/head';
 import { z } from "zod";
+import Select from "react-select";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Controller, useForm } from 'react-hook-form';
 
-interface FormValues {
+interface IFormValues {
     CreationDate: Date;
     RoomName: string;
     RoomUrl: string;
     Establishment: number;
     CreatorUser: number;
-    Destined: {
-        Courses: number;
-        Users_destiny: number;
-    }[]
+    establishment_courses?: number[];
+    Users_destiny?: number[];
 }
 
-interface Course {
-    id: number;
-    name: string;
-}
-
-interface User {
+interface IUser {
     id: number;
     firstname: string;
     first_lastname: string;
+}
+
+interface ICoursesEstablishment {
+    attributes: {
+        Grade: string
+        Letter: string
+        establishment: {
+            data: {
+                attributes: {
+                    name: string;
+                }
+                id: number;
+            }
+        }
+    }
+    id: number
 }
 
 export default function MeetingPage() {
@@ -38,50 +49,54 @@ export default function MeetingPage() {
     const [url, setUrl] = useState('');
     const router = useRouter(); // Inicializa el router
 
-    const arrayIDs = z.object({
-        Courses: z.number({ required_error: 'Campo requerido', invalid_type_error: 'Tipo invalido' }),
-        Users_destiny: z.number({ required_error: 'Campo requerido', invalid_type_error: 'Tipo invalido' }),
-    })
-
     const MeetingSchema = z.object({
         CreationDate: z.date({ required_error: 'Campo requerido', invalid_type_error: 'Tipo inválido' }),
         RoomName: z.string({ required_error: 'Campo requerido', invalid_type_error: 'Tipo inválido' }),
         RoomUrl: z.string({ required_error: 'Campo requerido', invalid_type_error: 'Tipo inválido' }),
         Establishment: z.number({ required_error: 'Campo requerido', invalid_type_error: 'Tipo invalido' }),
         CreatorUser: z.number({ required_error: 'Campo requerido', invalid_type_error: 'Tipo invalido' }),
-        Destined: z.array(arrayIDs),
+        establishment_courses: z.array(z.number()).optional(),  // Cambiado a array
+        Users_destiny: z.array(z.number()).optional(),  // Cambiado a array
     });
 
-    const [courses, setCourses] = useState<Course[]>([]);
-    const [users, setUsers] = useState<User[]>([]);
+    const { register, watch, setValue, handleSubmit, formState: { errors }, control } = useForm<IFormValues>({
+        resolver: zodResolver(MeetingSchema),
+    });
+
+    const [users, setUsers] = useState<IUser[]>([]);
     const [selectedCourses, setSelectedCourses] = useState<number[]>([]);
     const [selectedUsers, setSelectedUsers] = useState<number[]>([]);
 
     const getUsers = async () => {
         try {
-            const data = api_getUsersEstablishment(user.establishment.id);
-            //setDataUsers()  
-           } catch (error) {
-               
-           }
+            const data = await api_getUsersEstablishment(user.establishment.id);
+            setUsers(data.data.data)
+        } catch (error) {
+            console.log(error)
+        }
+    }
+    useEffect(() => {
+        if (!user) return;
+        getUsers();
+    }, [user])
+
+
+
+    const [coursesEs, setCoursesEs] = useState<ICoursesEstablishment[]>([])
+    const getCoursesEstablishment = async () => {
+        try {
+            const data = await api_getEstablishmentCoursesSinPag(user.establishment.id);
+            setCoursesEs(data.data.data);
+        } catch (error) {
+            console.error(error);
+        }
     }
 
+    useEffect(() => {
+        if (!user || user.establishment.id == 0) return;
+        getCoursesEstablishment();
+    }, [user]);
 
-      const getCourses = async () => {
-         try {
-          const data = api_getCourses(user.establishment.id);
-          //setDataCourses(data) 
-         } catch (error) {
-             
-         }
-     }
- 
-     useEffect(() => {
-         if (!user || user.establishment.id == 0) return;
-         getUsers()
-         getCourses();
-     }, [user]);
-  
     const handleCreateMeeting = async () => {
         try {
             // Reemplaza los espacios en blanco por guiones bajos
@@ -157,7 +172,7 @@ export default function MeetingPage() {
                     <title>Reunión</title>
                     <meta name="viewport" content="initial-scale=1.0, width=device-width" />
                 </Head>
-                <div className="w-full md:w-1/2 h-screen mx-auto">
+                <div className="w-full md:w-3/4 h-screen mx-auto">
                     {!roomStatus && (
                         <div className="grid md:grid-cols-12 w-full border border-gray-400 rounded shadow-md p-4">
                             <div className='col-span-6 flex flex-col items-center my-auto text-center'>
@@ -167,42 +182,68 @@ export default function MeetingPage() {
                                 <h1 className='font-bold text-xl'>Reuniones</h1>
                             </div>
                             <div className='col-span-6 mt-2 md:mt-0 border-t-2 md:border-t-0 md:border-l-2 p-4 flex flex-col items-center'>
-                                <label htmlFor="roomName" className="block mb-2 font-semibold">Nombre de la sala:</label>
-                                <input
-                                    type="text"
-                                    id="roomName"
-                                    name="roomName"
-                                    value={roomName}
-                                    onChange={handleInputChange}
-                                    className="w-full p-2 input input-primary mb-2"
-                                    placeholder="Ingrese el nombre de la sala"
-                                />
-                                <label htmlFor="courses" className="block mb-2 font-semibold">Seleccionar cursos (opcional):</label>
-                                <select
-                                    id="courses"
-                                    multiple
-                                    value={selectedCourses.map(String)}
-                                    onChange={handleCourseChange}
-                                    className="w-full p-2 input input-primary mb-2"
-                                    size={4}
-                                >
-                                    {courses.map(course => (
-                                        <option key={course.id} value={course.id}>{course.name}</option>
-                                    ))}
-                                </select>
-                                <label htmlFor="users" className="block mb-2 font-semibold">Seleccionar usuarios (opcional):</label>
-                                <select
-                                    id="users"
-                                    multiple
-                                    value={selectedUsers.map(String)}
-                                    onChange={handleUserChange}
-                                    className="w-full p-2 input input-primary mb-2"
-                                    size={4}
-                                >
-                                    {users.map(user => (
-                                        <option key={user.id} value={user.id}>{`${user.firstname} ${user.first_lastname}`}</option>
-                                    ))}
-                                </select>
+                                <div className='w-full'>
+                                    <label htmlFor="roomName" className="block mb-2 font-semibold">Nombre de la sala:</label>
+                                    <input
+                                        type="text"
+                                        id="roomName"
+                                        name="roomName"
+                                        value={roomName}
+                                        onChange={handleInputChange}
+                                        className="w-full p-2 input input-primary mb-2"
+                                        placeholder="Ingrese el nombre de la sala"
+                                    />
+                                </div>
+                                <div className='w-full'>
+                                    <label htmlFor="courses" className="mb-2 font-semibold">Seleccionar cursos (opcional):</label>
+                                    <Controller
+                                        control={control}
+                                        name="establishment_courses"
+                                        render={({ field: { onChange, value, name, ref } }) => (
+                                            <Select
+                                                placeholder="Seleccione curso"
+                                                getOptionValue={(option) => option.id.toString()}
+                                                getOptionLabel={(option) => option.attributes.Grade + " " + option.attributes.Letter}
+                                                value={coursesEs.filter((course) => value?.includes(course.id))} // Filtra los cursos seleccionados
+                                                options={coursesEs}
+                                                onChange={(val) => {
+                                                    const selectedIds = val ? val.map(course => course.id) : []; // Obtiene los IDs seleccionados
+                                                    setValue("establishment_courses", selectedIds); // Actualiza el valor en el formulario
+                                                }}
+                                                menuPortalTarget={document.body}
+                                                loadingMessage={() => "Cargando opciones..."}
+                                                isLoading={coursesEs.length === 0}
+                                                isClearable
+                                                isMulti // Habilita la selección múltiple
+                                            />
+                                        )}
+                                    />
+                                </div>
+                                <div className='w-full'>
+                                    <label htmlFor="users" className="block mb-2 font-semibold">Seleccionar usuarios (opcional):</label>
+                                    <Controller
+                                        control={control}
+                                        name="Users_destiny"
+                                        render={({ field: { onChange, value, name, ref } }) => (
+                                            <Select
+                                                placeholder="Seleccione usuario"
+                                                getOptionValue={(option) => option.id.toString()}
+                                                getOptionLabel={(option) => `${option.firstname} ${option.first_lastname}`}
+                                                value={users.filter((user) => value?.includes(user.id))}
+                                                options={users}
+                                                onChange={(val) => {
+                                                    const selectedIds = val ? val.map(user => user.id) : [];
+                                                    setValue("Users_destiny", selectedIds);
+                                                }}
+                                                menuPortalTarget={document.body}
+                                                loadingMessage={() => "Cargando opciones..."}
+                                                isLoading={users.length === 0}
+                                                isClearable
+                                                isMulti
+                                            />
+                                        )}
+                                    />
+                                </div>
                                 <button
                                     onClick={handleCreateMeeting}
                                     className="p-2 btn btn-outline btn-secondary"

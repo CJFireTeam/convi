@@ -21,9 +21,21 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+
 import { Input } from "../../components/ui/input";
 import { Label } from "../../components/ui/label";
 import { Button } from "../../components/ui/button";
+import { ChevronRight, Plus } from "lucide-react";
+import { Loading } from "react-daisyui";
 
 interface IFormValues {
   CreationDate: Date;
@@ -140,13 +152,13 @@ export default function MeetingPage() {
 
   const handleCreateMeeting = async () => {
     try {
-      // Reemplaza los espacios en blanco por guiones bajos
-      const formattedRoomName = roomName.replace(/\s+/g, "_"); // Reemplaza todos los espacios en blanco por "_"
-
-      if (!formattedRoomName) {
+      if (!roomName) {
         alert("Por favor, ingrese un nombre para la sala.");
         return;
       }
+      // Reemplaza los espacios en blanco por guiones bajos
+      const formattedRoomName = roomName.replace(/\s+/g, "_"); // Reemplaza todos los espacios en blanco por "_"
+
 
       localStorage.setItem("currentRoom", formattedRoomName); // Usa el nombre de sala formateado
 
@@ -160,12 +172,13 @@ export default function MeetingPage() {
 
       const currentTime = new Date().toISOString().split("T")[0];
       toast.loading("Creando reunión...");
-      // const data = await api_postSendMeeting({
-      //     CreationDate: currentTime,
-      //     RoomName: formattedRoomName,
-      //     RoomUrl: baseUrl,
-      //     Establishment: user.establishment.id
-      // });
+       const data = await api_postSendMeeting({
+           CreationDate: currentTime,
+           RoomName: formattedRoomName,
+           RoomUrl: baseUrl,
+           Establishment: user.establishment.id,
+           CreatorUser:user.id
+       });
 
       setRoomStatus(true);
       toast.dismiss();
@@ -204,49 +217,8 @@ export default function MeetingPage() {
       meetingWindow.close(); // Cerrar la ventana de reunión
     }
   };
-  const Cursos = ({e}:{e:number}) => {
-    const [students,setStudents] = useState<IUser[]>([]); 
-    const [loading,setLoading] = useState(true);
-    const getUsers = async () => {
-      try {
-        setLoading(true)
-        const data = await api_GetUsersAlumnosEstablishment(user.establishment.id,e);
-        setStudents(data.data);
-      } catch (error) {
-        console.log(error);
-      } finally{
-        setLoading(false)
-      }
-    };
-    useEffect(() => {
-      getUsers()
-    },[])
-    const element = coursesEs.find((element) => element.id === e) 
-    return (
-    <>
-      {!loading ? (<>
-        <Card>
-        <CardHeader>
-          <CardTitle className="text-center">{element?.attributes.Grade} {element?.attributes.Letter}</CardTitle>
-        </CardHeader>
-        <CardContent>
-         {students?.map((uc,index)=>(
-            <p key={index} className="font-semibold">{uc.firstname+" "+uc.first_lastname}</p>          
-          ))} 
-        </CardContent>
-        <CardFooter>
-          <p>Card Footer</p>
-        </CardFooter>
-      </Card>
-      </>) : (<>
-        <div className="flex flex-col items-center my-auto">
-          <span className="loading loading-spinner loading-lg"></span>
-        </div>
-      </>)}
-      
-    </>
-      );
-  };
+  
+
   const Body = () => {
     return (
         <Card className="md:w-1/2">
@@ -256,8 +228,7 @@ export default function MeetingPage() {
           <CardContent className="md:mx-8">
             <Label htmlFor="email">Nombre de la sala</Label>
             <Input
-              type="email"
-              id="email"
+              id="roomName"
               placeholder="Ingrese el nombre de la sala"
               value={roomName}
               onChange={handleInputChange}
@@ -320,15 +291,67 @@ export default function MeetingPage() {
     <div className="flex items-center justify-center">
       <Body/>
     </div>
-    <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-4">
+    {/* <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-4">
     {listaCursos && listaCursos.map((e, index) => (
-        <Cursos key={index} e={e}/> 
+        <Cursos key={index} e={e} coursesEs={coursesEs}/> 
         
       ))}
-    </div>
+    </div> */}
     </div>
   }
 
 }
+const Cursos = ({e,coursesEs}:{e:number,coursesEs:ICoursesEstablishment[]}) => {
+  const [students,setStudents] = useState<IUser[]>([]); 
+  const [loading,setLoading] = useState(false);
+  const { user, GetRole } = useUserStore();
+
+  const getUsers = async () => {
+    try {
+      setLoading(true)
+      const data = await api_GetUsersAlumnosEstablishment(user.establishment.id,e);
+      setStudents(data.data);
+      setLoading(false)
+
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  useEffect(() => {
+    getUsers()
+  },[])
+  const element = coursesEs.find((element) => element.id === e) 
+  return (<Card>
+      <CardHeader>
+        <CardTitle className="text-center">{element?.attributes.Grade} {element?.attributes.Letter}</CardTitle>
+      </CardHeader>
+      <CardContent>
+      <Table>
+      {loading}
+     <TableBody>
+      {loading && <Loading/>}
+      {!loading && students?.map((uc,index)=>(
+        <TableRow>
+          <TableCell className="font-medium text-nowrap">{uc.firstname+" "+uc.first_lastname}</TableCell>
+          <TableCell className="text-right">
+            <Button variant="ghost" size="icon">
+              <Plus color="green"/>
+            </Button>
+          </TableCell>
+        </TableRow>
+      ))}
+      </TableBody>
+    </Table>
+
+      </CardContent>
+      <CardFooter>
+      <Button variant="outline">
+        <Plus /> Agregar a todo el curso
+      </Button>
+      </CardFooter>
+    </Card>
+    
+    );
+};
 
 

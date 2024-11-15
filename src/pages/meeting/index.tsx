@@ -331,7 +331,7 @@ const Cursos = ({e,coursesEs}:{e:number,coursesEs:ICoursesEstablishment[]}) => {
      <TableBody>
       {loading && <Loading/>}
       {!loading && students?.map((uc,index)=>(
-        <TableRow>
+        <TableRow key={index}>
           <TableCell className="font-medium text-nowrap">{uc.firstname+" "+uc.first_lastname}</TableCell>
           <TableCell className="text-right">
             <Button variant="ghost" size="icon">

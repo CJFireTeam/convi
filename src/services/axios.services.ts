@@ -241,10 +241,11 @@ export function api_GetUsersApoderadosEstablishment(escuelaId: number) {
   query = query + `&filters[$and][2][establishment][id][$eq]=${escuelaId}`
   return api.get(`users${query}`)
 }
-export function api_GetUsersAlumnosEstablishment(escuelaId: number) {
+export function api_GetUsersAlumnosEstablishment(escuelaId: number,courses?:number) {
   let query = `?filters[$and][0][role][name][$eq]=Authenticated`
   query = query + `&filters[$and][1][tipo][$eq]=alumno`
   query = query + `&filters[$and][2][establishment][id][$eq]=${escuelaId}`
+  if (courses) query += `&filters[$and][3][courses][establishment_courses][id][$eq]=${courses}`;
   return api.get(`users${query}`)
 }
 

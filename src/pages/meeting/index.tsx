@@ -3,6 +3,7 @@ import { useUserStore } from "@/store/userStore";
 import { useRouter } from "next/router"; // Importa useRouter
 import {
   api_getEstablishmentCoursesSinPag,
+  api_GetUsersAlumnosEstablishment,
   api_getUsersEstablishment,
   api_postSendMeeting,
 } from "@/services/axios.services";
@@ -38,6 +39,7 @@ interface IUser {
   id: number;
   firstname: string;
   first_lastname: string;
+  second_lastname:string;
 }
 
 interface ICoursesEstablishment {
@@ -112,6 +114,7 @@ export default function MeetingPage() {
       console.log(error);
     }
   };
+  
   useEffect(() => {
     if (!user) return;
 
@@ -202,38 +205,55 @@ export default function MeetingPage() {
     }
   };
   const Cursos = ({e}:{e:number}) => {
-    console.log(e)
+    const [students,setStudents] = useState<IUser[]>([]); 
+    const [loading,setLoading] = useState(true);
+    const getUsers = async () => {
+      try {
+        setLoading(true)
+        const data = await api_GetUsersAlumnosEstablishment(user.establishment.id,e);
+        setStudents(data.data);
+      } catch (error) {
+        console.log(error);
+      } finally{
+        setLoading(false)
+      }
+    };
+    useEffect(() => {
+      getUsers()
+    },[])
     const element = coursesEs.find((element) => element.id === e) 
     return (
-      <Card>
+    <>
+      {!loading ? (<>
+        <Card>
         <CardHeader>
           <CardTitle className="text-center">{element?.attributes.Grade} {element?.attributes.Letter}</CardTitle>
-          <CardDescription>Card Description</CardDescription>
         </CardHeader>
         <CardContent>
-          <p>Card Content</p>
+         {students?.map((uc,index)=>(
+            <p key={index} className="font-semibold">{uc.firstname+" "+uc.first_lastname}</p>          
+          ))} 
         </CardContent>
         <CardFooter>
           <p>Card Footer</p>
         </CardFooter>
       </Card>
-    );
+      </>) : (<>
+        <div className="flex flex-col items-center my-auto">
+          <span className="loading loading-spinner loading-lg"></span>
+        </div>
+      </>)}
+      
+    </>
+      );
   };
   const Body = () => {
     return (
-      <>
-        <Head>
-          <title>Reunión</title>
-          <meta
-            name="viewport"
-            content="initial-scale=1.0, width=device-width"
-          />
-        </Head>
-        <Card>
+        <Card className="md:w-1/2">
           <CardHeader>
             <CardTitle>Bienvenido a la sala de reuniones</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="md:mx-8">
             <Label htmlFor="email">Nombre de la sala</Label>
             <Input
               type="email"
@@ -282,16 +302,24 @@ export default function MeetingPage() {
               variant="outline"
               className="w-full"
             >
-              Outline
+              Generar cita
             </Button>
           </CardFooter>
         </Card>
-      </>
     );
   }
   if (["Profesor", "Encargado de Convivencia Escolar"].includes(GetRole())) {
     return <div className="px-4">
-    <Body/>
+      <Head>
+        <title>Reunión</title>
+        <meta
+          name="viewport"
+          content="initial-scale=1.0, width=device-width"
+        />
+      </Head>
+    <div className="flex items-center justify-center">
+      <Body/>
+    </div>
     <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-4">
     {listaCursos && listaCursos.map((e, index) => (
         <Cursos key={index} e={e}/> 

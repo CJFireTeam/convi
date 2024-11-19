@@ -172,6 +172,9 @@ export default function MeetingPage() {
 
       const currentTime = new Date().toISOString().split("T")[0];
       toast.loading("Creando reunión...");
+        // Abrir la reunión en una nueva pestaña y
+        const newWindow = window.open(roomUrl, "_blank");
+        setMeetingWindow(newWindow);
        const data = await api_postSendMeeting({
            CreationDate: currentTime,
            RoomName: formattedRoomName,
@@ -183,9 +186,7 @@ export default function MeetingPage() {
       setRoomStatus(true);
       toast.dismiss();
       toast.success("Reunión creada correctamente");
-      // Abrir la reunión en una nueva pestaña y
-      const newWindow = window.open(roomUrl, "_blank");
-      setMeetingWindow(newWindow);
+    
       console.log("Información de la reunión enviada al backend");
     } catch (error) {
       console.error("Error al enviar la información de la reunión:", error);

@@ -1,4 +1,4 @@
- import ResumenCaseComponent from "../../../components/case/resumen.case.component";
+import ResumenCaseComponent from "../../../components/case/resumen.case.component";
  import ResumenComplaintComponent from "../../../components/case/resumen.complaint.component";
  import { api_cases, api_casesOne, api_updateCases, api_updateComplaint,api_complaint } from '@/services/axios.services';
  import { useUserStore } from '@/store/userStore';
@@ -84,7 +84,7 @@ export default function Gestionar() {
            console.log(dataZod)
            console.log(dataZod.options)
            console.log(dataZod)
-           console.log(data?.id)
+           console.log('id es: '+ data?.id)
            
              if (!data) return;
             // await api_updateCases(data.id, fase:3);
@@ -200,7 +200,7 @@ export default function Gestionar() {
                             </div>
                             <div className='flex justify-center'>
                                 
-                                    <button type="submit" className="px-4 rounded-md bg-primary my-5 px-2 py-2 text-center text-sm font-semibold text-white hover:brightness-90">
+                                    <button type="submit" className="px-4 rounded-md bg-primary my-5 px-2 py-2 text-center text-sm font-semibold text-white hover:brightness-90" disabled>
                                             Complementar
                                     </button>
                             </div>

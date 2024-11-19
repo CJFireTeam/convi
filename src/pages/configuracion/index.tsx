@@ -10,6 +10,7 @@ import { z } from "zod";
 import { toast } from "react-toastify";
 import { ArrowDownCircleIcon } from "@heroicons/react/24/outline";
 import Head from "next/head";
+import router from "next/router";
 interface ProfessionalI {
   names: string;
   surnames: string;
@@ -95,6 +96,7 @@ function Cargos() {
       hadleCloseProfesional()
       resetProfessional();
       toast.success('Se agrego al profesional correctamente');
+      router.reload()
     } catch (error) {
       console.log(error);
       setIsLoading(false)

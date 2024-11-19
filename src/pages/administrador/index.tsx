@@ -37,7 +37,7 @@ export default function Index() {
   const redirect = () => {
     push("administrador/crearusuario");
   };
-  
+
   const { user, GetRole } = useUserStore();
   const [data, setData] = useState<IUser[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -102,10 +102,10 @@ export default function Index() {
 
   return (
     <>
-    <Head>
-      <title>Administrar usuarios</title>
-      <meta name="viewport" content="initial-scale=1.0, width=device-width" />
-    </Head>
+      <Head>
+        <title>Administrar usuarios</title>
+        <meta name="viewport" content="initial-scale=1.0, width=device-width" />
+      </Head>
       <div className="px-4 sm:px-6 lg:px-8">
         <div className="sm:flex sm:items-center">
           <div className="sm:flex-auto">
@@ -282,7 +282,7 @@ export function EditAuthenticated(props: props) {
 
   const filteredUsers = data.filter((user) =>
     user.firstname.toLowerCase().includes(searchTerm.toLowerCase()) ||
-  user.first_lastname.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    user.first_lastname.toLowerCase().includes(searchTerm.toLowerCase()) ||
     user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
     user.tipo.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -293,18 +293,8 @@ export function EditAuthenticated(props: props) {
 
   return (
     <>
-      {data.length === 0 ? (
-        <div className="grid md:grid-cols-12 gap-4 p-4">
-          <div className="md:col-start-0 md:col-end-2">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-12 text-primary hover:text-green-700 cursor-pointer" onClick={() => props.editAut(false)}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="m11.25 9-3 3m0 0 3 3m-3-3h7.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-            </svg>
-          </div>
-          <div className="md:col-start-2 md:col-end-13 mx-auto my-auto">
-            <span className="loading loading-spinner loading-lg"></span>
-          </div>
-        </div>
-      ) : (
+      {data.length !== 0 ? (
+
         <>
           <div className="md:col-start-0 md:col-end-2">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-12 text-primary hover:text-green-700 cursor-pointer" onClick={() => props.editAut(false)}>
@@ -397,6 +387,17 @@ export function EditAuthenticated(props: props) {
             </>
           )}
         </>
+      ) : (
+        <div className="grid md:grid-cols-12 gap-4 p-4">
+          <div className="md:col-start-0 md:col-end-2">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-12 text-primary hover:text-green-700 cursor-pointer" onClick={() => props.editAut(false)}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="m11.25 9-3 3m0 0 3 3m-3-3h7.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+            </svg>
+          </div>
+          <div className="md:col-start-2 md:col-end-13 mx-auto my-auto">
+            <WarningAlert message={'Colegio sin usuarios Autenticados'} />
+          </div>
+        </div>
       )}
 
 

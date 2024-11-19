@@ -164,6 +164,7 @@ export default function Layout(props: LayoutProps) {
             <h1 className="text-xl font-semibold">{title}</h1>
           </header>
           <main className="flex-1 overflow-auto p-6">
+          {GetRole() === "Authenticated" && <><ModalWhoIS /><ModalQuestion/>  </>}
             {props.children}
           </main>
         </SidebarInset>

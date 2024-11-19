@@ -20,6 +20,7 @@ import {
     CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { useUserStore } from "@/store/userStore";
 
 interface IUser {
     id: number;
@@ -41,6 +42,10 @@ interface IUser {
         id: number;
         name: string;
     }
+    establishment_authenticateds: {
+        name: string;
+        id: number;
+    }[]
     courses: {
         id: number;
         grade: string;
@@ -73,6 +78,7 @@ export default function EditarUsuarioAut() {
     const [dataUser, setDataUser] = useState<IUser>();
     const [regionList, setRegionList] = useState<string[]>([]);
     const [comunaList, setComunaList] = useState<string[]>([]);
+    const { user, GetRole } = useUserStore();
 
 
     const EditUserSchema = z.object({
@@ -152,6 +158,11 @@ export default function EditarUsuarioAut() {
             setLoadingButton(false)
         }
     }
+
+    const establishment = dataUser?.establishment_authenticateds.find(
+        establishment => establishment.id === user.establishment.id
+    );
+
 
     return (
         <>
@@ -324,15 +335,16 @@ export default function EditarUsuarioAut() {
                         </div>
                     </form>
 
-                    <div className="grid md:grid-cols-12 gap-4 border rounded-md shadow-md p-4 mt-2">
-                        <div className="md:col-start-1 md:col-end-13">
-                            <InsertCourse
-                                userId={userId}
-                                establishmentId={dataUser.establishment.id}
-                                tipo={dataUser.tipo}
-                            />
-                        </div>
-                    </div>
+                    {!establishment && (
+                       <WarningAlert message={'No se encontro establecimiento.'}/>
+                    )}
+                    {establishment && (
+                        <InsertCourse
+                            userId={userId}
+                            establishmentId={establishment.id}
+                            tipo={dataUser.tipo}
+                        />
+                    )}
                 </>
             )}
         </>
@@ -415,7 +427,7 @@ export function InsertCourse(props: props) {
         if (props.establishmentId || props.userId) {
             getCoursesByUser()
         }
-    }, [props.establishmentId,,metaData.page])
+    }, [props.establishmentId, metaData.page])
 
     const CourseSchema = z.object({
         establishment_courses: z.number({ required_error: 'Campo requerido', invalid_type_error: 'Tipo de dato invalido' }),

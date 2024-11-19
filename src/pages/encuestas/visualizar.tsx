@@ -128,7 +128,7 @@ export default function Visualizar() {
   const getData2 = async () => {
     try {
       const data = await api_getQuestionsNotCompleted(Number(idSurvey));
-      setCountQuestions2(data.data.meta.pagination.total);
+      setCountQuestions2(data.data.meta.pagination.total -1);
 
     } catch (error) {
       console.log(error);

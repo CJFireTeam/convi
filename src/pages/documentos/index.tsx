@@ -1,6 +1,6 @@
 import WarningAlert from "@/components/alerts/warningAlert";
 import { data } from "@/components/encargado/grafico1";
-import { api_getAllUserByEstablishment, api_getCoursesByUserSinPag, api_getDocumentsByCourse, api_getDocumentsByEstablishment, api_getDocumentsByEstablishment2, api_getDocumentsByUserDestinity, api_getDocumentsByUserDestinity2, api_getDocumentUserCreated, api_getOneUser, api_postDocument, api_putDocument, api_uploadFiles } from "@/services/axios.services";
+import { api_getAllUserByEstablishment, api_getCoursesByUserSinPag, api_getDocumentsAut, api_getDocumentsByEstablishment2, api_getDocumentsByUserDestinity2, api_getDocumentUserCreated, api_getOneCourse, api_getOneUser, api_postDocument, api_putDocument, api_uploadFiles } from "@/services/axios.services";
 import { useUserStore } from "@/store/userStore";
 import { ArrowDownTrayIcon, ChevronDownIcon, ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/20/solid";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -42,6 +42,10 @@ interface IUser {
         id: number;
         name: string;
     }
+    establishment_authenticateds: {
+        name: string;
+        id: number;
+    }[]
     courses: {
         id: number;
     }[]
@@ -249,43 +253,25 @@ export default function Index() {
         setCurrentPage(nextPage)
     }
 
-    const fetchDocuments = async () => {
-        if (dataUser) {
-            try {
-                const [establishmentDocs, userDocs] = await Promise.all([
-                    api_getDocumentsByEstablishment(user.establishment.id),
-                    api_getDocumentsByUserDestinity(user.establishment.id, user.id)
-                ])
+    const [coEs, setCoEs] = useState<ICourse>();
 
-                let courseDocs: IDocument[] = []
-
-                if (dataUser.courses.length > 0) {
-                    const coursesPromises = dataUser.courses.map(course =>
-                        api_getDocumentsByCourse(user.establishment.id, course.id)
-                    )
-                    const coursesResults = await Promise.all(coursesPromises)
-                    courseDocs = coursesResults.flatMap(result => result.data.data)
-                }
-
-                const allDocs = [
-                    ...establishmentDocs.data.data,
-                    ...courseDocs,
-                    ...userDocs.data.data
-                ]
-
-                setDocuments(allDocs)
-                setDisplayedDocuments(allDocs.slice(0, documentsPerPage))
-            } catch (error) {
-                console.error('Error al obtener documentos:', error)
-            }
+    const fetchOneCourse = async () => {
+        try {
+            if (!dataUser) return;
+            const dataE = await api_getOneCourse(dataUser.courses[0].id)
+            const data = await api_getDocumentsAut(dataUser.establishment_authenticateds[0].id, dataUser.id,dataE.data.data.id );
+            console.log('data del fetch',dataE.data.data)
+        } catch (error) {
+            console.error('Error al obtener documentos:', error)
         }
     }
 
     useEffect(() => {
-        if (!user || user.id == 0) return;
-        fetchDocuments()
-    }, [user, dataUser])
-
+        if (dataUser && GetRole() === "Authenticated" && (dataUser.tipo === 'alumno' || dataUser.tipo === 'apoderado')) {
+            fetchOneCourse()
+        }
+    }, [dataUser])
+    
     const getDestinatario = (doc: IDocument) => {
         return doc.attributes.user_destiny?.data
             ? `${doc.attributes.user_destiny.data.attributes.firstname} ${doc.attributes.user_destiny.data.attributes.first_lastname}`
@@ -765,7 +751,17 @@ export default function Index() {
 
     if ((GetRole() === "admin" || GetRole() === "Encargado de Convivencia Escolar" || GetRole() === "Profesor") && dataUser?.canUploadDoc == false) {
 
-        return
+        return (
+            <>
+                <Head>
+                    <title>Documentos</title>
+                    <meta name="viewport" content="initial-scale=1.0, width=device-width" />
+                </Head>
+                <div className="flex flex-col items-center">
+                    <WarningAlert message={'Sin permisos, contacte con el administrador.'} />
+                </div>
+            </>
+        )
     }
 
     if (GetRole() === "Authenticated" && (dataUser?.tipo === 'alumno' || dataUser?.tipo === 'apoderado')) {
@@ -783,7 +779,7 @@ export default function Index() {
                 </>
             )
         }
-        if (!dataUser.establishment) {
+        if (dataUser.establishment_authenticateds.length === 0) {
             return (
                 <>
                     <Head>
@@ -849,13 +845,13 @@ export default function Index() {
                                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{doc.attributes.descriptionDoc}</td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{doc.attributes.userId.data.attributes.firstname + " " + doc.attributes.userId.data.attributes.first_lastname}</td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{getDestinatario(doc)}</td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{new Date(doc.attributes.document.data[0].attributes.createdAt).toLocaleDateString()}</td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{new Date(doc.attributes.document?.data[0].attributes.createdAt).toLocaleDateString()}</td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                                    {doc.attributes.document.data.length === 1 ? (
+                                                    {doc.attributes.document?.data.length === 1 ? (
                                                         <button
                                                             className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors duration-200"
                                                             onClick={() => {
-                                                                saveAs(process.env.NEXT_PUBLIC_BACKEND_ACCES + doc.attributes.document.data[0].attributes.url, doc.attributes.document.data[0].attributes.name);
+                                                                saveAs(getFile(doc.attributes.document.data[0].attributes.url), doc.attributes.document.data[0].attributes.name);
                                                             }}
                                                         >
                                                             <ArrowDownTrayIcon className="mr-2 h-4 w-4" aria-hidden="true" />
@@ -868,25 +864,24 @@ export default function Index() {
                                                                 Descargar Archivos
                                                                 <ChevronDownIcon className="ml-2 h-4 w-4" aria-hidden="true" />
                                                             </Menu.Button>
-                                                            <Menu.Items className="fixed z-50 mt-2 w-56 origin-top-right bg-white divide-y divide-gray-100 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
-                                                                <div className="px-1 py-1">
-                                                                    {doc.attributes.document.data.map((archivo, index) => (
-                                                                        <Menu.Item key={index}>
-                                                                            {({ active }) => (
-                                                                                <button
-                                                                                    className={`${active ? 'bg-green-500 text-white' : 'text-gray-900'
-                                                                                        } group flex rounded-md items-center w-full px-2 py-2 text-sm`}
-                                                                                    onClick={() => {
-                                                                                        saveAs(process.env.NEXT_PUBLIC_BACKEND_ACCES + archivo.attributes.url, archivo.attributes.name);
-                                                                                    }}
-                                                                                >
-                                                                                    <ArrowDownTrayIcon className="mr-2 h-4 w-4" aria-hidden="true" />
-                                                                                    Archivo {index + 1}
-                                                                                </button>
-                                                                            )}
-                                                                        </Menu.Item>
-                                                                    ))}
-                                                                </div>
+                                                            <Menu.Items className="absolute z-50 mt-2 w-56 origin-top-right bg-white divide-y divide-gray-100 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">                                                                <div className="px-1 py-1">
+                                                                {doc.attributes.document?.data.map((archivo, index) => (
+                                                                    <Menu.Item key={index}>
+                                                                        {({ active }) => (
+                                                                            <button
+                                                                                className={`${active ? 'bg-green-500 text-white' : 'text-gray-900'
+                                                                                    } group flex rounded-md items-center w-full px-2 py-2 text-sm`}
+                                                                                onClick={() => {
+                                                                                    saveAs(getFile(archivo.attributes.url), archivo.attributes.name);
+                                                                                }}
+                                                                            >
+                                                                                <ArrowDownTrayIcon className="mr-2 h-4 w-4" aria-hidden="true" />
+                                                                                Archivo {index + 1}
+                                                                            </button>
+                                                                        )}
+                                                                    </Menu.Item>
+                                                                ))}
+                                                            </div>
                                                             </Menu.Items>
                                                         </Menu>
                                                     )}

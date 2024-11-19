@@ -1,6 +1,6 @@
 import WarningAlert from "@/components/alerts/warningAlert";
 import { data } from "@/components/encargado/grafico1";
-import { api_getAllUserByEstablishment, api_getCoursesByUserSinPag, api_getDocumentsAut, api_getDocumentsByEstablishment2, api_getDocumentsByUserDestinity2, api_getDocumentUserCreated, api_getOneCourse, api_getOneUser, api_postDocument, api_putDocument, api_uploadFiles } from "@/services/axios.services";
+import { api_getAllUserByEstablishment, api_getCoursesByUserSinPag, api_getDocumentsByCourse, api_getDocumentsByEstablishment, api_getDocumentsByEstablishment2, api_getDocumentsByUserDestinity, api_getDocumentsByUserDestinity2, api_getDocumentUserCreated, api_getOneCourse, api_getOneUser, api_getOneUserDoc, api_postDocument, api_putDocument, api_uploadFiles } from "@/services/axios.services";
 import { useUserStore } from "@/store/userStore";
 import { ArrowDownTrayIcon, ChevronDownIcon, ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/20/solid";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -146,7 +146,7 @@ export default function Index() {
 
     const fetchData = async () => {
         try {
-            const userData = await api_getOneUser(user.id)
+            const userData = await api_getOneUserDoc(user.id)
             setDataUser(userData.data[0])
         } catch (error) {
             console.error('Error fetching data:', error)
@@ -171,7 +171,7 @@ export default function Index() {
 
     useEffect(() => {
         if (!user || user.id == 0) return;
-        // getAllUserByEstablishment();
+         getAllUserByEstablishment();
     }, [user]);
 
     const [documentCreate, setDocumentCreate] = useState<IDocument[]>([]);
@@ -252,26 +252,42 @@ export default function Index() {
         setDisplayedDocuments([...displayedDocuments, ...newDocuments])
         setCurrentPage(nextPage)
     }
-    const [dataDocuments,setDataDocuments] = useState({})
-    const fetchOneCourse = async () => {
-        try {
-            if (!dataUser) return;
-            let dataE = await api_getOneCourse(dataUser.courses[0].id)
-            const data = await api_getDocumentsAut(dataUser.establishment_authenticateds[0].id, dataUser.id,dataE.data.data.id );
-            dataE.data.data.attributes.documents.data = data.data.data
-            console.log(dataE.data.data.attributes);
-            setDataDocuments(dataE.data.data);
-        } catch (error) {
-            console.error('Error al obtener documentos:', error)
+
+
+    const fetchDocuments = async () => {
+        if (dataUser) {
+            try {
+                const [establishmentDocs, userDocs] = await Promise.all([
+                    api_getDocumentsByEstablishment(dataUser.establishment_authenticateds[0].id),
+                    api_getDocumentsByUserDestinity(dataUser.establishment_authenticateds[0].id,dataUser.id)
+                ])
+                let courseDocs: IDocument[] = []
+                if (dataUser.courses.length > 0) {
+                    const coursesPromises = dataUser.courses.map(course =>
+                        api_getDocumentsByCourse(course.id)
+                    )
+                    const coursesResults = await Promise.all(coursesPromises)
+                    courseDocs = coursesResults.flatMap(result => result.data.data)
+                }
+                const allDocs = [
+                    ...establishmentDocs.data.data,
+                    ...courseDocs,
+                    ...userDocs.data.data
+                ]
+                setDocuments(allDocs)
+                setDisplayedDocuments(allDocs.slice(0, documentsPerPage))
+            } catch (error) {
+                console.error('Error al obtener documentos:', error)
+            }
         }
     }
 
     useEffect(() => {
         if (dataUser && GetRole() === "Authenticated" && (dataUser.tipo === 'alumno' || dataUser.tipo === 'apoderado')) {
-            fetchOneCourse()
+            fetchDocuments()
         }
     }, [dataUser])
-    
+
     const getDestinatario = (doc: IDocument) => {
         return doc.attributes.user_destiny?.data
             ? `${doc.attributes.user_destiny.data.attributes.firstname} ${doc.attributes.user_destiny.data.attributes.first_lastname}`
@@ -500,7 +516,7 @@ export default function Index() {
                     </div>
 
                     {/* Select de curso */}
-                    <div className="col-span-2 md:col-span-1 items-center mb-4">
+                    {/* <div className="col-span-2 md:col-span-1 items-center mb-4">
                         {!isUserSelected && (
                             <>
                                 <label htmlFor="curso" className="font-semibold">Seleccione un curso: </label>
@@ -525,10 +541,10 @@ export default function Index() {
                                 {errors.courseId?.message && (<p className="text-red-600 text-sm mt-1">{errors.courseId.message}</p>)}
                             </>
                         )}
-                    </div>
+                    </div> */}
 
                     {/* Select de usuario */}
-                    <div className="col-span-2 md:col-span-1 items-center mb-4">
+                    <div className="col-span-2 md:col-span-2 md:w-1/2 items-center mb-4">
                         {!isCourseSelected && (
                             <>
                                 <label htmlFor="curso" className="font-semibold">Seleccione un usuario: </label>
@@ -601,8 +617,9 @@ export default function Index() {
                                             )}
                                         </div>
                                         <div className="grid lg:grid-cols-3">
-                                            {doc.attributes.document.data.map((archivo, index) => (<>
+                                            {doc.attributes.document.data.map((archivo, i) => (<>
                                                 <button
+                                                    key={i}
                                                     type="button"
                                                     className="btn btn-outline btn-primary mb-2 lg:mb-0 lg:mr-2"
                                                     onClick={() => {
@@ -610,7 +627,7 @@ export default function Index() {
                                                     }}
                                                 >
                                                     <ArrowDownTrayIcon className="h-3 w-3" aria-hidden="true" />
-                                                    Archivo {index + 1}
+                                                    Archivo {i + 1}
                                                 </button>
 
                                             </>))}
@@ -662,8 +679,9 @@ export default function Index() {
                                             )}
                                         </div>
                                         <div className="grid lg:grid-cols-3">
-                                            {doc.attributes.document.data.map((archivo, index) => (<>
+                                            {doc.attributes.document.data.map((archivo, i) => (<>
                                                 <button
+                                                    key={i}
                                                     type="button"
                                                     className="btn btn-outline btn-primary mb-2 lg:mb-0 lg:mr-2"
                                                     onClick={() => {
@@ -671,7 +689,7 @@ export default function Index() {
                                                     }}
                                                 >
                                                     <ArrowDownTrayIcon className="mr-2 h-4 w-4" aria-hidden="true" />
-                                                    Archivo {index + 1}
+                                                    Archivo {i + 1}
                                                 </button>
 
                                             </>))}
@@ -716,8 +734,9 @@ export default function Index() {
 
                                         </div>
                                         <div className="grid lg:grid-cols-3">
-                                            {doc.attributes.document.data.map((archivo, index) => (<>
+                                            {doc.attributes.document.data.map((archivo, i) => (<>
                                                 <button
+                                                    key={i}
                                                     type="button"
                                                     className="btn btn-outline btn-primary mb-2 lg:mb-0 lg:mr-2"
                                                     onClick={() => {
@@ -725,7 +744,7 @@ export default function Index() {
                                                     }}
                                                 >
                                                     <ArrowDownTrayIcon className="mr-2 h-4 w-4" aria-hidden="true" />
-                                                    Archivo {index + 1}
+                                                    Archivo {i + 1}
                                                 </button>
 
                                             </>))}
@@ -832,7 +851,7 @@ export default function Index() {
                                 <table className="w-full border-collapse bg-white">
                                     <thead>
                                         <tr className="bg-green-700 text-white">
-                                        
+
                                             <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Asunto</th>
                                             <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Subido por</th>
                                             <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Destinado para</th>
@@ -866,8 +885,8 @@ export default function Index() {
                                                                 <ChevronDownIcon className="ml-2 h-4 w-4" aria-hidden="true" />
                                                             </Menu.Button>
                                                             <Menu.Items className="absolute z-50 mt-2 w-56 origin-top-right bg-white divide-y divide-gray-100 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">                                                                <div className="px-1 py-1">
-                                                                {doc.attributes.document?.data.map((archivo, index) => (
-                                                                    <Menu.Item key={index}>
+                                                                {doc.attributes.document?.data.map((archivo, i) => (
+                                                                    <Menu.Item key={i}>
                                                                         {({ active }) => (
                                                                             <button
                                                                                 className={`${active ? 'bg-green-500 text-white' : 'text-gray-900'
@@ -877,7 +896,7 @@ export default function Index() {
                                                                                 }}
                                                                             >
                                                                                 <ArrowDownTrayIcon className="mr-2 h-4 w-4" aria-hidden="true" />
-                                                                                Archivo {index + 1}
+                                                                                Archivo {i + 1}
                                                                             </button>
                                                                         )}
                                                                     </Menu.Item>

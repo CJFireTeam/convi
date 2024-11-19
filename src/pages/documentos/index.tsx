@@ -170,7 +170,7 @@ export default function Index() {
     };
 
     useEffect(() => {
-        if (!user || user.id == 0) return;
+        if (!user.id || !user.establishment?.id ) return;
          getAllUserByEstablishment();
     }, [user]);
 
@@ -191,7 +191,7 @@ export default function Index() {
     }
 
     useEffect(() => {
-        if (!user || user.id == 0) return;
+        if (!user.id || !user.establishment?.id ) return;
         dataDocumentByCreate()
     }, [user, metaData.page]);
 
@@ -212,7 +212,7 @@ export default function Index() {
     }
 
     useEffect(() => {
-        if (!user || user.id == 0) return;
+        if (!user.id || !user.establishment?.id ) return;
         dataDocumentByEstablishment()
     }, [user, metaData2.page]);
 
@@ -234,7 +234,7 @@ export default function Index() {
     }
 
     useEffect(() => {
-        if (!user || user.id == 0) return;
+        if (!user.id || !user.establishment?.id ) return;
         dataDocumentByDestiny()
     }, [user, metaData4.page]);
 
@@ -617,7 +617,7 @@ export default function Index() {
                                             )}
                                         </div>
                                         <div className="grid lg:grid-cols-3">
-                                            {doc.attributes.document.data.map((archivo, i) => (<>
+                                            {doc.attributes.document.data?.map((archivo, i) => (<>
                                                 <button
                                                     key={i}
                                                     type="button"
@@ -855,7 +855,6 @@ export default function Index() {
                                             <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Asunto</th>
                                             <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Subido por</th>
                                             <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Destinado para</th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Fecha</th>
                                             <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider">Archivo</th>
                                         </tr>
                                     </thead>
@@ -865,9 +864,8 @@ export default function Index() {
                                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{doc.attributes.descriptionDoc}</td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{doc.attributes.userId.data.attributes.firstname + " " + doc.attributes.userId.data.attributes.first_lastname}</td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{getDestinatario(doc)}</td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{new Date(doc.attributes.document?.data[0].attributes.createdAt).toLocaleDateString()}</td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                                    {doc.attributes.document?.data.length === 1 ? (
+                                                    {doc.attributes.document?.data?.length === 1 ? (
                                                         <button
                                                             className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors duration-200"
                                                             onClick={() => {
@@ -885,7 +883,7 @@ export default function Index() {
                                                                 <ChevronDownIcon className="ml-2 h-4 w-4" aria-hidden="true" />
                                                             </Menu.Button>
                                                             <Menu.Items className="absolute z-50 mt-2 w-56 origin-top-right bg-white divide-y divide-gray-100 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">                                                                <div className="px-1 py-1">
-                                                                {doc.attributes.document?.data.map((archivo, i) => (
+                                                                {doc.attributes.document?.data?.map((archivo, i) => (
                                                                     <Menu.Item key={i}>
                                                                         {({ active }) => (
                                                                             <button

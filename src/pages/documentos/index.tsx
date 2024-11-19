@@ -171,7 +171,7 @@ export default function Index() {
 
     useEffect(() => {
         if (!user || user.id == 0) return;
-        getAllUserByEstablishment();
+        // getAllUserByEstablishment();
     }, [user]);
 
     const [documentCreate, setDocumentCreate] = useState<IDocument[]>([]);
@@ -252,15 +252,15 @@ export default function Index() {
         setDisplayedDocuments([...displayedDocuments, ...newDocuments])
         setCurrentPage(nextPage)
     }
-
-    const [coEs, setCoEs] = useState<ICourse>();
-
+    const [dataDocuments,setDataDocuments] = useState({})
     const fetchOneCourse = async () => {
         try {
             if (!dataUser) return;
-            const dataE = await api_getOneCourse(dataUser.courses[0].id)
+            let dataE = await api_getOneCourse(dataUser.courses[0].id)
             const data = await api_getDocumentsAut(dataUser.establishment_authenticateds[0].id, dataUser.id,dataE.data.data.id );
-            console.log('data del fetch',dataE.data.data)
+            dataE.data.data.attributes.documents.data = data.data.data
+            console.log(dataE.data.data.attributes);
+            setDataDocuments(dataE.data.data);
         } catch (error) {
             console.error('Error al obtener documentos:', error)
         }
@@ -832,6 +832,7 @@ export default function Index() {
                                 <table className="w-full border-collapse bg-white">
                                     <thead>
                                         <tr className="bg-green-700 text-white">
+                                        
                                             <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Asunto</th>
                                             <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Subido por</th>
                                             <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Destinado para</th>

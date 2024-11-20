@@ -487,16 +487,26 @@ export default function Index() {
         getCoursesByUser()
     }, [user])
 
-    const handleDownload = (url:string,name:string) => {
-        // Crea un enlace dinámico para descargar la imagen
-        const link = document.createElement("a");
-        link.href = url; // URL de la imagen
-        link.download = name; // Nombre sugerido para el archivo
-        link.target = "_blank"; // Opcional, para abrir en una nueva pestaña si no descarga
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+    const handleDownload = async (url: string, name: string) => {
+        try {
+            const response = await fetch(url, { method: "GET" });
+            if (!response.ok) {
+                throw new Error(`Error al descargar el archivo: ${response.statusText}`);
+            }
+            const blob = await response.blob(); // Convierte el contenido en un Blob
+            const blobUrl = window.URL.createObjectURL(blob); // Crea una URL temporal
+            const link = document.createElement("a");
+            link.href = blobUrl;
+            link.download = name; // Nombre sugerido para el archivo
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(blobUrl); // Limpia la URL temporal
+        } catch (error) {
+            console.error("Error descargando el archivo:", error);
+        }
     };
+    
 
     if ((GetRole() === "admin" || GetRole() === "Encargado de Convivencia Escolar" || GetRole() === "Profesor") && dataUser?.canUploadDoc == true && courseByUser.length === 0) {
         return (

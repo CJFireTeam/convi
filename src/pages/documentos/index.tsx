@@ -624,6 +624,8 @@ export default function Index() {
                                                     className="btn btn-outline btn-primary mb-2 lg:mb-0 lg:mr-2"
                                                     onClick={() => {
                                                         saveAs(getFile(archivo.attributes.url), archivo.attributes.name);
+                                                        console.log('getfile data: ',getFile(archivo.attributes.url))
+                                                        console.log('nombre file: ',archivo.attributes.name)
                                                     }}
                                                 >
                                                     <ArrowDownTrayIcon className="h-3 w-3" aria-hidden="true" />

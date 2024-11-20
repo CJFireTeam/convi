@@ -170,8 +170,8 @@ export default function Index() {
     };
 
     useEffect(() => {
-        if (!user.id || !user.establishment?.id ) return;
-         getAllUserByEstablishment();
+        if (!user.id || !user.establishment?.id) return;
+        getAllUserByEstablishment();
     }, [user]);
 
     const [documentCreate, setDocumentCreate] = useState<IDocument[]>([]);
@@ -191,7 +191,7 @@ export default function Index() {
     }
 
     useEffect(() => {
-        if (!user.id || !user.establishment?.id ) return;
+        if (!user.id || !user.establishment?.id) return;
         dataDocumentByCreate()
     }, [user, metaData.page]);
 
@@ -212,7 +212,7 @@ export default function Index() {
     }
 
     useEffect(() => {
-        if (!user.id || !user.establishment?.id ) return;
+        if (!user.id || !user.establishment?.id) return;
         dataDocumentByEstablishment()
     }, [user, metaData2.page]);
 
@@ -234,7 +234,7 @@ export default function Index() {
     }
 
     useEffect(() => {
-        if (!user.id || !user.establishment?.id ) return;
+        if (!user.id || !user.establishment?.id) return;
         dataDocumentByDestiny()
     }, [user, metaData4.page]);
 
@@ -259,7 +259,7 @@ export default function Index() {
             try {
                 const [establishmentDocs, userDocs] = await Promise.all([
                     api_getDocumentsByEstablishment(dataUser.establishment_authenticateds[0].id),
-                    api_getDocumentsByUserDestinity(dataUser.establishment_authenticateds[0].id,dataUser.id)
+                    api_getDocumentsByUserDestinity(dataUser.establishment_authenticateds[0].id, dataUser.id)
                 ])
                 let courseDocs: IDocument[] = []
                 if (dataUser.courses.length > 0) {
@@ -487,6 +487,17 @@ export default function Index() {
         getCoursesByUser()
     }, [user])
 
+    const handleDownload = (url:string,name:string) => {
+        // Crea un enlace dinámico para descargar la imagen
+        const link = document.createElement("a");
+        link.href = url; // URL de la imagen
+        link.download = name; // Nombre sugerido para el archivo
+        link.target = "_blank"; // Opcional, para abrir en una nueva pestaña si no descarga
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
     if ((GetRole() === "admin" || GetRole() === "Encargado de Convivencia Escolar" || GetRole() === "Profesor") && dataUser?.canUploadDoc == true && courseByUser.length === 0) {
         return (
             <>
@@ -623,9 +634,7 @@ export default function Index() {
                                                     type="button"
                                                     className="btn btn-outline btn-primary mb-2 lg:mb-0 lg:mr-2"
                                                     onClick={() => {
-                                                        saveAs(getFile(archivo.attributes.url), archivo.attributes.name);
-                                                        console.log('getfile data: ',getFile(archivo.attributes.url))
-                                                        console.log('nombre file: ',archivo.attributes.name)
+                                                        handleDownload(getFile(archivo.attributes.url), archivo.attributes.name);
                                                     }}
                                                 >
                                                     <ArrowDownTrayIcon className="h-3 w-3" aria-hidden="true" />
@@ -687,7 +696,7 @@ export default function Index() {
                                                     type="button"
                                                     className="btn btn-outline btn-primary mb-2 lg:mb-0 lg:mr-2"
                                                     onClick={() => {
-                                                        saveAs(getFile(archivo.attributes.url), archivo.attributes.name);
+                                                        handleDownload(getFile(archivo.attributes.url), archivo.attributes.name);
                                                     }}
                                                 >
                                                     <ArrowDownTrayIcon className="mr-2 h-4 w-4" aria-hidden="true" />
@@ -742,7 +751,7 @@ export default function Index() {
                                                     type="button"
                                                     className="btn btn-outline btn-primary mb-2 lg:mb-0 lg:mr-2"
                                                     onClick={() => {
-                                                        saveAs(getFile(archivo.attributes.url), archivo.attributes.name);
+                                                        handleDownload(getFile(archivo.attributes.url), archivo.attributes.name);
                                                     }}
                                                 >
                                                     <ArrowDownTrayIcon className="mr-2 h-4 w-4" aria-hidden="true" />
@@ -871,7 +880,7 @@ export default function Index() {
                                                         <button
                                                             className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors duration-200"
                                                             onClick={() => {
-                                                                saveAs(getFile(doc.attributes.document.data[0].attributes.url), doc.attributes.document.data[0].attributes.name);
+                                                                handleDownload(getFile(doc.attributes.document.data[0].attributes.url), doc.attributes.document.data[0].attributes.name);
                                                             }}
                                                         >
                                                             <ArrowDownTrayIcon className="mr-2 h-4 w-4" aria-hidden="true" />
@@ -892,7 +901,7 @@ export default function Index() {
                                                                                 className={`${active ? 'bg-green-500 text-white' : 'text-gray-900'
                                                                                     } group flex rounded-md items-center w-full px-2 py-2 text-sm`}
                                                                                 onClick={() => {
-                                                                                    saveAs(getFile(archivo.attributes.url), archivo.attributes.name);
+                                                                                    handleDownload(getFile(archivo.attributes.url), archivo.attributes.name);
                                                                                 }}
                                                                             >
                                                                                 <ArrowDownTrayIcon className="mr-2 h-4 w-4" aria-hidden="true" />

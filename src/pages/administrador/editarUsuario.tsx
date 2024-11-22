@@ -1,5 +1,5 @@
 import WarningAlert from "@/components/alerts/warningAlert";
-import { api_deleteCourse, api_getCoursesByUser, api_getEstablishmentCoursesSinPag, api_getOneUser, api_postCourses, api_role, api_updateUser } from "@/services/axios.services";
+import { api_deleteCourse, api_getEstablishmentCoursesByUser, api_getEstablishmentCoursesSinPag, api_getOneUser, api_postCourses, api_putEstablishmentCourses, api_role, api_updateUser } from "@/services/axios.services";
 import { getComunas, getRegiones } from "@/services/local.services";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useSearchParams } from "next/navigation";
@@ -394,8 +394,6 @@ export default function EditarUsuario() {
 
 interface IFormCourse {
     establishment_courses: number;
-    establishment: number;
-    users: number;
 }
 
 interface props {
@@ -421,53 +419,31 @@ interface ICoursesEstablishment {
 
 interface ICourse {
     attributes: {
-        establishment_courses: {
-            data: {
-                attributes: {
-                    Grade: string;
-                    Letter: string;
+        Grade: string;
+        Letter: string;
+        establishment:{
+            data:{
+                id:number;
+                attributes:{
+                    name:string;
                 }
-                id: number;
-            }[]
+            }
         }
     }
     id: number;
 }
+    
 
 export function InsertCourse(props: props) {
     const [loadingButton, setLoadingButton] = useState(false)
     const [loadingDelete, setLoadingDelete] = useState(false)
     const CourseSchema = z.object({
         establishment_courses: z.number({ required_error: 'Campo requerido', invalid_type_error: 'Tipo de dato invalido' }),
-        establishment: z.number(),
-        users: z.number()
     });
 
     const { register, watch, setValue, handleSubmit, formState: { errors }, control } = useForm<IFormCourse>({
         resolver: zodResolver(CourseSchema),
     });
-
-    const onSubmit = async (data: IFormCourse) => {
-        try {
-            setLoadingButton(true)
-            const response = await api_postCourses(data);
-            toast.success('Curso agregado correctamente');
-            getCoursesByUser()
-            getCoursesEstablishment()
-        }
-        catch (errors) {
-            console.log(errors);
-            toast.error('Ha sucedio un error inesperado.')
-        } finally {
-            setLoadingButton(false)
-        }
-
-    }
-
-    useEffect(() => {
-        setValue('establishment', props.establishmentId);
-        setValue('users', parseInt(props.userId));
-    }, [props.establishmentId, props.userId, setValue]);
 
     const [coursesEs, setCoursesEs] = useState<ICoursesEstablishment[]>([])
     const getCoursesEstablishment = async () => {
@@ -476,7 +452,7 @@ export function InsertCourse(props: props) {
             const establishmentCourses = data.data.data;
 
             // Filtrar los cursos para que solo se incluyan aquellos que el usuario no tiene inscritos
-            const userCourseIds = courseByUser.map(course => course.attributes.establishment_courses.data[0]?.id);
+            const userCourseIds = courseByUser.map(course => course.id);
 
             const filteredCourses = establishmentCourses.filter((course: any) =>
                 !userCourseIds.includes(course.id) && !course.attributes.Eliminado // Asegúrate de que el curso no esté marcado como eliminado
@@ -488,20 +464,13 @@ export function InsertCourse(props: props) {
         }
     }
 
-    useEffect(() => {
-        if (props.establishmentId) {
-            getCoursesEstablishment()
-        }
-
-    }, [props.establishmentId])
-
     const [loading, setLoading] = useState(true)
     const [courseByUser, setCourseByUser] = useState<ICourse[]>([]);
     const [metaData, setMetaData] = useState<metaI>({ page: 1, pageCount: 0, pageSize: 0, total: 0 });
     const getCoursesByUser = async () => {
         try {
             setLoading(true)
-            const data = await api_getCoursesByUser(props.establishmentId, parseInt(props.userId), metaData.page)
+            const data = await api_getEstablishmentCoursesByUser(props.establishmentId, parseInt(props.userId), metaData.page)
             setCourseByUser(data.data.data);
             setMetaData(data.data.meta.pagination)
             // Verifica si no hay cursos después de la actualización
@@ -515,6 +484,37 @@ export function InsertCourse(props: props) {
         }
     }
 
+    useEffect(() => {
+        if (props.establishmentId && courseByUser) {
+            getCoursesEstablishment();
+        }
+    }, [props.establishmentId, courseByUser]);
+
+    const onSubmit = async (data: IFormCourse) => {
+        try {
+            setLoadingButton(true);
+    
+            // Combinar los cursos existentes con el nuevo curso seleccionado
+            const currentCourseIds = courseByUser.map(course => course.id); // Obtén los IDs de los cursos actuales
+            const updatedCourses = [...currentCourseIds, data.establishment_courses]; // Añade el nuevo curso
+    
+            // Envía la lista actualizada al backend
+            await api_putEstablishmentCourses(parseInt(props.userId), {
+                establishment_courses: updatedCourses,
+            });
+    
+            toast.success('Curso agregado correctamente');
+            // Actualiza las listas de cursos después de la operación
+            await getCoursesByUser();
+            await getCoursesEstablishment();
+        } catch (error) {
+            console.error('Error al agregar curso:', error);
+            toast.error('Ha sucedido un error inesperado.');
+        } finally {
+            setLoadingButton(false);
+        }
+    };
+
     const updatePage = (number: number) => {
         setMetaData(prev => ({ ...prev, page: number }))
     }
@@ -523,22 +523,34 @@ export function InsertCourse(props: props) {
         if (props.establishmentId || props.userId) {
             getCoursesByUser()
         }
-    }, [props.establishmentId,metaData.page])
+    }, [props.establishmentId, metaData.page])
 
-    const eliminarclick = async (CourseEsId: number) => {
+    const eliminarclick = async (courseId: number) => {
         try {
             setLoadingDelete(true);
-            const response = await api_deleteCourse(CourseEsId);
-            // Aquí puedes manejar el estado de tu aplicación, como actualizar la lista de documentos
-            toast.success('Curso eliminado exitosamente.')
-            await getCoursesByUser()
-            await getCoursesEstablishment()
+    
+            // Filtra los cursos actuales para eliminar el seleccionado
+            const updatedCourses = courseByUser
+                .filter(course => course.id !== courseId)
+                .map(course => course.id); // Obtén los IDs de los cursos restantes
+    
+            // Envía la lista actualizada al backend
+            await api_putEstablishmentCourses(parseInt(props.userId), {
+                establishment_courses: updatedCourses,
+            });
+    
+            toast.success('Curso eliminado exitosamente.');
+            // Actualiza las listas de cursos después de la operación
+            await getCoursesByUser();
+            await getCoursesEstablishment();
         } catch (error) {
             console.error('Error al eliminar el curso', error);
+            toast.error('Ha sucedido un error inesperado.');
         } finally {
-            setLoadingDelete(false)
+            setLoadingDelete(false);
         }
     };
+    
 
     return (
         <>
@@ -553,7 +565,7 @@ export function InsertCourse(props: props) {
                         <Controller control={control} name="establishment_courses" render={({ field: { onChange, value, name, ref } }) =>
                         (
                             <Select placeholder="Seleccione curso" getOptionValue={(option) => option.id.toString()}
-                                getOptionLabel={(option) => option.attributes.Grade + " " + option.attributes.Letter}
+                                getOptionLabel={(option) => option.attributes.Grade + " " + option.attributes.Letter + " " + option.attributes.establishment.data.attributes.name}
                                 value={coursesEs.find((e) => e.id === value)}
                                 options={coursesEs}
                                 onChange={(val) => {
@@ -607,14 +619,17 @@ export function InsertCourse(props: props) {
                     </div>
                     {courseByUser.map((c, index) => (<>
                         <div key={index} className="m-2">
-                            {c.attributes.establishment_courses.data.length > 0 ? (<>
                                 <Card className="mt-2">
                                     <CardHeader>
                                         <CardTitle>Cursos</CardTitle>
                                     </CardHeader>
                                     <CardContent>
-                                        < span className="font-semibold" >
-                                            {c.attributes.establishment_courses.data[0].attributes.Grade + " " + c.attributes.establishment_courses.data[0].attributes.Letter}
+                                        <span className="font-semibold" >
+                                            {c.attributes.Grade + " " + c.attributes.Letter}
+                                        </ span>
+                                        <br />
+                                        <span className="font-semibold" >
+                                            {c.attributes.establishment.data.attributes.name}
                                         </ span>
                                     </CardContent>
                                     <CardFooter className="flex justify-center">
@@ -634,9 +649,7 @@ export function InsertCourse(props: props) {
                                         </svg>
                                     </CardFooter>
                                 </Card>
-                            </>) : (
-                                <span className="font-semibold">Sin cursos disponibles</span>
-                            )}
+                           
                         </div>
                         {/* Open the modal using document.getElementById('ID').showModal() method */}
                         <dialog id={`my_modal_${c.id}`} className="modal">

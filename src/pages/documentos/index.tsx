@@ -1,5 +1,4 @@
 import WarningAlert from "@/components/alerts/warningAlert";
-import { data } from "@/components/encargado/grafico1";
 import { api_getAllUserByEstablishment, api_getCoursesByUserSinPag, api_getDocumentsByCourse, api_getDocumentsByEstablishment, api_getDocumentsByEstablishment2, api_getDocumentsByUserDestinity, api_getDocumentsByUserDestinity2, api_getDocumentUserCreated, api_getOneCourse, api_getOneUser, api_getOneUserDoc, api_postDocument, api_putDocument, api_uploadFiles } from "@/services/axios.services";
 import { useUserStore } from "@/store/userStore";
 import { ArrowDownTrayIcon, ChevronDownIcon, ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/20/solid";

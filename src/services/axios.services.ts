@@ -400,16 +400,15 @@ export function api_getDocumentsByUserDestinity2(establishmentId: number, userId
   return api.get(`documents${query}`)
 }
 
-export function api_getCoursesByUser(establishment: number, userId: number, page: number) {
+export function api_getEstablishmentCoursesByUser(establishment: number, userId: number, page: number) {
   let query = `?filter[$and][0][establishment][id][$eq]=${establishment}`;
   query += `&filters[$and][1][users][id][$eq]=${userId}`;
-  query += `&filters[$and][2][establishment_courses][Eliminado][$eq]=false`; // Filtrar cursos donde Eliminado es false
-  query += `&populate[0]=establishment_courses`; // Poblar establishment_courses
-  query += `&populate[establishment_courses][filters][Eliminado][$eq]=false`; // Aplica el filtro Eliminado=false
+  query += `&filters[$and][2][Eliminado][$eq]=false`; // Filtrar cursos donde Eliminado es false
+  query += `&populate=*`; 
   query += `&sort=createdAt:desc`; // Ordenar por el campo 'createdAt' en orden descendente
   query += `&pagination[page]=${page}&pagination[pageSize]=12`;
 
-  return api.get(`courses${query}`);
+  return api.get(`establishment-courses${query}`);
 }
 export function api_getCoursesByUserSinPag(establishment: number, userId: number) {
   let query = `?filter[$and][0][establishment][id][$eq]=${establishment}`;
@@ -450,4 +449,11 @@ export function api_putEliminadoEstablishmenCourses(CourseEsId: number, isDelete
 
 export function api_deleteCourse(CourseEsId: number) {
   return api.delete(`courses/${CourseEsId}`)
+}
+
+export function api_putEstablishmentCourses(userId: number, data: any) {
+  // Define la URL del documento que deseas actualizar
+  const url = `users/${userId}`; // Asegúrate de que la URL sea correcta
+  // Realiza la solicitud PUT para actualizar el campo 'Eliminado'
+  return api.put(url, data);
 }

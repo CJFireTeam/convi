@@ -311,17 +311,9 @@ export function api_getDocumentUserCreated(escuelaId: number, userId: number, pa
   let query = `?filters[$and][0][establishmentId][id][$eq]=${escuelaId}`;
   query += `&filters[$and][1][userId][id][$eq]=${userId}`;
   query += `&filters[$and][2][Eliminado][$eq]=false`;
-
-  // Poblar todas las relaciones necesarias
-  query += `&populate[userId]=*`; // Poblar el usuario
-  query += `&populate[establishmentId]=*`; // Poblar el establecimiento
-  query += `&populate[courseId][populate][establishment_courses]=*`; // Poblar establishment_courses a través de courseId
-  query += `&populate[document]=*`; // Poblar documentos
-  query += `&populate[user_destiny]=*`; // Poblar el destino del usuario
-
+  query += `&populate=*`;
   query += `&sort=createdAt:desc`;
   query += `&pagination[page]=${page}&pagination[pageSize]=3`;
-
   return api.get(`documents${query}`);
 }
 
@@ -338,7 +330,7 @@ export function api_getOneCourse(course: number) {
 
 export function api_getDocumentsByEstablishment2(establishmentId: number, userId: number, page: number) {
   let query = `?filters[$and][0][establishmentId][id][$eq]=${establishmentId}`
-  query += `&filters[$and][1][courseId][id][$null]=true`
+  query += `&filters[$and][1][establishment_course][id][$null]=true`
   query += `&filters[$and][2][user_destiny][id][$null]=true`
   query += `&filters[$and][3][Eliminado][$eq]=false`
   query += `&filters[$and][4][userId][id][$ne]=${userId}`
@@ -347,31 +339,39 @@ export function api_getDocumentsByEstablishment2(establishmentId: number, userId
   return api.get(`documents${query}`)
 }
 
+export function api_getDocumentsByCourse2(establishmentId: number,courseId:number, userId: number) {
+  let query = `?filters[$and][0][establishmentId][id][$eq]=${establishmentId}`
+  query += `&filters[$and][1][establishment_course][id]=${courseId}`
+  query += `&filters[$and][2][user_destiny][id][$null]=true`
+  query += `&filters[$and][3][Eliminado][$eq]=false`
+  query += `&filters[$and][4][userId][id][$ne]=${userId}`
+  query += `&populate=*&sort=createdAt:desc`
+  return api.get(`documents${query}`)
+}
+
 export function api_getDocumentsByEstablishment(establishmentId: number) {
   let query = `?filters[$and][0][establishmentId][id][$eq]=${establishmentId}`
-  query += `&filters[$and][1][courseId][id][$null][$eq]=true`
+  query += `&filters[$and][1][establishment_course][id][$null][$eq]=true`
   query += `&filters[$and][3][user_destiny][id][$null]=true`
   query += `&filters[$and][4][Eliminado][$eq]=false`
   query += `&populate=*&sort=createdAt:desc`
   return api.get(`documents${query}`)
 }
 
-export function api_getDocumentsByCourse(courseId: number) {
-  let query = `?filters[$and][0][courseId][id][$eq]=${courseId}`
-  query += `&filters[$and][3][user_destiny][id][$null]=true`
-  query += `&populate[establishmentId]=*`
-  query += `&populate[courseId][populate][establishment_courses]=*`
-  query += `&populate[userId]=*` 
-  query += `&populate[document]=*`
-  query += `&filters[$and][4][Eliminado][$eq]=false`
+export function api_getDocumentsByCourse(courseId: number,establishmentId:number) {
+  let query = `?filters[$and][0][establishment_course][id][$eq]=${courseId}`
+  query += `&filters[$and][1][establishmentId][id][$eq]=${establishmentId}`
+  query += `&filters[$and][2][user_destiny][id][$null]=true`
+  query += `&filters[$and][3][Eliminado][$eq]=false`
   query += `&populate=*&sort=createdAt:desc`
   return api.get(`documents${query}`)
 }
+
 
 export function api_getDocumentsByUserDestinity(establishmentId: number, userId: number) {
 let query = `?filters[$and][0][establishmentId][id][$eq]=${establishmentId}`
 query += `&filters[$and][1][user_destiny][id][$eq]=${userId}`
-query += `&filters[$and][2][courseId][id][$null]=true`
+query += `&filters[$and][2][establishment_course][id][$null]=true`
 query += `&filters[$and][3][Eliminado][$eq]=false`
 query += `&populate=*&sort=createdAt:desc`
 return api.get(`documents${query}`)
@@ -393,7 +393,7 @@ return api.get(`documents${query}`)
 export function api_getDocumentsByUserDestinity2(establishmentId: number, userId: number, page: number) {
   let query = `?filters[$and][0][establishmentId][id][$eq]=${establishmentId}`
   query += `&filters[$and][1][user_destiny][id][$eq]=${userId}`
-  query += `&filters[$and][2][courseId][id][$null]=true`
+  query += `&filters[$and][2][establishment_course][id][$null]=true`
   query += `&filters[$and][4][Eliminado][$eq]=false`
   query += `&populate=*&sort=createdAt:desc`
   query += `&pagination[page]=${page}&pagination[pageSize]=3`

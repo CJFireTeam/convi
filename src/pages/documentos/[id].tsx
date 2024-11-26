@@ -134,7 +134,7 @@ export default function DocumentosByColegio() {
                     <meta name="viewport" content="initial-scale=1.0, width=device-width" />
                 </Head>
                 <div className="flex flex-col items-center">
-                    <WarningAlert message={'Aun no tienes un curso asignado.'} />
+                    <WarningAlert message={'Aún no tienes un curso asignado.'} />
                 </div>
             </>
         )
@@ -147,7 +147,7 @@ export default function DocumentosByColegio() {
                     <meta name="viewport" content="initial-scale=1.0, width=device-width" />
                 </Head>
                 <div className="flex flex-col items-center">
-                    <WarningAlert message={'Aun no hay documentos para tu curso.'} />
+                    <WarningAlert message={'Aún no hay documentos para tu curso.'} />
                 </div>
             </>
         )

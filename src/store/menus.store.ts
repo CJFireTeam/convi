@@ -136,7 +136,7 @@ const ProfesorMenus: IMenuChildren[] = [
     current: false,
   },
   {
-    name: "Reunion",
+    name: "Reunión",
     href: "/meeting",
     icon: FolderIcon,
     children: [],

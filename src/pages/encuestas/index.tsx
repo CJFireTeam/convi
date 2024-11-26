@@ -135,7 +135,7 @@ export default function Index() {
                 )}
               </div>
             </>
-          ) : <WarningAlert message="Aun no has creado una encuesta" />}
+          ) : <WarningAlert message="Aún no has creado una encuesta" />}
 
         </div>
       </>
@@ -503,7 +503,7 @@ function Table({ data }: { data: surveyInterface[] }) {
                 scope="col"
                 className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
               >
-                Fecha Termino
+                Fecha Terminó
               </th>
               <th
                 scope="col"

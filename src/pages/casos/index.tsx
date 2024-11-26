@@ -119,7 +119,7 @@ function Table({ data }: { data: caseInterface[] }) {
               scope="col"
               className="px-3 py-3.5 text-center text-sm font-semibold text-gray-900"
             >
-              Fecha de creacion
+              Fecha de creación
             </th>
             {role.name !== "Encargado de Convivencia Escolar" && (
               <>

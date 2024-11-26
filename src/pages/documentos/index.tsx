@@ -194,7 +194,7 @@ export default function Index() {
                 <form onSubmit={handleSubmit(onSubmit)} className="grid md:grid-cols-2 gap-2 mx-auto mb-4 w-full border rounded-lg shadow-md p-4 items-center text-center">
                     <div className="col-span-2">
                         <span className="text-2xl font-bold">Subir Documentos:</span>
-                        <p className="text-sm font-semibold text-slate-500">nota: deje en blanco para enviar documento al colegio completo. </p>
+                        <p className="text-sm font-semibold text-slate-500">Nota: Deje en blanco para enviar documento al colegio completo. </p>
                     </div>
 
                     {/* Select de curso */}

@@ -84,7 +84,7 @@ export default function DocumentosEstablecimiento(props:props){
                                 <>
                                     <div key={index} className="grid lg:grid-cols-3 gap-4 border border-gray-100 hover:border-2 hover:border-primary p-2 mb-1">
                                         <div className="flex flex-col text-left">
-                                            <p><span className="font-semibold">Descripcion: </span>{doc.attributes.descriptionDoc}</p>
+                                            <p><span className="font-semibold">Descripción: </span>{doc.attributes.descriptionDoc}</p>
                                             {!doc.attributes.establishment_course.data && (
                                                 <></>
                                             )}

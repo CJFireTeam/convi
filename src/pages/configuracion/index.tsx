@@ -258,7 +258,7 @@ function Cargos() {
         </div>
         <Modal ref={ref}>
           <Modal.Header>
-            <span className="font-bold flex justify-center text-primary mt-4">Creacion de cargo</span>
+            <span className="font-bold flex justify-center text-primary mt-4">Creación de cargo</span>
             <Button onClick={hadleClose} size="sm" color="ghost" shape="circle" className="text-base font-semibold absolute right-2 top-2">
               X
             </Button>
@@ -282,7 +282,7 @@ function Cargos() {
 
         <Modal ref={refProfesional}>
           <Modal.Header>
-            <span className="font-bold flex justify-center text-primary mt-4">Creacion de profesional</span>
+            <span className="font-bold flex justify-center text-primary mt-4">Creación de profesional</span>
             <Button onClick={hadleCloseProfesional} size="sm" color="ghost" shape="circle" className="text-base font-semibold absolute right-2 top-2">
               X
             </Button>

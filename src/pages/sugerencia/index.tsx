@@ -96,7 +96,7 @@ function Colegio({ errors }: props) {
                     <select id="region" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-10/12 p-2.5"
                         value={regionSelected}
                         onChange={handleChangeRegion}>
-                        <option value={0}>Seleccione la region:</option>
+                        <option value={0}>Seleccione la región:</option>
                         {regionList.map((region: string) => (
                             <option value={region} key={region}>
                                 {region}
@@ -259,7 +259,7 @@ export default function Sugerencia() {
                                             value={seleccion}
                                             onChange={handleSeleccionChange}
                                         >
-                                            <option value="">Escoge una opción:</option>
+                                            <option value="">Seleccione una opción:</option>
                                             <option value="convi">Convi</option>
                                             <option value="otro establecimiento">Otro establecimiento</option>
                                         </select>

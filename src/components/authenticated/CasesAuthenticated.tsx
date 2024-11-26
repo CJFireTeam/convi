@@ -67,7 +67,7 @@ function Table({ data }: { data: caseInterface[] }) {
               scope="col"
               className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
             >
-              Fecha de creacion
+              Fecha de creación
             </th>
             <th
               scope="col"
@@ -120,7 +120,7 @@ function Table({ data }: { data: caseInterface[] }) {
       </table>
       <Modal backdrop responsive ref={creationRef} className="bg-white">
         <Modal.Header className="font-bold">
-          Informacion del caso:
+          Información del caso:
         </Modal.Header>
         <Divider />
         <Modal.Body>

@@ -196,8 +196,9 @@ export function api_getQuestionResponses({ questionId }: { questionId: number })
 }
 
 
-export function api_postSendMeeting(data: { CreationDate: string, RoomName: string, RoomUrl: string, Establishment: number, CreatorUser: number }) {
-  return api.post(`meetings`, data)
+export function api_postSendMeeting(data: any) {
+  console.log('Sending meeting data:', data);
+  return api.post(`meetings`, data);
 }
 
 export function api_postCase(caseData: {
@@ -256,7 +257,14 @@ export function api_GetUsersAlumnosEstablishment(escuelaId: number, courses?: nu
   let query = `?filters[$and][0][role][name][$eq]=Authenticated`
   query = query + `&filters[$and][1][tipo][$eq]=alumno`
   query = query + `&filters[$and][2][establishment_authenticateds][id][$eq]=${escuelaId}`
-  if (courses) query += `&filters[$and][3][courses][establishment_courses][id][$eq]=${courses}`;
+  if (courses) query += `&filters[$and][3][establishment_courses][id][$eq]=${courses}`;
+  return api.get(`users${query}`)
+}
+export function api_getUsersEstablishment2(escuelaId: number, courses?: number) {
+  let query = `?filters[$and][0][role][name][$ne]=admin`
+  query = query + `&filters[$or][1][establishment][id][$eq]=${escuelaId}`
+  query = query + `&filters[$or][2][establishment_authenticateds][id][$eq]=${escuelaId}`
+  if (courses) query += `&filters[$and][3][establishment_courses][id][$eq]=${courses}&populate=*`;
   return api.get(`users${query}`)
 }
 

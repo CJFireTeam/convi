@@ -249,7 +249,7 @@ export default function EditarUsuario() {
 
                             {/* Dirección */}
                             <div className="md:mr-4">
-                                <label htmlFor="direccion">Direccion:</label>
+                                <label htmlFor="direccion">Dirección:</label>
                                 <Input type="text" {...register('direccion', { setValueAs: (value) => value === '' ? undefined : value })} defaultValue={dataUser?.direccion} className="input input-primary w-full" />
                                 {errors.direccion?.message && (<p className="text-red-600 text-sm mt-1">{errors.direccion.message}</p>)}
                             </div>

@@ -24,15 +24,15 @@ interface InputsSchoolApoderado {
   Schools: number[];
 }
 const tipoSchema = z.object({
-  tipo: z.string({ required_error: "Es necesario seleccionar una opcion" }),
+  tipo: z.string({ required_error: "Es necesario seleccionar una opción" }),
 });
 
 const SchoolSchemaStudent = z.object({
-  Schools: z.number({ required_error: "Es necesario seleccionar una opcion" }),
+  Schools: z.number({ required_error: "Es necesario seleccionar una opción" }),
 });
 
 const SchoolSchemaApoderado = z.object({
-  Schools: z.array(z.number({ required_error: "Es necesario seleccionar una opcion" })).min(1, { message: "Es necesario agregar un establecimiento" }).default([])
+  Schools: z.array(z.number({ required_error: "Es necesario seleccionar una opción" })).min(1, { message: "Es necesario agregar un establecimiento" }).default([])
 });
 
 function ModalTipoUser() {

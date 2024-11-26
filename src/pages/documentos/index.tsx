@@ -16,6 +16,8 @@ import DocumentosRecibidos from "@/components/documentos/documentosrecibidos";
 import DocumentosEstablecimiento from "@/components/documentos/documentosestablecimiento";
 import DocumentosCurso from "@/components/documentos/documentoscurso";
 import DocumentosAlumno from "@/components/documentos/documentAlum/documentosalumno";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 interface FormValues {
     descriptionDoc: string;
     userId: number;
@@ -295,6 +297,36 @@ export default function Index() {
             <>
                 <DocumentosAlumno />
             </>)
+    }
+
+    if (GetRole() === "Authenticated" && (user.tipo === 'apoderado')) {
+        return (
+            <>
+                <div className="w-full text-center">
+                    <label htmlFor="Colegio" className="font-semibold text-xl">Seleccione el colegio deseado.</label>
+                    {user.establishment_authenticateds.map((e, i) => (<>
+                        <Card className="w-[350px]" key={i}>
+                            <CardHeader>
+                                <CardTitle>{e.name}</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                {e.Comuna}
+                                <br />
+                                {e.address}
+                            </CardContent>
+                            <CardFooter className="flex justify-center">
+                                <Button
+                                    onClick={() => {
+                                        router.push(`/documentos/${e.id}`); 
+                                    }}
+                                >Seleccionar</Button>
+                            </CardFooter>
+                        </Card>
+                    </>))}
+                </div>
+
+            </>
+        )
     }
 
 

@@ -309,11 +309,6 @@ export default function Index() {
                             <CardHeader>
                                 <CardTitle>{e.name}</CardTitle>
                             </CardHeader>
-                            <CardContent>
-                                {e.Comuna}
-                                <br />
-                                {e.address}
-                            </CardContent>
                             <CardFooter className="flex justify-center">
                                 <Button
                                     onClick={() => {

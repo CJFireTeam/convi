@@ -8,6 +8,7 @@ import Cookies from "js-cookie";
 import { useEffect, useState } from "react";
 import UserInterface from "@/interfaces/user.interface";
 import {
+  api_CasesOnes,
   api_postCase,
   api_usersByRole,
 } from "../../services/axios.services";
@@ -26,6 +27,44 @@ interface Inputs {
   date: string;
   details: string;
   measures: string;
+}
+
+interface ICase {
+  id: number;
+  attributes: {
+    createdAt: string;
+    created: {
+      data: {
+        id: number;
+        attributes: {
+          firstname: string;
+          first_lastname: string;
+          secondname: string;
+          second_lastname: string;
+          establishment_courses: {
+            data: {
+              id: number;
+              attributes: {
+                Letter: string;
+                Grade: string;
+                LeadTeacher: {
+                  data: {
+                    id: number;
+                    attributes: {
+                      firstname: string;
+                      first_lastname: string;
+                      secod_lastname: string;
+                    }
+                  }
+                }
+              }
+            }[]
+          }
+          tipo: string;
+        }
+      }
+    }
+  }
 }
 
 export default function Denuncia() {
@@ -49,6 +88,52 @@ export default function Denuncia() {
   useEffect(() => {
     user && user.id ? setValue('created', user.id) : setValue('created', undefined);
   }, [user]);
+
+  const [userCase, setUserCase] = useState<ICase[]>([]);
+  const FetchCase = async () => {
+    const firstCaseId = Number(sessionStorage.getItem("first_case"));
+    try {
+      const data = await api_CasesOnes(firstCaseId);
+      setUserCase(data.data.data);
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  useEffect(() => {
+    FetchCase()
+  }, [])
+
+  const nameEstudent = userCase[0]?.attributes.created.data.attributes.tipo === 'alumno' ?
+    userCase[0]?.attributes.created.data.attributes.firstname + " " +
+    userCase[0]?.attributes.created.data.attributes.secondname + " " +
+    userCase[0]?.attributes.created.data.attributes.first_lastname + " " +
+    userCase[0]?.attributes.created.data.attributes.second_lastname : '';
+
+  const courseEstudent = userCase[0]?.attributes.created.data.attributes.tipo === 'alumno' ?
+    userCase[0]?.attributes.created.data.attributes.establishment_courses.data[0]?.attributes.Grade + " " +
+    userCase[0]?.attributes.created.data.attributes.establishment_courses.data[0]?.attributes.Letter
+    : '';
+
+  const formatDate = (dateString: any) => {
+    const date = new Date(dateString);
+    const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000); // Ajustar a la zona horaria local
+    return localDate.toISOString().slice(0, 16); // Formato YYYY-MM-DDTHH:MM
+  };
+
+  const fechaEstudent = userCase[0]?.attributes.created.data.attributes.tipo === 'alumno' ?
+    formatDate(userCase[0]?.attributes.createdAt) : '';
+
+  const nameLeadTeacher = userCase[0]?.attributes.created.data.attributes.tipo === 'alumno' ? 
+  userCase[0]?.attributes.created.data.attributes.establishment_courses.data[0].attributes.LeadTeacher.data.attributes.firstname
+  + " " + userCase[0]?.attributes.created.data.attributes.establishment_courses.data[0].attributes.LeadTeacher.data.attributes.first_lastname : "";
+
+  const isNameReadOnly = !!nameEstudent; // Solo lectura si hay un nombre
+  const isCourseReadOnly = !!courseEstudent; // Solo lectura si hay un curso
+  const isDateReadOnly = !!fechaEstudent; // Solo lectura si hay una fecha
+
+  const isNameLeadTeacherReadOnly = !!nameLeadTeacher;
+
 
   const [userList, setUserList] = useState<UserInterface[]>([]);
 
@@ -193,6 +278,8 @@ export default function Denuncia() {
                           <div className="flex rounded-md shadow-sm ring-1 ring-inset ring-gray-300 focus-within:ring-2 focus-within:ring-inset focus-within:ring-indigo-600">
                             <input
                               {...register('nameSchoolar', { setValueAs: (value) => value === "" ? undefined : value })}
+                              defaultValue={nameEstudent}
+                              readOnly={isNameReadOnly}
                               type="text"
                               id="nameSchoolar"
                               className="block flex-1 border-0 bg-transparent py-1.5 pl-1 text-gray-900 placeholder:text-gray-400 focus:ring-0 sm:text-sm sm:leading-6"
@@ -210,6 +297,8 @@ export default function Denuncia() {
                           <div className="flex rounded-md shadow-sm ring-1 ring-inset ring-gray-300 focus-within:ring-2 focus-within:ring-inset focus-within:ring-indigo-600">
                             <input
                               {...register('course', { setValueAs: (value) => value === "" ? undefined : value })}
+                              defaultValue={courseEstudent}
+                              readOnly={isCourseReadOnly}
                               type="text"
                               id="course"
                               className="block flex-1 border-0 bg-transparent py-1.5 pl-1 text-gray-900 placeholder:text-gray-400 focus:ring-0 sm:text-sm sm:leading-6"
@@ -228,6 +317,8 @@ export default function Denuncia() {
                             <input
                               {...register('Teacher', { setValueAs: (value) => value === "" ? undefined : value })}
                               type="text"
+                              defaultValue={nameLeadTeacher}
+                              readOnly={isNameLeadTeacherReadOnly}
                               id="Teacher"
                               className="block flex-1 border-0 bg-transparent py-1.5 pl-1 text-gray-900 placeholder:text-gray-400 focus:ring-0 sm:text-sm sm:leading-6"
                             />
@@ -245,6 +336,8 @@ export default function Denuncia() {
                             <input
                               {...register('date', { setValueAs: (value) => value === "" ? undefined : value })}
                               type="datetime-local"
+                              defaultValue={fechaEstudent}
+                              readOnly={isDateReadOnly}
                               id="date"
                               className="block flex-1 border-0 bg-transparent py-1.5 pl-1 text-gray-900 placeholder:text-gray-400 focus:ring-0 sm:text-sm sm:leading-6"
                             />

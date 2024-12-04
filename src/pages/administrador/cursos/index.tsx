@@ -1,19 +1,23 @@
 import { useState, useEffect } from "react"
-import { useForm } from "react-hook-form"
+import { Controller, useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { toast } from "react-toastify"
 import Head from "next/head"
 import ViewEstablishmentCourses from "@/components/administrador/viewestblishmentcourses"
 import WarningAlert from "@/components/alerts/warningAlert"
-import { api_postEstablishmentCourses } from "@/services/axios.services"
+import { api_getUsersProfeEstablishment, api_postEstablishmentCourses } from "@/services/axios.services"
 import { useUserStore } from "@/store/userStore"
 import router from "next/router"
+import { IUserEstablishment } from "@/interfaces/documentos.interface"
+import Select from "react-select";
+
 
 interface IFormEstablishmentCourse {
-    Letter: string
-    Grade: string
-    establishment: number
+    Letter: string;
+    Grade: string;
+    establishment: number;
+    LeadTeacher?:number;
 }
 
 const EstablishmentCourseSchema = z.object({
@@ -22,6 +26,7 @@ const EstablishmentCourseSchema = z.object({
     Grade: z.string({ required_error: 'Campo requerido', invalid_type_error: 'Tipo de dato inválido' })
         .regex(/^[1-8][°a-zA-Z]*$/, { message: 'El curso debe comenzar con un número del 1 al 8 seguido de letras (ejemplo: 1°A, 2°medio,)' }),
     establishment: z.number(),
+    LeadTeacher:z.number({ required_error: 'Campo requerido', invalid_type_error: 'Tipo de dato inválido' }).optional(),
 })
 
 export default function Index() {
@@ -30,9 +35,24 @@ export default function Index() {
     const [loadingButton, setLoadingButton] = useState(false)
     const [refreshCourses, setRefreshCourses] = useState(false)
 
-    const { register, setValue, handleSubmit, formState: { errors } } = useForm<IFormEstablishmentCourse>({
+    const { register, setValue,control, handleSubmit, formState: { errors } } = useForm<IFormEstablishmentCourse>({
         resolver: zodResolver(EstablishmentCourseSchema),
     })
+
+    const [teacher,setTeacher]=useState<IUserEstablishment[]>([]);
+    const getTeachers = async () =>{
+        try {
+            const data = await api_getUsersProfeEstablishment(user.establishment.id);
+            setTeacher(data.data);
+        } catch (error) {
+            console.log(error)
+        }
+    };
+
+    useEffect(()=>{
+        if( !user || !user.establishment?.id )return;
+        getTeachers()
+    },[user,user.establishment?.id])
 
     useEffect(() => {
         if (user) {
@@ -75,8 +95,8 @@ export default function Index() {
             </Head>
             <div className="grid lg:grid-cols-2">
                 <form onSubmit={handleSubmit(onSubmit)}>
-                    <div className="grid lg:grid-cols-3 border rounded-md p-4 shadow-md mb-2 lg:mb-0 lg:mr-2">
-                        <div className="lg:col-span-3 mb-3">
+                    <div className="grid lg:grid-cols-2 border rounded-md p-4 shadow-md mb-2 lg:mb-0 lg:mr-2">
+                        <div className="lg:col-span-2 mb-3">
                             <p className="text-2xl font-bold">Agregue un nuevo curso</p>
                         </div>
                         <div className="mb-2 lg:mb-0 lg:mr-2">
@@ -90,6 +110,7 @@ export default function Index() {
                             />
                             {errors.Grade?.message && <p className="text-red-600 text-sm mt-1">{errors.Grade.message}</p>}
                         </div>
+
                         <div className="mb-2 lg:mb-0 lg:mr-2">
                             <label htmlFor="letra" className="font-semibold">Ingrese letra</label>
                             <input
@@ -101,6 +122,34 @@ export default function Index() {
                             />
                             {errors.Letter?.message && <p className="text-red-600 text-sm mt-1">{errors.Letter.message}</p>}
                         </div>
+
+                        <div className="mb-2 lg:mb-0 lg:mr-2">
+                        <label htmlFor="user" className="font-semibold">Seleccione un usuario: </label>
+                                <Controller
+                                    control={control}
+                                    name="LeadTeacher"
+                                    render={({ field: { onChange, value, name, ref } }) => (
+                                        <Select
+                                            placeholder="Seleccione usuario (opcional)"
+                                            getOptionValue={(option) => option.id.toString()}
+                                            getOptionLabel={(option) => option.firstname + " " + option.first_lastname}
+                                            value={teacher.find((e) => e.id === value)}
+                                            options={teacher}
+                                            onChange={(val) => {
+                                                if (val) {
+                                                    setValue("LeadTeacher", val.id); // Solo llama a setValue si val no es undefined
+                                                }
+                                            }}
+                                            menuPortalTarget={document.body}
+                                            loadingMessage={() => "Cargando opciones..."}
+                                            isLoading={teacher.length === 0}
+                                            isClearable
+                                        />
+                                    )}
+                                />
+                                {errors.LeadTeacher?.message && (<p className="text-red-600 text-sm mt-1">{errors.LeadTeacher.message}</p>)}
+                        </div>
+
                         <div className="mb-2 lg:mb-0 lg:mt-6 mx-auto lg:mx-0">
                             {!loadingButton && (
                                 <button type="submit" className="btn btn-outline btn-primary">

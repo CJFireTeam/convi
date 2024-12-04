@@ -75,12 +75,6 @@ function Table({ data }: { data: caseInterface[] }) {
             >
               Ver
             </th>
-            <th
-              scope="col"
-              className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
-            >
-              Derivar
-            </th>
           </tr>
         </thead>
         <tbody className="divide-y divide-gray-200 bg-white">
@@ -111,9 +105,6 @@ function Table({ data }: { data: caseInterface[] }) {
                   <EyeIcon className="h-6 w-6" aria-hidden="true" />
                 </button>
               </td>
-              <td className="py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6  space-x-2 items-center">
-                <PencilIcon className="h-6 w-6" aria-hidden="true" />
-              </td>
             </tr>
           ))}
         </tbody>
@@ -132,7 +123,7 @@ function Table({ data }: { data: caseInterface[] }) {
                 <label className="label">
                   <span className="label-text">¿Quiénes participaron?</span>
                 </label>
-                <textarea value={selectedPerson ? selectedPerson.attributes.who.values.join(" , ") : ''} readOnly rows={1}></textarea>
+                <p className="ml-1">{selectedPerson ? selectedPerson.attributes.who.values.join(" , ") : ''}</p>
               </div>
             </div>
             <div className="flex flex-wrap">
@@ -140,7 +131,7 @@ function Table({ data }: { data: caseInterface[] }) {
                 <label className="label">
                   <span className="label-text">¿Dónde ocurrió?</span>
                 </label>
-                <textarea value={selectedPerson ? selectedPerson.attributes.where.values.join(" , ") : ''} readOnly rows={1}></textarea>
+                <p className="ml-1">{selectedPerson ? selectedPerson.attributes.where.values.join(" , ") : ''}</p>
               </div>
             </div>
             <div className="flex flex-wrap">
@@ -148,7 +139,7 @@ function Table({ data }: { data: caseInterface[] }) {
                 <label className="label">
                   <span className="label-text">¿Cuándo ocurrió?</span>
                 </label>
-                <textarea value={selectedPerson ? selectedPerson.attributes.when.values.join(" , ") : ''} readOnly rows={1}></textarea>
+                <p className="ml-1">{selectedPerson ? selectedPerson.attributes.when.values.join(" , ") : ''}</p>
               </div>
             </div>
             <div className="flex flex-wrap">
@@ -156,7 +147,7 @@ function Table({ data }: { data: caseInterface[] }) {
                 <label className="label">
                   <span className="label-text">Relato de los hechos</span>
                 </label>
-                <textarea value={selectedPerson ? selectedPerson.attributes.story : ''} readOnly rows={1}></textarea>
+                <p className="ml-1">{selectedPerson ? selectedPerson.attributes.story : ''}</p>
               </div>
             </div>
             <div className="flex flex-wrap">
@@ -164,7 +155,7 @@ function Table({ data }: { data: caseInterface[] }) {
                 <label className="label">
                   <span className="label-text">¿Se tomaron medidas?:</span>
                 </label>
-                <textarea value={selectedPerson ? selectedPerson.attributes.measures : ''} readOnly rows={1}></textarea>
+                <p className="ml-1">{selectedPerson ? selectedPerson.attributes.measures : ''}</p>
               </div>
             </div>
             <div className="my-2">

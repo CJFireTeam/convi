@@ -1,9 +1,11 @@
-import { useEffect, useState } from "react"
-import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/20/solid"
-import WarningAlert from "../alerts/warningAlert"
-import { api_getEstablishmentCourses, api_putEliminadoEstablishmenCourses } from "@/services/axios.services"
-import metaI from "@/interfaces/meta.interface"
+import { useState, useEffect } from "react"
+import { ChevronLeft, ChevronRight, Trash2 } from 'lucide-react'
+import { Button } from "@/components/ui/button"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { toast } from "react-toastify"
+import { api_getEstablishmentCourses, api_getUsersProfeEstablishment, api_putEliminadoEstablishmenCourses, api_putEstablishmenCourses } from "@/services/axios.services"
+import { IUserEstablishment } from "@/interfaces/documentos.interface"
 
 interface Props {
     establishmentId: number
@@ -22,6 +24,16 @@ interface ICoursesEstablishment {
                 id: number;
             }
         }
+        LeadTeacher: {
+            data: {
+                attributes: {
+                    firstname: string;
+                    first_lastname: string;
+                    second_lastname: string;
+                }
+                id: number;
+            }
+        }
     }
     id: number
 }
@@ -29,7 +41,9 @@ interface ICoursesEstablishment {
 export default function ViewEstablishmentCourses({ establishmentId, refreshTrigger }: Props) {
     const [loading, setLoading] = useState(true)
     const [coursesEs, setCoursesEs] = useState<ICoursesEstablishment[]>([])
-    const [metaData, setMetaData] = useState<metaI>({ page: 1, pageCount: 0, pageSize: 0, total: 0 })
+    const [metaData, setMetaData] = useState({ page: 1, pageCount: 0, pageSize: 0, total: 0 })
+    const [teachers, setTeachers] = useState<IUserEstablishment[]>([])
+    const [selectedTeacher, setSelectedTeacher] = useState<string>("")
 
     const getCoursesEstablishment = async () => {
         setLoading(true)
@@ -38,9 +52,8 @@ export default function ViewEstablishmentCourses({ establishmentId, refreshTrigg
             setCoursesEs(data.data.data)
             setMetaData(data.data.meta.pagination)
 
-            // Verifica si no hay cursos después de la actualización
             if (data.data.data.length === 0 && metaData.page > 1) {
-                updatePage(metaData.page - 1); // Retrocede a la página anterior
+                updatePage(metaData.page - 1)
             }
         } catch (error) {
             console.error(error)
@@ -49,9 +62,19 @@ export default function ViewEstablishmentCourses({ establishmentId, refreshTrigg
         }
     }
 
+    const getTeachers = async () => {
+        try {
+            const data = await api_getUsersProfeEstablishment(establishmentId)
+            setTeachers(data.data)
+        } catch (error) {
+            console.error(error)
+        }
+    }
+
     useEffect(() => {
         if (establishmentId) {
             getCoursesEstablishment()
+            getTeachers()
         }
     }, [establishmentId, metaData.page, refreshTrigger])
 
@@ -59,21 +82,36 @@ export default function ViewEstablishmentCourses({ establishmentId, refreshTrigg
         setMetaData(prev => ({ ...prev, page: number }))
     }
 
-    const eliminarclick = async (CourseEsId: number) => {
+    const eliminarCurso = async (courseId: number) => {
         try {
-            const response = await api_putEliminadoEstablishmenCourses(CourseEsId, true); // Establece 'Eliminado' en true
-            // Aquí puedes manejar el estado de tu aplicación, como actualizar la lista de documentos
+            await api_putEliminadoEstablishmenCourses(courseId, true)
             toast.success('Curso eliminado exitosamente.')
             await getCoursesEstablishment()
         } catch (error) {
-            console.error('Error al eliminar el curso', error);
+            console.error('Error al eliminar el curso', error)
+            toast.error('Error al eliminar el curso')
         }
-    };
+    }
+
+    const actualizarProfesorJefe = async (courseId: number) => {
+        if (!selectedTeacher) {
+            toast.error('Por favor, selecciona un profesor.')
+            return
+        }
+        try {
+            await api_putEstablishmenCourses(courseId, parseInt(selectedTeacher))
+            toast.success('Profesor jefe agregado exitosamente.')
+            await getCoursesEstablishment()
+        } catch (error) {
+            console.error('Error al actualizar', error)
+            toast.error('Error al actualizar el profesor jefe')
+        }
+    }
 
     if (loading) {
         return (
             <div className="flex flex-col items-center my-auto">
-                <span className="loading loading-spinner loading-lg text-primary"></span>
+                <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
             </div>
         )
     }
@@ -81,108 +119,119 @@ export default function ViewEstablishmentCourses({ establishmentId, refreshTrigg
     if (!loading && coursesEs.length === 0) {
         return (
             <div className="flex flex-col items-center my-auto">
-                <WarningAlert message={'Sin cursos creados'} />
+                <p className="text-yellow-600 font-semibold">Sin cursos creados</p>
             </div>
         )
     }
 
     return (
-        <>
-            {coursesEs.map((c, index) => (<>
-                <div className="grid lg:grid-cols-6 border-b-2 border-primary m-2" key={index}>
-                    <div className="col-start-0 col-end-3 flex flex-row justify-center">
-                        <p className="text-xl font-semibold">{c.attributes.Grade + " " + c.attributes.Letter}</p>
+        <div className="space-y-4">
+            <p className="text-gray-500 text-sm font-semibold">Para editar presione en medio.</p>
+            {coursesEs.map((course) => (
+                <div key={course.id} className="grid grid-cols-6 items-center gap-4 p-4 border rounded-lg">
+                    <div className="col-span-1 text-center">
+                        <p className="text-xl font-semibold">{`${course.attributes.Grade} ${course.attributes.Letter}`}</p>
                     </div>
-                    <div className="col-start-6 col-end-7 flex flex-row justify-center my-auto">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6 cursor-pointer text-error"
-                            onClick={() => {
-                                const modal = document.getElementById(`my_modal_${c.id}`) as HTMLDialogElement; // Usando ID único
-                                modal?.showModal();
-                            }}
-                        >
-                            <path strokeLinecap="round" strokeLinejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
-                        </svg>
+                    <div className="col-span-4">
+                        <Dialog>
+                            <DialogTrigger asChild>
+                                <Button
+                                    variant="outline"
+                                    className="w-full justify-start overflow-hidden text-ellipsis whitespace-nowrap"
+                                >
+                                    {course.attributes.LeadTeacher && course.attributes.LeadTeacher.data
+                                        ? `Profesor jefe: ${course.attributes.LeadTeacher.data.attributes.firstname} ${course.attributes.LeadTeacher.data.attributes.first_lastname}`
+                                        : 'Sin Profesor jefe'}
+                                </Button>
+                            </DialogTrigger>
+                            <DialogContent>
+                                <DialogHeader>
+                                    <DialogTitle>Asignar Profesor Jefe</DialogTitle>
+                                </DialogHeader>
+                                <Select onValueChange={setSelectedTeacher}>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Seleccione un profesor" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {teachers.length > 0 ? (
+                                            teachers.map((teacher) => (
+                                                <SelectItem key={teacher.id} value={teacher.id.toString()}>
+                                                    {`${teacher.firstname} ${teacher.first_lastname}`}
+                                                </SelectItem>
+                                            ))
+                                        ) : (
+                                            <p>No hay profesores disponibles</p>
+                                        )}
+                                    </SelectContent>
+                                </Select>
+                                <Button onClick={() => actualizarProfesorJefe(course.id)}>Asignar</Button>
+                            </DialogContent>
+                        </Dialog>
+                    </div>
+                    <div className="col-span-1 text-center">
+                        <Dialog>
+                            <DialogTrigger asChild>
+                                <Button variant="ghost" size="icon">
+                                    <Trash2 className="h-5 w-5 text-red-500" />
+                                </Button>
+                            </DialogTrigger>
+                            <DialogContent>
+                                <DialogHeader>
+                                    <DialogTitle>¿Estás seguro que quieres borrar el curso?</DialogTitle>
+                                </DialogHeader>
+                                <div className="flex justify-center space-x-2">
+                                    <Button variant="destructive" onClick={() => eliminarCurso(course.id)}>Aceptar</Button>
+                                </div>
+                            </DialogContent>
+                        </Dialog>
                     </div>
                 </div>
-                {/* Open the modal using document.getElementById('ID').showModal() method */}
-                <dialog id={`my_modal_${c.id}`} className="modal">
-                    <div className="modal-box bg-white flex flex-col items-center">
-                        <h3 className="font-bold text-lg text-center">¿Estas seguro que quieres borrar el curso?</h3>
-                        <div className="modal-action">
-                            <form method="dialog">
-                                <button className="btn mr-4">Cancelar</button>
-                                <button type="button" className="btn btn-outline btn-error" onClick={() => eliminarclick(c.id)}>
-                                    Aceptar
-                                </button>
-                            </form>
-                        </div>
-                    </div>
-                </dialog>
-            </>))
-            }
+            ))}
             <Paginator metadata={metaData} setMetaData={updatePage} />
-
-
-        </>
+        </div>
     )
 }
 
-function Paginator({ metadata, setMetaData }: { metadata: metaI, setMetaData: (numero: number) => void }) {
+function Paginator({ metadata, setMetaData }: { metadata: { page: number, pageCount: number, pageSize: number, total: number }, setMetaData: (numero: number) => void }) {
     const changePage = (number: number) => {
         if (number > metadata.pageCount || number <= 0) return
         setMetaData(number)
     }
 
     return (
-        <div className="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6">
-            <div className="flex flex-1 justify-between sm:hidden">
-                <button
-                    onClick={() => changePage(metadata.page - 1)}
-                    className="inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-                >
-                    Página Anterior
-                </button>
-                <button
-                    onClick={() => changePage(metadata.page + 1)}
-                    className="ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-                >
-                    Próxima Página
-                </button>
+        <div className="flex items-center justify-between">
+            <div className="flex-1 text-sm text-muted-foreground">
+                Mostrando {Math.min(metadata.pageSize * metadata.page, metadata.total)} de {metadata.total} resultados
             </div>
-            <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
-                <div>
-                    <p className="text-sm text-gray-700">
-                        Mostrando <span className="font-medium">{Math.min(Number(metadata.pageSize) * metadata.page, metadata.total)}</span> de{" "}
-                        <span className="font-medium">{metadata.total}</span> resultados
-                    </p>
-                </div>
-                <nav className="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
-                    <button
-                        onClick={() => changePage(metadata.page - 1)}
-                        className="cursor-pointer inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:outline-offset-0"
+            <div className="flex items-center space-x-2">
+                <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => changePage(metadata.page - 1)}
+                    disabled={metadata.page === 1}
+                >
+                    <ChevronLeft className="h-4 w-4" />
+                </Button>
+                {[...Array(metadata.pageCount)].map((_, i) => (
+                    <Button
+                        key={i}
+                        variant={i + 1 === metadata.page ? "default" : "outline"}
+                        size="icon"
+                        onClick={() => changePage(i + 1)}
                     >
-                        <span className="sr-only">Anterior</span>
-                        <ChevronLeftIcon className="h-5 w-5" aria-hidden="true" />
-                    </button>
-                    {[...Array(metadata.pageCount)].map((_, i) => (
-                        <button
-                            key={i}
-                            onClick={() => changePage(i + 1)}
-                            className={`cursor-pointer relative hidden items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 focus:z-20 focus:outline-offset-0 md:inline-flex ${i + 1 === metadata.page ? 'hover:brightness-90 bg-primary text-white shadow' : ''
-                                }`}
-                        >
-                            {i + 1}
-                        </button>
-                    ))}
-                    <button
-                        onClick={() => changePage(metadata.page + 1)}
-                        className="cursor-pointer relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0"
-                    >
-                        <span className="sr-only">Siguiente</span>
-                        <ChevronRightIcon className="h-5 w-5" aria-hidden="true" />
-                    </button>
-                </nav>
+                        {i + 1}
+                    </Button>
+                ))}
+                <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => changePage(metadata.page + 1)}
+                    disabled={metadata.page === metadata.pageCount}
+                >
+                    <ChevronRight className="h-4 w-4" />
+                </Button>
             </div>
         </div>
     )
 }
+

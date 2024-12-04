@@ -86,6 +86,12 @@ export function api_casesOne(id: string) {
   return api.get(`cases/${id}${query}`)
 }
 
+export function api_CasesOnes(id: number) {
+  let query = `?filters[$and][0][id][$eq]=${id}`;
+  query += `&populate[created][populate][establishment_courses][populate][LeadTeacher]=*`;
+  return api.get(`cases${query}`);
+}
+
 export function api_casesByFase({ createdBy, userId, fase }: { createdBy: number, userId?: number, fase: number }) {
   let query = `?populate[created][populate][0]=role&populate[directed][populate][0]=role`
   query = query + `&filters[$or][0][created]=${createdBy}`
@@ -464,4 +470,11 @@ export function api_putEstablishmentCourses(userId: number, data: any) {
   const url = `users/${userId}`; // Asegúrate de que la URL sea correcta
   // Realiza la solicitud PUT para actualizar el campo 'Eliminado'
   return api.put(url, data);
+}
+
+export function api_putEstablishmenCourses(CourseEsId: number, LeadTeacher: number) {
+  // Define la URL del documento que deseas actualizar
+  const url = `establishment-courses/${CourseEsId}`; // Asegúrate de que la URL sea correcta
+  // Realiza la solicitud PUT para actualizar el campo 'Eliminado'
+  return api.put(url, { data: { LeadTeacher: LeadTeacher } });
 }

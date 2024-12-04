@@ -46,7 +46,7 @@ export default function ResumenCaseComponent({ data, caseId, derived }: { data: 
                     </tr>
                     <tr>
                         <th className="px-3 py-3.5 w-1/3 text-left text-sm font-semibold text-gray-900 border-r border-gray-300">Categoria</th>
-                        <td className="px-3 py-3.5 w-2/3 text-left text-sm font-normal	 text-gray-900">{data.attributes.created.data.attributes.role.data.attributes.name}</td>
+                        <td className="px-3 py-3.5 w-2/3 text-left text-sm font-normal	 text-gray-900">{data.attributes.created.data.attributes.tipo === "otro" ? data.attributes.created.data.attributes.role.data.attributes.name : data.attributes.created.data.attributes.tipo}</td>
                     </tr>
                     <tr>
                         <th className="px-3 py-3.5 w-1/3 text-left text-sm font-semibold text-gray-900 border-r border-gray-300">Teléfono</th>

@@ -266,7 +266,7 @@ function Table({ data }: { data: caseInterface[] }) {
                 <label className="label">
                   <span className="label-text">¿Quiénes participaron?</span>
                 </label>
-                <textarea value={selectedPerson?.attributes.who?.values.join(" , ") || 'Sin datos'} readOnly rows={1}></textarea>
+                <p className="ml-1">{selectedPerson?.attributes.who?.values.join(" , ") || 'Sin datos'}</p>
               </div>
             </div>
             <div className="flex flex-wrap">
@@ -274,7 +274,7 @@ function Table({ data }: { data: caseInterface[] }) {
                 <label className="label">
                   <span className="label-text">¿Dónde ocurrió?</span>
                 </label>
-                <textarea value={selectedPerson?.attributes.where?.values.join(" , ") || 'Sin datos'} readOnly rows={1}></textarea>
+                <p className="ml-1">{selectedPerson?.attributes.where?.values.join(" , ") || 'Sin datos'}</p>
               </div>
             </div>
             <div className="flex flex-wrap">
@@ -282,7 +282,7 @@ function Table({ data }: { data: caseInterface[] }) {
                 <label className="label">
                   <span className="label-text">¿Cuándo ocurrió?</span>
                 </label>
-                <textarea value={selectedPerson?.attributes.when?.values.join(" , ") || 'Sin datos'} readOnly rows={1}></textarea>
+                <p className="ml-1">{selectedPerson?.attributes.when?.values.join(" , ") || 'Sin datos'}</p>
               </div>
             </div>
             <div className="flex flex-wrap">
@@ -290,7 +290,7 @@ function Table({ data }: { data: caseInterface[] }) {
                 <label className="label">
                   <span className="label-text">Relato de los hechos</span>
                 </label>
-                <textarea value={selectedPerson?.attributes.story || 'Sin datos'} readOnly rows={1}></textarea>
+                <p className="ml-1">{selectedPerson?.attributes.story || 'Sin datos'}</p>
               </div>
             </div>
             <div className="flex flex-wrap">
@@ -298,7 +298,7 @@ function Table({ data }: { data: caseInterface[] }) {
                 <label className="label">
                   <span className="label-text">¿Se tomaron medidas?:</span>
                 </label>
-                <textarea value={selectedPerson?.attributes.measures || 'Sin datos'} readOnly rows={1}></textarea>
+                <p className="ml-1">{selectedPerson?.attributes.measures || 'Sin datos'}</p>
               </div>
             </div>
             <div className="my-2">

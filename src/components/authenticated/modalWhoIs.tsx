@@ -321,6 +321,7 @@ function ModalSchoolApoderado() {
     try {
       await api_updateUser(user.id, {
         establishment_authenticateds: data.Schools,
+        establishment: data.Schools[0]
       });
       establecimientosVirtual.forEach(element => {
         addSchool(element.id,element.name);

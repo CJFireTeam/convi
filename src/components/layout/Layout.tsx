@@ -157,7 +157,7 @@ export default function Layout(props: LayoutProps) {
 
     <SidebarProvider color="">
       <div className="flex h-screen overflow-y-hidden">
-        <AppSidebar items={useMenuStore.getState().menus} firstName={user.firstname} lastName={user.first_lastname} />
+        <AppSidebar items={useMenuStore.getState().menus} firstName={user.firstname} lastName={user.first_lastname} tipo={user.tipo}/>
         <SidebarInset className="flex-1">
           <header className="flex h-16 items-center gap-4 border-b px-6">
             <SidebarTrigger />
@@ -173,7 +173,7 @@ export default function Layout(props: LayoutProps) {
   );
 }
 
-function AppSidebar({ items, firstName, lastName }: { items: IMenuChildren[], firstName: string, lastName: string }) {
+function AppSidebar({ items, firstName, lastName,tipo }: { items: IMenuChildren[], firstName: string, lastName: string,tipo:string | null | undefined }) {
   const {
     desconectar,
   } = useUserStore();
@@ -206,7 +206,7 @@ function AppSidebar({ items, firstName, lastName }: { items: IMenuChildren[], fi
               <DropdownMenuContent align="start" className="w-56">
                 <DropdownMenuItem onClick={() => push("/perfil")} >
                   <User className="mr-2 h-4 w-4" />
-                  Mi perfil
+                  {tipo && tipo === "apoderado" ? "Mi perfil y establecimiento" :"Mi perfil"}
                 </DropdownMenuItem>
                 <DropdownMenuItem className="text-red-500 focus:text-red-500 focus:bg-red-100 dark:focus:bg-red-900" onClick={() => logout()}>
                   <LogOut className="mr-2 h-4 w-4" />

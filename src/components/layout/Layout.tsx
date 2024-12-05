@@ -1,12 +1,18 @@
-import {
-  ReactNode,
-  useCallback,
-  useEffect,
-  useState,
-} from "react";
+import { ReactNode, useCallback, useEffect, useState } from "react";
 import Cookies from "js-cookie";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
-import { SidebarGroupContent, SidebarGroupLabel, SidebarInset, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarProvider, SidebarRail, SidebarTrigger } from "@/components/ui/sidebar"
+import {
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarInset,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarProvider,
+  SidebarRail,
+  SidebarTrigger,
+} from "@/components/ui/sidebar";
 import { useLoaderContext } from "../../context/loader";
 import axios from "axios";
 import { redirect, usePathname, useRouter } from "next/navigation";
@@ -22,7 +28,7 @@ import {
   SidebarFooter,
   SidebarGroup,
   SidebarHeader,
-} from "@/components/ui/sidebar"
+} from "@/components/ui/sidebar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -30,8 +36,25 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { ChevronUp, HelpCircle, Home, LogOut, Menu, Settings, User, User2 } from "lucide-react";
+} from "@/components/ui/dropdown-menu";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  ChevronUp,
+  HelpCircle,
+  Home,
+  LogOut,
+  Menu,
+  Settings,
+  User,
+  User2,
+} from "lucide-react";
 import { Button } from "../ui/button";
 
 type LayoutProps = {
@@ -89,7 +112,7 @@ export default function Layout(props: LayoutProps) {
   }, [useUserStore.getState().GetRole(), pathname]);
 
   useEffect(() => {
-    (async () => { })();
+    (async () => {})();
     const me = async () => {
       try {
         const data = await api_me();
@@ -114,69 +137,97 @@ export default function Layout(props: LayoutProps) {
     setVisible((visible) => !visible);
   }, []);
 
-
   useEffect(() => {
     const updateTitle = () => {
-      setTitle(document.title || "Dashboard")
-    }
+      setTitle(document.title || "Dashboard");
+    };
 
     // Set initial title
-    updateTitle()
+    updateTitle();
 
     // Listen for title changes
-    const targetNode = document.head || document.documentElement
-    const config = { subtree: true, childList: true, characterData: true }
+    const targetNode = document.head || document.documentElement;
+    const config = { subtree: true, childList: true, characterData: true };
 
     const observer = new MutationObserver((mutationsList) => {
       for (let mutation of mutationsList) {
-        if (mutation.type === 'childList' || mutation.type === 'characterData') {
-          updateTitle()
-          break
+        if (
+          mutation.type === "childList" ||
+          mutation.type === "characterData"
+        ) {
+          updateTitle();
+          break;
         }
       }
-    })
+    });
 
-    observer.observe(targetNode, config)
+    observer.observe(targetNode, config);
 
-    return () => observer.disconnect()
-  }, [])
+    return () => observer.disconnect();
+  }, []);
+  useEffect(() => {}, [user]);
+  if (user.role === undefined) {
+    return "LOADING";
+  }
+  if (user.role.name === "root") {
+    return <LayoutRoot>{props.children} </LayoutRoot>;
+  }
+  if (user.role.name !== "root") {
+    return (
+      // <>
+      //    <SidebarProvider>
+      //   <AppSidebar items={useMenuStore.getState().menus} firstName={user.firstname} lastName={user.first_lastname}/>
+      //   <main >
+      //     <SidebarTrigger />
+      //   {GetRole() === "Authenticated" && <><ModalWhoIS /><ModalQuestion/>  </>}
+      //     {props.children}
+      //   </main>
+      //     {/* {props.children} */}
+      // </SidebarProvider>
 
-  return (
-    // <>
-    //    <SidebarProvider>
-    //   <AppSidebar items={useMenuStore.getState().menus} firstName={user.firstname} lastName={user.first_lastname}/>
-    //   <main >
-    //     <SidebarTrigger />
-    //   {GetRole() === "Authenticated" && <><ModalWhoIS /><ModalQuestion/>  </>}
-    //     {props.children}
-    //   </main>
-    //     {/* {props.children} */}
-    // </SidebarProvider>
+      // </>
 
-    // </>
-
-    <SidebarProvider color="">
-      <div className="flex h-screen overflow-y-hidden">
-        <AppSidebar items={useMenuStore.getState().menus} firstName={user.firstname} lastName={user.first_lastname} tipo={user.tipo}/>
-        <SidebarInset className="flex-1">
-          <header className="flex h-16 items-center gap-4 border-b px-6">
-            <SidebarTrigger />
-            <h1 className="text-xl font-semibold">{title}</h1>
-          </header>
-          <main className="flex-1 overflow-auto p-6">
-          {GetRole() === "Authenticated" && <><ModalWhoIS /><ModalQuestion/>  </>}
-            {props.children}
-          </main>
-        </SidebarInset>
-      </div>
-    </SidebarProvider>
-  );
+      <SidebarProvider color="">
+        <div className="flex h-screen overflow-y-hidden">
+          <AppSidebar
+            items={useMenuStore.getState().menus}
+            firstName={user.firstname}
+            lastName={user.first_lastname}
+            tipo={user.tipo}
+          />
+          <SidebarInset className="flex-1">
+            <header className="flex h-16 items-center gap-4 border-b px-6">
+              <SidebarTrigger />
+              <h1 className="text-xl font-semibold">{title}</h1>
+            </header>
+            <main className="flex-1 overflow-auto p-6">
+              {GetRole() === "Authenticated" && (
+                <>
+                  <ModalWhoIS />
+                  <ModalQuestion />{" "}
+                </>
+              )}
+              {props.children}
+            </main>
+          </SidebarInset>
+        </div>
+      </SidebarProvider>
+    );
+  }
 }
 
-function AppSidebar({ items, firstName, lastName,tipo }: { items: IMenuChildren[], firstName: string, lastName: string,tipo:string | null | undefined }) {
-  const {
-    desconectar,
-  } = useUserStore();
+function AppSidebar({
+  items,
+  firstName,
+  lastName,
+  tipo,
+}: {
+  items: IMenuChildren[];
+  firstName: string;
+  lastName: string;
+  tipo: string | null | undefined;
+}) {
+  const { desconectar } = useUserStore();
 
   function logout() {
     Cookies.remove("bearer");
@@ -187,7 +238,6 @@ function AppSidebar({ items, firstName, lastName,tipo }: { items: IMenuChildren[
   }
   const { push } = useRouter();
   return (
-
     <Sidebar>
       <SidebarHeader>
         <SidebarMenu>
@@ -197,18 +247,26 @@ function AppSidebar({ items, firstName, lastName,tipo }: { items: IMenuChildren[
                 <SidebarMenuButton size="lg" className="w-full">
                   <div className="flex items-center">
                     <div className="h-8 w-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-semibold">
-                      {firstName[0]}{lastName[0]}
+                      {firstName[0]}
+                      {lastName[0]}
                     </div>
-                    <span className="ml-3 font-semibold">{firstName} {lastName}</span>
+                    <span className="ml-3 font-semibold">
+                      {firstName} {lastName}
+                    </span>
                   </div>
                 </SidebarMenuButton>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start" className="w-56">
-                <DropdownMenuItem onClick={() => push("/perfil")} >
+                <DropdownMenuItem onClick={() => push("/perfil")}>
                   <User className="mr-2 h-4 w-4" />
-                  {tipo && tipo === "apoderado" ? "Mi perfil y establecimiento" :"Mi perfil"}
+                  {tipo && tipo === "apoderado"
+                    ? "Mi perfil y establecimiento"
+                    : "Mi perfil"}
                 </DropdownMenuItem>
-                <DropdownMenuItem className="text-red-500 focus:text-red-500 focus:bg-red-100 dark:focus:bg-red-900" onClick={() => logout()}>
+                <DropdownMenuItem
+                  className="text-red-500 focus:text-red-500 focus:bg-red-100 dark:focus:bg-red-900"
+                  onClick={() => logout()}
+                >
                   <LogOut className="mr-2 h-4 w-4" />
                   Desconectar
                 </DropdownMenuItem>
@@ -233,5 +291,38 @@ function AppSidebar({ items, firstName, lastName,tipo }: { items: IMenuChildren[
       </SidebarContent>
       <SidebarRail />
     </Sidebar>
-  )
+  );
 }
+
+const LayoutRoot = (props: LayoutProps) => {
+  const {
+    setUser,
+    bearer,
+    setRole,
+    GetRole,
+    user,
+    isLoading,
+    setStablishment,
+    GetStablishment,
+    desconectar,
+  } = useUserStore();
+
+  return (
+    <div className="container mx-auto">
+      <Card className="mx-4 mt-4 mb-2">
+        <CardHeader>
+          <CardTitle>
+            <Alert>
+              <User className="h-4 w-4" />
+              <AlertTitle>Bienvenido</AlertTitle>
+              <AlertDescription>
+                {user.firstname} {user.first_lastname}
+              </AlertDescription>
+            </Alert>
+          </CardTitle>
+        </CardHeader>
+      </Card>
+      {props.children}
+    </div>
+  );
+};

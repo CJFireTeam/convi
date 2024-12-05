@@ -1,4 +1,4 @@
-import { ArrowLeftIcon, PencilIcon, PlusIcon, StarIcon, TrashIcon } from "@heroicons/react/20/solid";
+import { ArrowLeftIcon, PencilIcon, PlusIcon, StarIcon, TrashIcon, XCircleIcon } from "@heroicons/react/20/solid";
 import { Router, useRouter } from "next/router";
 import { Button, Input, Textarea } from "react-daisyui";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -101,15 +101,17 @@ export default function Creacion() {
     setValue('establishment', user.establishment.id);
   }, [user]);
 
+
+  const [loading, setLoading] = useState(false);
   const onSubmit = async (dataSurvey: FormularyI) => {
     try {
-
+      setLoading(true);
       // Primero realiza el POST de la encuesta (api_postSurveys)
       const surveyResponse = await api_postSurveys(dataSurvey);
       // Rescatar la ID de la encuesta recién creada
       const formulario = surveyResponse.data.data.id; // Asegúrate de que la respuesta tenga el campo "id"
       const respUsers = await assignFormUsers(dataSurvey.establishment, formulario);
-      console.log(respUsers)
+
       // Ahora procesa las preguntas, asignando valores por defecto si Opciones está vacío
       const processedQuestions = dataSurvey.Question.map((question) => {
         if (question.opciones.length === 0) {
@@ -132,10 +134,13 @@ export default function Creacion() {
       await Promise.all(questionsWithSurveyId.map((question) => api_postQuestions(question)));
 
       toast.success('Encuesta y preguntas creadas correctamente');
-      router.push("/encuestas")
+      setTimeout(() => { router.push("/encuestas") }, 2000)
     } catch (error) {
       console.error("Error al crear la encuesta o las preguntas:", error);
       toast.error('Ocurrió un error al crear la encuesta o las preguntas');
+      setLoading(false);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -149,7 +154,7 @@ export default function Creacion() {
   const fechaActual = new Date();
 
   return (
-    <>  
+    <>
       <Button
         className="mx-1 sm:mx-2 md:mx-4 my-1 sm:my-2"
         onClick={redirect}
@@ -195,7 +200,7 @@ export default function Creacion() {
                       selectsStart
                       startDate={fechaInicio}
                       endDate={fechaFin}
-                      minDate={fechaActual} 
+                      minDate={fechaActual}
                       locale="es"
 
                     />
@@ -236,7 +241,10 @@ export default function Creacion() {
                   <AddQuestionComponent append={append} />
                 </div>
                 <div className="text-center my-2">
-                  <Button className="btn btn-primary text-white w-full sm:w-auto  px-6 py-2">Crear encuesta</Button>
+                  <Button className="btn btn-primary text-white w-full sm:w-auto  px-6 py-2" disabled={loading}>
+                    {!loading ? 'Crear encuesta': <>Cargando<span className="loading loading-spinner loading-md"></span>
+                      </>}
+                  </Button>
                 </div>
               </form>
             </div>
@@ -267,11 +275,11 @@ export default function Creacion() {
                 <p className="w-full border-none">{descripcionForm ? descripcionForm : <span className="font-medium">Sin Descripción.</span>}</p>
               </div>
               <div className="">
-              <div className="my-3 sm:my-4 p-3 sm:p-4  text-center items-center">
-              {fields.map((field, index) => (
-                  <PreviewQuestionComponent key={field.id} index={index} />
-                ))}
-              </div>
+                <div className="my-3 sm:my-4 p-3 sm:p-4  text-center items-center">
+                  {fields.map((field, index) => (
+                    <PreviewQuestionComponent key={field.id} index={index} />
+                  ))}
+                </div>
               </div>
             </div>
           </FormProvider>
@@ -392,13 +400,18 @@ function QuestionComponent({ index, remove }: { index: number, remove: (index: n
     remove(index);
   };
 
+  const deleteOption = (optionIndex: number) => {
+    const currentOptions = watch(`Question.${index}.opciones`) || [];
+    setValue(`Question.${index}.opciones`, currentOptions.filter((_, idx) => idx !== optionIndex));
+  };
+
   return (
     <div className="space-y-4 p-6 bg-gray-50 rounded-lg shadow-sm">
       <div className="space-y-2">
-        <input
+        <Input
           {...register(`Question.${index}.Titulo`)}
           placeholder="Ingrese el título de la pregunta..."
-          className="w-full mb-2 border border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary"
+          className="w-full mb-2"
         />
         {errors?.Question?.[index]?.Titulo && <p className="text-red-500 text-sm">{errors.Question?.[index]?.Titulo?.message}</p>}
       </div>
@@ -409,60 +422,42 @@ function QuestionComponent({ index, remove }: { index: number, remove: (index: n
           <option value="multipleChoice">Múltiple elección</option>
           <option value="qualification">Calificación</option>
         </select>
-        {errors &&
-          (errors.Question?.[index]?.Tipo ? (
-            <p className="text-red-500 text-sm">{errors?.Question?.[index]?.Tipo?.message}</p>
-          ) : null)
-        }
+        {errors?.Question?.[index]?.Tipo && <p className="text-red-500 text-sm">{errors.Question?.[index]?.Tipo?.message}</p>}
       </div>
 
       {tipoPregunta === "text" && (
-        <input
+        <Input
           type="text"
-          className="w-full mt-2 border border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary"
+          className="w-full mt-2"
           placeholder="Respuesta de texto"
           disabled
         />
       )}
 
-      {tipoPregunta === "option" && (
+      {(tipoPregunta === "option" || tipoPregunta === "multipleChoice") && (
         <>
           <p className="font-medium">Opciones:</p>
           {(watch(`Question.${index}.opciones`) || []).map((_, idx: number) => (
             <div key={idx} className="flex items-center mb-2">
-              <input
+              <Input
                 type="text"
                 {...register(`Question.${index}.opciones.${idx}`)}
-                className="w-full border border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary"
+                className="w-full"
                 placeholder="Ingrese el nombre de la opción..."
               />
+              <Button
+                type="button"
+                onClick={() => deleteOption(idx)}
+                className="ml-2 p-2 text-red-500 hover:text-red-700"
+              >
+                <XCircleIcon className="h-5 w-5" />
+              </Button>
             </div>
           ))}
           <div className="space-y-2 flex items-center justify-center">
-            <button type="button" onClick={addOption} className="btn btn-primary bg-blue-500 hover:bg-blue-700 text-white py-2 px-4 rounded">
+            <Button type="button" onClick={addOption} className="bg-blue-500 hover:bg-blue-700 text-white">
               Añadir Opción
-            </button>
-          </div>
-        </>
-      )}
-
-      {tipoPregunta === "multipleChoice" && (
-        <>
-          <p className="font-medium">Opciones:</p>
-          {(watch(`Question.${index}.opciones`) || []).map((_, idx: number) => (
-            <div key={idx} className="flex items-center mb-2">
-              <input
-                type="text"
-                {...register(`Question.${index}.opciones.${idx}`)}
-                className="w-full border border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary"
-                placeholder="Ingrese el nombre de la opción..."
-              />
-            </div>
-          ))}
-          <div className="space-y-2 flex items-center justify-center">
-            <button type="button" onClick={addOption} className="btn btn-primary bg-blue-500 hover:bg-blue-700 text-white py-2 px-4 rounded">
-              Añadir Opción
-            </button>
+            </Button>
           </div>
         </>
       )}
@@ -475,14 +470,14 @@ function QuestionComponent({ index, remove }: { index: number, remove: (index: n
         </div>
       )}
       <div className="space-y-2 flex items-center justify-center">
-        <button onClick={deleteQuestion} className="text-red-500 mt-4 items-center">
+        <Button onClick={deleteQuestion} className="text-red-500 mt-4">
           <TrashIcon className="h-5 w-5" aria-hidden="true" />
-        </button>
+        </Button>
       </div>
     </div>
-
   );
 }
+
 
 function PreviewQuestionComponent({ index }: { index: number }) {
   const { watch } = useFormContext<FormularyI>();
@@ -497,7 +492,7 @@ function PreviewQuestionComponent({ index }: { index: number }) {
 
       {tipoPregunta === "text" && <input type="text" className="w-full border border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary" disabled />}
 
-      {tipoPregunta === "option" &&(
+      {tipoPregunta === "option" && (
         <div className="grid grid-cols-3 gap-2">
           {opciones.map((opcion, idx) => (
             <div key={idx} className="flex items-center justify-center mb-2">
@@ -506,18 +501,18 @@ function PreviewQuestionComponent({ index }: { index: number }) {
             </div>
           ))}
         </div>
-        )}
+      )}
 
-      {tipoPregunta === "multipleChoice" &&(
+      {tipoPregunta === "multipleChoice" && (
         <div className="grid grid-cols-3 gap-2">
-        {opciones.map((opcion, idx) => (
-          <div key={idx} className="flex items-center justify-center mb-2">
-            <input type="checkbox" disabled className="mr-2" />
-            <label>{opcion}</label>
-          </div>
-        ))}
-      </div>
-        )}
+          {opciones.map((opcion, idx) => (
+            <div key={idx} className="flex items-center justify-center mb-2">
+              <input type="checkbox" disabled className="mr-2" />
+              <label>{opcion}</label>
+            </div>
+          ))}
+        </div>
+      )}
 
       {tipoPregunta === "qualification" && (
         <div className="flex space-x-2 mt-2 items-center justify-center">

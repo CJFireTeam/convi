@@ -101,6 +101,16 @@ export default function DocumentosCurso(props: props) {
                                     {currentDocument.attributes.userId.data && (
                                         <p><span className="font-semibold">Creador: </span>{currentDocument.attributes.userId.data.attributes.firstname + " " + currentDocument.attributes.userId.data.attributes.first_lastname}</p>
                                     )}
+                                    {currentDocument.attributes.createdAt && (
+                                        <p><span className="font-semibold">Fecha: </span>{new Date(currentDocument.attributes.createdAt).toLocaleString('es-ES', {
+                                            year: 'numeric',
+                                            month: 'long',
+                                            day: 'numeric',
+                                            hour: '2-digit',
+                                            minute: '2-digit',
+                                            second: '2-digit',
+                                        })}</p>
+                                    )}
                                 </div>
                                 <div className="grid lg:grid-cols-3">
                                     {currentDocument.attributes.document.data.map((archivo, i) => (
@@ -114,8 +124,8 @@ export default function DocumentosCurso(props: props) {
                                             disabled={loading}
                                         >
                                             {loading ? 'Descargando...' : <><ArrowDownTrayIcon className="mr-2 h-4 w-4" aria-hidden="true" />
-                                                Archivo {i + 1}</> }
-                                            
+                                                Archivo {i + 1}</>}
+
                                         </button>
                                     ))}
                                 </div>

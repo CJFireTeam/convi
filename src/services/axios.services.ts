@@ -478,3 +478,8 @@ export function api_putEstablishmenCourses(CourseEsId: number, LeadTeacher: numb
   // Realiza la solicitud PUT para actualizar el campo 'Eliminado'
   return api.put(url, { data: { LeadTeacher: LeadTeacher } });
 }
+
+export function api_putUserEstablishmen(userId: number, id: number) {
+  const url = `users/${userId}`;
+  return api.put(url,  { establishment: id });
+}

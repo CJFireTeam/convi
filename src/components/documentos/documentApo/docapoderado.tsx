@@ -10,9 +10,7 @@ import { Menu } from '@headlessui/react'
 import { useRouter } from "next/router";
 
 
-export default function DocumentosByColegio() {
-    const router = useRouter();
-    const establishmentId = router.query.id as string;
+export default function DocApoderado() {
     const { user, GetRole } = useUserStore();
     const [loadingFetch, setLoadingFetch] = useState(false);
 
@@ -25,13 +23,13 @@ export default function DocumentosByColegio() {
         try {
             setLoadingFetch(true)
             const [establishmentDocs, userDocs] = await Promise.all([
-                api_getDocumentsByEstablishment(parseInt(establishmentId)),
-                api_getDocumentsByUserDestinity(parseInt(establishmentId), user.id)
+                api_getDocumentsByEstablishment(user.establishment.id),
+                api_getDocumentsByUserDestinity(user.establishment.id, user.id)
             ])
             let courseDocs: IDocuments[] = []
-            if (establishmentId) {
+            if (user.establishment.id) {
                 const coursesPromises = user.establishment_courses.map(course =>
-                    api_getDocumentsByCourse(course.id, parseInt(establishmentId))
+                    api_getDocumentsByCourse(course.id, user.establishment.id)
                 )
                 const coursesResults = await Promise.all(coursesPromises)
                 courseDocs = coursesResults.flatMap(result => result.data.data)
@@ -52,9 +50,9 @@ export default function DocumentosByColegio() {
     }
 
     useEffect(() => {
-        if (!user || !establishmentId || !user.id) return;
+        if (!user || !user.establishment?.id || !user.id) return;
         fetchDocuments()
-    }, [user, establishmentId])
+    }, [user, user.establishment?.id])
 
     const getDestinatario = (doc: IDocuments) => {
         return doc.attributes.user_destiny?.data
@@ -113,7 +111,7 @@ export default function DocumentosByColegio() {
             </>
         )
     }
-    if (!establishmentId) {
+    if (!user.establishment.id) {
         return (
             <>
                 <Head>
@@ -175,6 +173,7 @@ export default function DocumentosByColegio() {
 
                                             <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Asunto</th>
                                             <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Subido por</th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Fecha</th>
                                             <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Destinado para</th>
                                             <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider">Archivo</th>
                                         </tr>
@@ -184,6 +183,16 @@ export default function DocumentosByColegio() {
                                             <tr key={index} className="hover:bg-green-50 transition-colors duration-200">
                                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{doc.attributes.descriptionDoc}</td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{doc.attributes.userId.data.attributes.firstname + " " + doc.attributes.userId.data.attributes.first_lastname}</td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                    {new Date(doc.attributes.createdAt).toLocaleString('es-ES', {
+                                                        year: 'numeric',
+                                                        month: 'long',
+                                                        day: 'numeric',
+                                                        hour: '2-digit',
+                                                        minute: '2-digit',
+                                                        second: '2-digit',
+                                                    })}
+                                                </td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{getDestinatario(doc)}</td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                                     {doc.attributes.document?.data?.length === 1 ? (

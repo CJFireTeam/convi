@@ -65,13 +65,13 @@ export default function DocumentosRecibidos(props: props) {
 
     const updatePage = (number: number) => {
         if (number > metaData.pageCount || number <= 0) return; // Asegúrate de que el número de página sea válido
-    
+
         // Crea un nuevo objeto para evitar la mutación directa
         const newMetaData = {
             ...metaData,
             page: number,
         };
-    
+
         setMetaData(newMetaData);
     };
 
@@ -99,6 +99,16 @@ export default function DocumentosRecibidos(props: props) {
                                         )}
                                         {doc.attributes.userId.data && (
                                             <p><span className="font-semibold">creador: </span>{doc.attributes.userId.data.attributes.firstname + " " + doc.attributes.userId.data.attributes.first_lastname}</p>
+                                        )}
+                                        {doc.attributes.createdAt && (
+                                            <p><span className="font-semibold">Fecha: </span>{new Date(doc.attributes.createdAt).toLocaleString('es-ES', {
+                                                year: 'numeric',
+                                                month: 'long',
+                                                day: 'numeric',
+                                                hour: '2-digit',
+                                                minute: '2-digit',
+                                                second: '2-digit',
+                                            })}</p>
                                         )}
                                     </div>
                                     <div className="grid lg:grid-cols-3">

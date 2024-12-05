@@ -83,7 +83,7 @@ export const SchoolComponent: React.FC<{
     const getUsers = async () => {
       const data = await api_usersByRole(selectedRole, GetStablishment().id);
       setUserList(data.data.data.attributes.users.data);
-    }; 
+    };
     if (useUserStore.getState().GetRole() !== "Authenticated") {
       if (selectedRole !== 0 && GetStablishment().id !== 0) getUsers();
     }
@@ -97,56 +97,56 @@ export const SchoolComponent: React.FC<{
   return (
     <>
 
-    <div className="md:flex-1 divide-y md:mx-1 my-1 divide-gray-200 overflow-hidden shadow-xl rounded-lg bg-white shadow animate-fadein">
-      <div className="px-4 py-5 sm:px-6 text-left">
-        <h6 className="font-bold md:text-base text-sm">{form.title}</h6>
-      </div>
-      {datailsSchool && (
-        <DetailedSchoolComponent
-          establecimiento={establecimiento}
-          setEstablecimiento={handleChangeEstablecimiento}
-        />
-      )}
-      <div className="flex flex-col md:flex-row m-2">
-        <label className="md:flex-1 mr-4">
-          <h6 className="text-sm leading-6 text-gray-900 font-bold">Cargo</h6>
-          <select
-            className="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-primary sm:text-sm sm:leading-6"
-            value={selectedRole}
-            onChange={handleRoleChange}
-          >
-            <option value={0}>Seleccione el rol</option>
+      <div className="md:flex-1 divide-y md:mx-1 my-1 divide-gray-200 overflow-hidden shadow-xl rounded-lg bg-white shadow animate-fadein">
+        <div className="px-4 py-5 sm:px-6 text-left">
+          <h6 className="font-bold md:text-base text-sm">{form.title}</h6>
+        </div>
+        {datailsSchool && (
+          <DetailedSchoolComponent
+            establecimiento={establecimiento}
+            setEstablecimiento={handleChangeEstablecimiento}
+          />
+        )}
+        <div className="flex flex-col md:flex-row m-2">
+          <label className="md:flex-1 mr-4">
+            <h6 className="text-sm leading-6 text-gray-900 font-bold">Cargo</h6>
+            <select
+              className="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-primary sm:text-sm sm:leading-6"
+              value={selectedRole}
+              onChange={handleRoleChange}
+            >
+              <option value={0}>Seleccione el rol</option>
 
-            {roleList.map((role: roleListI) => (
-              <option
-                value={role.attributes.reference}
-                key={role.attributes.reference}
-              >
-                {role.attributes.name}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className="md:flex-1">
-          <span className="text-sm font-bold leading-6 text-gray-900">
-            Selecciona a quién dirigir la denuncia
-          </span>
-          <select
-            value={selectedValue}
-            onChange={handleChange}
-            className="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-primary sm:text-sm sm:leading-6"
-          >
-            <option value={0}>Seleccione el usuario</option>
-            {userList.map((user: UserInterface) => (
-              <option value={user.id} key={user.id}>
-                {user.attributes.firstname} {user.attributes.first_lastname}
-              </option>
-            ))}
-          </select>
-        </label>
+              {roleList.map((role: roleListI) => (
+                <option
+                  value={role.attributes.reference}
+                  key={role.attributes.reference}
+                >
+                  {role.attributes.name}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="md:flex-1">
+            <span className="text-sm font-bold leading-6 text-gray-900">
+              Selecciona a quién dirigir la denuncia
+            </span>
+            <select
+              value={selectedValue}
+              onChange={handleChange}
+              className="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-primary sm:text-sm sm:leading-6"
+            >
+              <option value={0}>Seleccione el usuario</option>
+              {userList.map((user: UserInterface) => (
+                <option value={user.id} key={user.id}>
+                  {user.attributes.firstname} {user.attributes.first_lastname}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
       </div>
-    </div>
-    
+
     </>
   );
 };
@@ -155,7 +155,7 @@ export const DetailedSchoolComponent: React.FC<{
   establecimiento: number;
   setEstablecimiento: (number: string) => void;
 }> = ({ establecimiento, setEstablecimiento }) => {
-  const {bearer,setRole,GetRole,user,role} = useUserStore()
+  const { bearer, setRole, GetRole, user, role } = useUserStore()
 
   const [meta, setMeta] = useState<metaI>({
     page: 0,
@@ -165,15 +165,16 @@ export const DetailedSchoolComponent: React.FC<{
   });
   const [query, setQuery] = useState("");
 
-  const [establecimientoList, setEstablecimientoList] = useState<{id: number,name: string}[]>([]);
+  const [establecimientoList, setEstablecimientoList] = useState<{ id: number, name: string }[]>([]);
   const [establecimientoSelected, setEstablecimientoSelected] =
     useState<number>(0);
   const [isLoading, setIsLoading] = useState(false);
 
-  useEffect(()=> {
+  useEffect(() => {
     setEstablecimientoList(user.establishment_authenticateds)
     if (GetRole() === "Authenticated" && user.tipo === "alumno") setEstablecimiento(String(user.establishment_authenticateds[0].id));
-  },[user])
+    if (GetRole() === "Authenticated" && user.tipo === "apoderado") setEstablecimiento(String(user.establishment.id));
+  }, [user])
 
   const handleChangeEstablecimiento = async (
     event: React.ChangeEvent<HTMLSelectElement>
@@ -183,28 +184,7 @@ export const DetailedSchoolComponent: React.FC<{
   };
 
   if (role.name === "Authenticated" && user.tipo === "apoderado") {
-    return (
-      <div className="flex flex-col md:flex-row m-2">
-        <label className="md:flex-1">
-          <h6 className="text-sm leading-6 text-gray-900 font-bold">
-            Establecimiento
-          </h6>
-
-          <select
-            value={establecimientoSelected}
-            onChange={handleChangeEstablecimiento}
-            className="mt-2 block w-full md:w-1/2 rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-primary sm:text-sm sm:leading-6"
-          >
-            <option value={""}>Seleccione el establecimiento</option>
-            {establecimientoList.map((stablishment: {id: number,name: string}) => (
-              <option value={stablishment.id} key={stablishment.id}>
-                {stablishment.name}
-              </option>
-            ))}
-          </select>
-        </label>
-      </div>
-  );
+    return (<></> );
   }
 
 };

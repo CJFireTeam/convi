@@ -7,12 +7,12 @@ import Head from "next/head";
 import { useEffect, useState } from "react";
 import WarningAlert from "../alerts/warningAlert";
 
-interface props{
-    establishmentId:number;
-    userId:number;
+interface props {
+    establishmentId: number;
+    userId: number;
 }
 
-export default function DocumentosEstablecimiento(props:props){
+export default function DocumentosEstablecimiento(props: props) {
 
     const [documentEstablishment, setDocumentEstablishment] = useState<IDocuments[]>([]);
     const [metaData, setMetaData] = useState<metaI>({ page: 1, pageCount: 0, pageSize: 0, total: 0 });
@@ -33,7 +33,7 @@ export default function DocumentosEstablecimiento(props:props){
     useEffect(() => {
         if (!props.userId || !props.establishmentId) return;
         dataDocumentByEstablishment()
-    }, [props.userId,props.establishmentId, metaData.page]);
+    }, [props.userId, props.establishmentId, metaData.page]);
 
     const [loading, setLoading] = useState(false);
 
@@ -71,64 +71,73 @@ export default function DocumentosEstablecimiento(props:props){
         setMetaData(newMetaData);
     };
 
-    return(
+    return (
         <>
-        <div className="border rounded-lg shadow-md p-4 items-center w-full mb-4">
-                    <div className="flex flex-col lg:flex-row">
-                        <p className="font-bold text-2xl mb-2">Documentos Establecimiento: </p>
-                    </div>
-
-                    {documentEstablishment.length > 0 ?
-                        (<>
-                            {documentEstablishment.map((doc, index) => (
-                                <>
-                                    <div key={index} className="grid lg:grid-cols-3 gap-4 border border-gray-100 hover:border-2 hover:border-primary p-2 mb-1">
-                                        <div className="flex flex-col text-left">
-                                            <p><span className="font-semibold">Descripción: </span>{doc.attributes.descriptionDoc}</p>
-                                            {!doc.attributes.establishment_course.data && (
-                                                <></>
-                                            )}
-                                            {doc.attributes.establishment_course.data && (
-                                                <p><span className="font-semibold">Curso: </span>{doc.attributes.establishment_course.data.attributes.Grade + " " + doc.attributes.establishment_course.data.attributes.Letter}</p>
-                                            )}
-                                            {!doc.attributes.userId.data && (
-                                                <></>
-                                            )}
-                                            {doc.attributes.userId.data && (
-                                                <p><span className="font-semibold">Creador: </span>{doc.attributes.userId.data.attributes.firstname + " " + doc.attributes.userId.data.attributes.first_lastname}</p>
-                                            )}
-
-                                        </div>
-                                        <div className="grid lg:grid-cols-3">
-                                            {doc.attributes.document.data.map((archivo, i) => (<>
-                                                <button
-                                                    key={i}
-                                                    type="button"
-                                                    className="btn btn-outline btn-primary mb-2 lg:mb-0 lg:mr-2"
-                                                    onClick={() => {
-                                                        handleDownload(getFile(archivo.attributes.url), archivo.attributes.name);
-                                                    }}
-                                                    disabled={loading}
-                                                >
-                                                    {loading ? 'Descargando...': <><ArrowDownTrayIcon className="mr-2 h-4 w-4" aria-hidden="true" />
-                                                        Archivo {i + 1}</>}
-                                                    
-                                                </button>
-
-                                            </>))}
-                                        </div>
-                                    </div>
-                                </>
-                            ))}
-                            <Paginator metadata={metaData} setMetaData={updatePage} />
-                        </>)
-                        :
-                        (
-                            <div className="flex flex-col items-center">
-                                <WarningAlert message={'Sin documentos'} />
-                            </div>
-                        )}
+            <div className="border rounded-lg shadow-md p-4 items-center w-full mb-4">
+                <div className="flex flex-col lg:flex-row">
+                    <p className="font-bold text-2xl mb-2">Documentos Establecimiento: </p>
                 </div>
+
+                {documentEstablishment.length > 0 ?
+                    (<>
+                        {documentEstablishment.map((doc, index) => (
+                            <>
+                                <div key={index} className="grid lg:grid-cols-3 gap-4 border border-gray-100 hover:border-2 hover:border-primary p-2 mb-1">
+                                    <div className="flex flex-col text-left">
+                                        <p><span className="font-semibold">Descripción: </span>{doc.attributes.descriptionDoc}</p>
+                                        {!doc.attributes.establishment_course.data && (
+                                            <></>
+                                        )}
+                                        {doc.attributes.establishment_course.data && (
+                                            <p><span className="font-semibold">Curso: </span>{doc.attributes.establishment_course.data.attributes.Grade + " " + doc.attributes.establishment_course.data.attributes.Letter}</p>
+                                        )}
+                                        {!doc.attributes.userId.data && (
+                                            <></>
+                                        )}
+                                        {doc.attributes.userId.data && (
+                                            <p><span className="font-semibold">Creador: </span>{doc.attributes.userId.data.attributes.firstname + " " + doc.attributes.userId.data.attributes.first_lastname}</p>
+                                        )}
+                                        {doc.attributes.createdAt && (
+                                            <p><span className="font-semibold">Fecha: </span>{new Date(doc.attributes.createdAt).toLocaleString('es-ES', {
+                                                year: 'numeric',
+                                                month: 'long',
+                                                day: 'numeric',
+                                                hour: '2-digit',
+                                                minute: '2-digit',
+                                                second: '2-digit',
+                                            })}</p>
+                                        )}
+                                    </div>
+                                    <div className="grid lg:grid-cols-3">
+                                        {doc.attributes.document.data.map((archivo, i) => (<>
+                                            <button
+                                                key={i}
+                                                type="button"
+                                                className="btn btn-outline btn-primary mb-2 lg:mb-0 lg:mr-2"
+                                                onClick={() => {
+                                                    handleDownload(getFile(archivo.attributes.url), archivo.attributes.name);
+                                                }}
+                                                disabled={loading}
+                                            >
+                                                {loading ? 'Descargando...' : <><ArrowDownTrayIcon className="mr-2 h-4 w-4" aria-hidden="true" />
+                                                    Archivo {i + 1}</>}
+
+                                            </button>
+
+                                        </>))}
+                                    </div>
+                                </div>
+                            </>
+                        ))}
+                        <Paginator metadata={metaData} setMetaData={updatePage} />
+                    </>)
+                    :
+                    (
+                        <div className="flex flex-col items-center">
+                            <WarningAlert message={'Sin documentos'} />
+                        </div>
+                    )}
+            </div>
 
         </>
     )

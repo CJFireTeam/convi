@@ -243,6 +243,7 @@ export default function CrearCasos() {
     if (user.id === 0) return;
     if (GetRole() !== "Authenticated") schoolCase.establishment = user.establishment.id;
     if (GetRole() === "Authenticated" && user.tipo === "alumno") schoolCase.establishment = user.establishment_authenticateds[0].id
+    if (GetRole() === "Authenticated" && user.tipo === "apoderado") schoolCase.establishment = user.establishment.id
     schoolCase.created = user.id;
     console.log(schoolCase.establishment)
   }, [user])

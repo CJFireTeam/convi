@@ -67,7 +67,7 @@ export default function DocumentosAlumno() {
         setDisplayedDocuments([...displayedDocuments, ...newDocuments])
         setCurrentPage(nextPage)
     }
-    
+
     const [loading, setLoading] = useState(false);
     const handleDownload = async (url: string, name: string) => {
         try {
@@ -162,6 +162,7 @@ export default function DocumentosAlumno() {
 
                                         <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Asunto</th>
                                         <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Subido por</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Fecha</th>
                                         <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Destinado para</th>
                                         <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider">Archivo</th>
                                     </tr>
@@ -171,6 +172,14 @@ export default function DocumentosAlumno() {
                                         <tr key={index} className="hover:bg-green-50 transition-colors duration-200">
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{doc.attributes.descriptionDoc}</td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{doc.attributes.userId.data.attributes.firstname + " " + doc.attributes.userId.data.attributes.first_lastname}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{new Date(doc.attributes.createdAt).toLocaleString('es-ES', {
+                                                year: 'numeric',
+                                                month: 'long',
+                                                day: 'numeric',
+                                                hour: '2-digit',
+                                                minute: '2-digit',
+                                                second: '2-digit',
+                                            })}</td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{getDestinatario(doc)}</td>
                                             <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                                 {doc.attributes.document?.data?.length === 1 ? (

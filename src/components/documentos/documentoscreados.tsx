@@ -35,7 +35,7 @@ export default function DocumentosCreados(props: props) {
         dataDocumentByCreate()
     }, [props.userId, props.userId, metaData.page]);
 
-    const [loading,setLoading]=useState(false);
+    const [loading, setLoading] = useState(false);
 
     const handleDownload = async (url: string, name: string) => {
         try {
@@ -56,21 +56,21 @@ export default function DocumentosCreados(props: props) {
             window.URL.revokeObjectURL(blobUrl); // Limpia la URL temporal
         } catch (error) {
             console.error("Error descargando el archivo:", error);
-        } finally{
+        } finally {
             setLoading(false);
         }
     };
 
-    
+
     const updatePage = (number: number) => {
         if (number > metaData.pageCount || number <= 0) return; // Asegúrate de que el número de página sea válido
-    
+
         // Crea un nuevo objeto para evitar la mutación directa
         const newMetaData = {
             ...metaData,
             page: number,
         };
-    
+
         setMetaData(newMetaData);
     };
 
@@ -109,6 +109,16 @@ export default function DocumentosCreados(props: props) {
                                         )}
                                         {doc.attributes.user_destiny.data && (
                                             <p><span className="font-semibold">Destinatario: </span>{doc.attributes.user_destiny.data.attributes.firstname + " " + doc.attributes.user_destiny.data.attributes.first_lastname}</p>
+                                        )}
+                                        {doc.attributes.createdAt && (
+                                            <p><span className="font-semibold">Fecha: </span>{new Date(doc.attributes.createdAt).toLocaleString('es-ES', {
+                                                year: 'numeric',
+                                                month: 'long',
+                                                day: 'numeric',
+                                                hour: '2-digit',
+                                                minute: '2-digit',
+                                                second: '2-digit',
+                                            })}</p>
                                         )}
                                     </div>
                                     <div className="grid lg:grid-cols-3">

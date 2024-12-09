@@ -112,7 +112,7 @@ export default function Layout(props: LayoutProps) {
   }, [useUserStore.getState().GetRole(), pathname]);
 
   useEffect(() => {
-    (async () => {})();
+    (async () => { })();
     const me = async () => {
       try {
         const data = await api_me();
@@ -165,9 +165,12 @@ export default function Layout(props: LayoutProps) {
 
     return () => observer.disconnect();
   }, []);
-  useEffect(() => {}, [user]);
+  useEffect(() => { }, [user]);
   if (user.role === undefined) {
-    return "LOADING";
+    return <>
+      <div className="flex items-center justify-center h-screen">
+        <span className="loading loading-spinner loading-lg"></span>
+      </div>    </>;
   }
   if (user.role.name === "root") {
     return <LayoutRoot>{props.children} </LayoutRoot>;
@@ -307,18 +310,40 @@ const LayoutRoot = (props: LayoutProps) => {
     desconectar,
   } = useUserStore();
 
+  const { push } = useRouter();
+
+
+  function logout() {
+    Cookies.remove("bearer");
+    Cookies.remove("establishment");
+    Cookies.remove("role");
+    desconectar();
+    push("/login");
+  }
+
+
   return (
-    <div className="container mx-auto">
+    <div className="mx-auto">
       <Card className="mx-4 mt-4 mb-2">
         <CardHeader>
           <CardTitle>
-            <Alert>
-              <User className="h-4 w-4" />
-              <AlertTitle>Bienvenido</AlertTitle>
-              <AlertDescription>
-                {user.firstname} {user.first_lastname}
-              </AlertDescription>
+            <Alert  className="grid grid-cols-2 gap-4">
+              <div className="my-auto">
+                <User className="h-4 w-4 md:inline-block mr-1" />
+                <AlertTitle className="inline-block mr-1">Bienvenido</AlertTitle>
+                <AlertDescription className="inline-block">
+                  {user.firstname} {user.first_lastname}
+                </AlertDescription>
+              </div>
+
+              <div className="w-full flex my-auto justify-end">
+                <Button
+                variant='destructive'
+                  onClick={() => logout()}
+                >Desconectar</Button>
+              </div>
             </Alert>
+
           </CardTitle>
         </CardHeader>
       </Card>

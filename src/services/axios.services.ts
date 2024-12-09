@@ -53,6 +53,24 @@ export function api_establishmentByComuna(comuna: string) {
 export function api_allEstablishment() {
   return api.get(`establishments`)
 }
+
+
+export function api_allEstablishments() {
+  let query = `?populate[users][populate][role]=*`
+  return api.get(`establishments${query}`)
+}
+
+export function api_allEstablishmentStatusTrue() {
+  let query = `?filters[$and][0][status][$eq]=true`
+  query += `&populate[users][populate][role]=*`
+  return api.get(`establishments${query}`)
+}
+
+export function api_allEstablishmentStatusFalse() {
+  let query = `?filters[$and][0][status][$eq]=false`
+  return api.get(`establishments${query}`)
+}
+
 export function api_surveys({ createdBy, userId, page = 1 }: { createdBy: number, userId?: number, page?: number }) {
   let query = `?populate[creador][populate][0]=role`
   query = query + `&filters[creador]=${createdBy}`
@@ -243,6 +261,37 @@ export function api_getUsersEstablishment(escuelaId: number) {
   return api.get(`users${query}`)
 }
 
+export function api_getAllAdministrador() {
+  let query = `?filters[$and][0][role][name][$eq]=admin`
+  query += `&populate=*`
+  return api.get(`users${query}`)
+}
+export function api_getActiveAdministrador() {
+  let query = `?filters[$and][0][role][name][$eq]=admin`
+  query += `&filters[$and][1][blocked][$eq]=false`
+  query += `&filters[$and][2][confirmed][$eq]=true`
+  query += `&populate=*`
+  return api.get(`users${query}`)
+}
+
+export function api_getpendientAdministrador() {
+  let query = `?filters[$and][0][role][name][$eq]=admin`
+  query += `&filters[$and][1][blocked][$eq]=false`
+  query += `&filters[$and][2][confirmed][$eq]=false`
+  query += `&populate=*`
+  return api.get(`users${query}`)
+}
+
+export function api_getBlockAdministrador() {
+  let query = `?filters[$and][0][role][name][$eq]=admin`
+  query += `&filters[$and][1][blocked][$eq]=true`
+  query += `&filters[$and][2][confirmed][$eq]=true`
+  query += `&populate=*`
+  return api.get(`users${query}`)
+}
+
+
+
 export function api_getUsersProfeEstablishment(escuelaId: number) {
   let query = `?filters[$and][0][role][name][$eq]=Profesor&filters[$and][1][establishment][id][$eq]=${escuelaId}`
   return api.get(`users${query}`)
@@ -353,7 +402,7 @@ export function api_getDocumentsByEstablishment2(establishmentId: number, userId
   return api.get(`documents${query}`)
 }
 
-export function api_getDocumentsByCourse2(establishmentId: number,courseId:number, userId: number) {
+export function api_getDocumentsByCourse2(establishmentId: number, courseId: number, userId: number) {
   let query = `?filters[$and][0][establishmentId][id][$eq]=${establishmentId}`
   query += `&filters[$and][1][establishment_course][id]=${courseId}`
   query += `&filters[$and][2][user_destiny][id][$null]=true`
@@ -372,7 +421,7 @@ export function api_getDocumentsByEstablishment(establishmentId: number) {
   return api.get(`documents${query}`)
 }
 
-export function api_getDocumentsByCourse(courseId: number,establishmentId:number) {
+export function api_getDocumentsByCourse(courseId: number, establishmentId: number) {
   let query = `?filters[$and][0][establishment_course][id][$eq]=${courseId}`
   query += `&filters[$and][1][establishmentId][id][$eq]=${establishmentId}`
   query += `&filters[$and][2][user_destiny][id][$null]=true`
@@ -383,12 +432,12 @@ export function api_getDocumentsByCourse(courseId: number,establishmentId:number
 
 
 export function api_getDocumentsByUserDestinity(establishmentId: number, userId: number) {
-let query = `?filters[$and][0][establishmentId][id][$eq]=${establishmentId}`
-query += `&filters[$and][1][user_destiny][id][$eq]=${userId}`
-query += `&filters[$and][2][establishment_course][id][$null]=true`
-query += `&filters[$and][3][Eliminado][$eq]=false`
-query += `&populate=*&sort=createdAt:desc`
-return api.get(`documents${query}`)
+  let query = `?filters[$and][0][establishmentId][id][$eq]=${establishmentId}`
+  query += `&filters[$and][1][user_destiny][id][$eq]=${userId}`
+  query += `&filters[$and][2][establishment_course][id][$null]=true`
+  query += `&filters[$and][3][Eliminado][$eq]=false`
+  query += `&populate=*&sort=createdAt:desc`
+  return api.get(`documents${query}`)
 }
 
 /* export function api_getDocumentsByCourse2(establishmentId: number, courseGrade: string, courseLetter: string, userId: number, page: number) {
@@ -418,7 +467,7 @@ export function api_getEstablishmentCoursesByUser(establishment: number, userId:
   let query = `?filter[$and][0][establishment][id][$eq]=${establishment}`;
   query += `&filters[$and][1][users][id][$eq]=${userId}`;
   query += `&filters[$and][2][Eliminado][$eq]=false`; // Filtrar cursos donde Eliminado es false
-  query += `&populate=*`; 
+  query += `&populate=*`;
   query += `&sort=createdAt:desc`; // Ordenar por el campo 'createdAt' en orden descendente
   query += `&pagination[page]=${page}&pagination[pageSize]=12`;
 
@@ -437,6 +486,30 @@ export function api_getCoursesByUserSinPag(establishment: number, userId: number
 export function api_postEstablishmentCourses(data: any) {
   return api.post(`establishment-courses`, { data: data })
 };
+
+export function api_postEstablishment(data: any) {
+  return api.post(`establishments`, { data: data })
+}
+
+export function api_putEstatusEstablishment(establishmentId: number, status: boolean) {
+  const url = `establishments/${establishmentId}`;
+  return api.put(url, { status: status })
+}
+export function api_putBlockedUser(userId: number, blocked: boolean) {
+  const url = `users/${userId}`;
+  return api.put(url, { blocked: blocked })
+}
+
+export function api_putEstablishment(establishmentId: number, data: { name: string; address: string; Phone: string; Comuna: string; }) {
+  const url = `establishments/${establishmentId}`;
+  return api.put(url, { data: data });
+}
+
+export function api_putStatusEstablishment(establishmentId: number, status: boolean) {
+  const url = `establishments/${establishmentId}`;
+  return api.put(url, { data: { status: status } })
+}
+
 
 export function api_getEstablishmentCourses(establishment: number, page: number) {
   let query = `?filter[$and][0][establishment][id][$eq]=${establishment}`
@@ -472,6 +545,13 @@ export function api_putEstablishmentCourses(userId: number, data: any) {
   return api.put(url, data);
 }
 
+export function api_putUserAdmin(userId: number, data: any) {
+  // Define la URL del documento que deseas actualizar
+  const url = `users/${userId}`; // Asegúrate de que la URL sea correcta
+  // Realiza la solicitud PUT para actualizar el campo 'Eliminado'
+  return api.put(url, data);
+}
+
 export function api_putEstablishmenCourses(CourseEsId: number, LeadTeacher: number) {
   // Define la URL del documento que deseas actualizar
   const url = `establishment-courses/${CourseEsId}`; // Asegúrate de que la URL sea correcta
@@ -481,5 +561,5 @@ export function api_putEstablishmenCourses(CourseEsId: number, LeadTeacher: numb
 
 export function api_putUserEstablishmen(userId: number, id: number) {
   const url = `users/${userId}`;
-  return api.put(url,  { establishment: id });
+  return api.put(url, { establishment: id });
 }

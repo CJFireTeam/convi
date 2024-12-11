@@ -46,6 +46,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { getComunas, getRegiones } from "@/services/local.services";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import { toast } from "react-toastify";
+import router from "next/router";
 
 interface IForm {
     name: string;
@@ -65,6 +66,7 @@ export default function VerEstablecimientos() {
     const [currentPage, setCurrentPage] = useState(1);
     const [searchTerm, setSearchTerm] = useState('');
     const [adminFilter, setAdminFilter] = useState<'all' | 'with' | 'without'>('all');
+    const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all'); // Nuevo estado para filtro de estado
     const itemsPerPage = 10;
     const [regionList, setRegionList] = useState<string[]>([]);
     const [comunaList, setComunaList] = useState<string[]>([]);
@@ -158,7 +160,11 @@ export default function VerEstablecimientos() {
             adminFilter === 'all' ? true :
                 adminFilter === 'with' ? findAdministrador(e.attributes.users.data) !== undefined :
                     findAdministrador(e.attributes.users.data) === undefined;
-        return nameMatch && adminMatch;
+        const statusMatch =
+            statusFilter === 'all' ? true :
+                statusFilter === 'active' ? e.attributes.status :
+                    !e.attributes.status;
+        return nameMatch && adminMatch && statusMatch;
     });
 
     const totalPages = Math.ceil(filteredEstablishments.length / itemsPerPage);
@@ -173,11 +179,18 @@ export default function VerEstablecimientos() {
 
 
     const handleEditClick = (id: number, establishment: IAllEstablishment) => {
-        reset()
+        reset(); // Resetea el formulario antes de editar.
         setEditingEstablishment(id);
-        setEditedName(establishment.attributes.name);
-        setEditedAddress(establishment.attributes.address);
-        setEditedPhone(establishment.attributes.Phone);
+        setValue('name', establishment.attributes.name);
+        setValue('address', establishment.attributes.address);
+        setValue('Phone', establishment.attributes.Phone);
+        setValue('Region', establishment.attributes.Region);
+        setValue('Comuna', establishment.attributes.Comuna);
+
+        // Asegúrate de cargar las comunas correspondientes a la región
+        if (establishment.attributes.Region) {
+            fetchComunas(establishment.attributes.Region);
+        }
     };
 
     const handleSaveEdit: SubmitHandler<IForm> = async (data: IForm) => {
@@ -188,16 +201,18 @@ export default function VerEstablecimientos() {
                 name: data.name,
                 address: data.address,
                 Phone: data.Phone,
-                Comuna: data.Comuna,
+                Region: data.Region,  // Añade la región
+                Comuna: data.Comuna,  // Añade la comuna
             };
 
             await api_putEstablishment(editingEstablishment, updatedData);
             setEditingEstablishment(null);
             toast.success('Establecimiento actualizado correctamente.')
             getAllEstablishment();
+            router.reload();
         } catch (error) {
             console.error("Error al guardar los cambios:", error);
-            toast.error('Ha ocurrido un error inesperado, porfavor contactate con soporte')
+            toast.error('Ha ocurrido un error inesperado, por favor contacte con soporte')
         }
     };
     const handleCancelEdit = () => {
@@ -296,24 +311,35 @@ export default function VerEstablecimientos() {
                                 <SelectItem value="without">Sin administrador</SelectItem>
                             </SelectContent>
                         </Select>
+                        <Select value={statusFilter} onValueChange={(value: 'all' | 'active' | 'inactive') => setStatusFilter(value)}>
+                            <SelectTrigger className="w-full">
+                                <SelectValue placeholder="Filtrar por estado" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">Todos los estados</SelectItem>
+                                <SelectItem value="active">Activos</SelectItem>
+                                <SelectItem value="inactive">Desactivados</SelectItem>
+                            </SelectContent>
+                        </Select>
                     </div>
                     <div>
-                        {currentEstablishments.length === 0 && (
-                            <div className="flex justify-center">
-                                <WarningAlert message={'Sin Establecimientos creados '} />
-                            </div>
-                        )}
-                        {currentEstablishments.length > 0 && currentEstablishments.map((e, i) => (
+                        {currentEstablishments.map((e) => (
                             <TooltipProvider key={e.id}>
                                 <Tooltip>
                                     <TooltipTrigger asChild>
                                         <Accordion type="single" collapsible>
-                                            <AccordionItem value={`item-${i}`}>
+                                            <AccordionItem value={`item-${e.id}`}>
                                                 <AccordionTrigger>
                                                     <div className="flex items-center justify-between w-full">
                                                         <span>{e.attributes.name}</span>
                                                         <div className="flex items-center space-x-2">
-                                                            <span className={`w-3 h-3 rounded-full ${findAdministrador(e.attributes.users.data) ? 'bg-green-500' : 'bg-red-500'}`}></span>
+                                                            {/* Indicador de estado (circulo) */}
+                                                            <span
+                                                                className={`w-3 h-3 rounded-full ${findAdministrador(e.attributes.users.data)
+                                                                    ? 'bg-green-500'
+                                                                    : 'bg-red-500'
+                                                                    }`}
+                                                            ></span>
                                                             <Button
                                                                 variant="ghost"
                                                                 size="icon"
@@ -322,53 +348,28 @@ export default function VerEstablecimientos() {
                                                                     handleToggleStatus(e.id, e.attributes.status);
                                                                 }}
                                                             >
-                                                                {e.attributes.status ? <LockOpen className="h-4 w-4" /> : <Lock className="h-4 w-4" />}
+                                                                {e.attributes.status ? <LockOpen /> : <Lock />}
                                                             </Button>
                                                         </div>
                                                     </div>
                                                 </AccordionTrigger>
-
                                                 <AccordionContent>
-                                                    <div className="grid grid-cols-2 text-center p-4">
-                                                        <Label className="col-span-2 text-lg">Administrador del establecimiento: </Label>
-                                                        <Label className="col-span-2 text-lg">{
-                                                            (() => {
-                                                                const admin = findAdministrador(e.attributes.users.data);
-                                                                return admin
-                                                                    ? `${admin.attributes.firstname} ${admin.attributes.first_lastname}`
-                                                                    : 'No se encontró administrador';
-                                                            })()
-                                                        }</Label>
-                                                    </div>
-
                                                     {editingEstablishment === e.id ? (
                                                         <form onSubmit={handleSubmit(handleSaveEdit)} className="grid grid-cols-2 gap-2 p-4">
                                                             <div>
                                                                 <Label htmlFor="name">Nombre</Label>
-                                                                <Input
-                                                                    id="name"
-                                                                    {...register('name')}
-                                                                    defaultValue={editedName}
-                                                                />
-                                                                {errors.name && <span className="text-red-500">{errors.name.message}</span>}
+                                                                <Input {...register('name')} />
+                                                                {errors.name && <span>{errors.name.message}</span>}
                                                             </div>
                                                             <div>
                                                                 <Label htmlFor="address">Dirección</Label>
-                                                                <Input
-                                                                    id="address"
-                                                                    {...register('address')}
-                                                                    defaultValue={editedAddress}
-                                                                />
-                                                                {errors.address && <span className="text-red-500">{errors.address.message}</span>}
+                                                                <Input {...register('address')} />
+                                                                {errors.address && <span>{errors.address.message}</span>}
                                                             </div>
                                                             <div>
                                                                 <Label htmlFor="Phone">Teléfono</Label>
-                                                                <Input
-                                                                    id="Phone"
-                                                                    {...register('Phone')}
-                                                                    defaultValue={editedPhone}
-                                                                />
-                                                                {errors.Phone && <span className="text-red-500">{errors.Phone.message}</span>}
+                                                                <Input {...register('Phone')} />
+                                                                {errors.Phone && <span>{errors.Phone.message}</span>}
                                                             </div>
                                                             <div>
                                                                 <Label htmlFor="Region">Región</Label>
@@ -380,7 +381,7 @@ export default function VerEstablecimientos() {
                                                                             <SelectTrigger>
                                                                                 <SelectValue placeholder="Selecciona una región" />
                                                                             </SelectTrigger>
-                                                                            <SelectContent>
+                                                                            <SelectContent className="max-h-52">
                                                                                 {regionList.map((region) => (
                                                                                     <SelectItem key={region} value={region}>
                                                                                         {region}
@@ -390,7 +391,7 @@ export default function VerEstablecimientos() {
                                                                         </Select>
                                                                     )}
                                                                 />
-                                                                {errors.Region && <span className="text-red-500">{errors.Region.message}</span>}
+                                                                {errors.Region && <span>{errors.Region.message}</span>}
                                                             </div>
                                                             <div>
                                                                 <Label htmlFor="Comuna">Comuna</Label>
@@ -398,11 +399,15 @@ export default function VerEstablecimientos() {
                                                                     name="Comuna"
                                                                     control={control}
                                                                     render={({ field }) => (
-                                                                        <Select onValueChange={field.onChange} value={field.value} disabled={!watch('Region')}>
+                                                                        <Select
+                                                                            onValueChange={field.onChange}
+                                                                            value={field.value}
+                                                                            disabled={!watch('Region')}
+                                                                        >
                                                                             <SelectTrigger>
                                                                                 <SelectValue placeholder="Selecciona una comuna" />
                                                                             </SelectTrigger>
-                                                                            <SelectContent>
+                                                                            <SelectContent className="max-h-52">
                                                                                 {comunaList.map((comuna) => (
                                                                                     <SelectItem key={comuna} value={comuna}>
                                                                                         {comuna}
@@ -412,15 +417,13 @@ export default function VerEstablecimientos() {
                                                                         </Select>
                                                                     )}
                                                                 />
-                                                                {errors.Comuna && <span className="text-red-500">{errors.Comuna.message}</span>}
+                                                                {errors.Comuna && <span>{errors.Comuna.message}</span>}
                                                             </div>
                                                             <div className="col-span-2 flex justify-end gap-2">
-                                                                <Button type="button" onClick={handleCancelEdit} variant="secondary">
+                                                                <Button type="button" onClick={handleCancelEdit}>
                                                                     Cancelar
                                                                 </Button>
-                                                                <Button type="submit">
-                                                                    Guardar
-                                                                </Button>
+                                                                <Button type="submit">Guardar</Button>
                                                             </div>
                                                         </form>
                                                     ) : (
@@ -428,10 +431,13 @@ export default function VerEstablecimientos() {
                                                             <Label>Nombre: {e.attributes.name}</Label>
                                                             <Label>Dirección: {e.attributes.address}</Label>
                                                             <Label>Teléfono: {e.attributes.Phone}</Label>
+                                                            <Label>Región: {e.attributes.Region}</Label>
+                                                            <Label>Comuna: {e.attributes.Comuna}</Label>
                                                             <div className="col-span-2 flex justify-end">
                                                                 <Button
                                                                     onClick={() => handleEditClick(e.id, e)}
                                                                     variant="outline"
+                                                                    disabled={!e.attributes.status} // Deshabilita si está bloqueado.
                                                                 >
                                                                     Editar
                                                                 </Button>
@@ -443,8 +449,9 @@ export default function VerEstablecimientos() {
                                         </Accordion>
                                     </TooltipTrigger>
                                     <TooltipContent>
-                                        {!findAdministrador(e.attributes.users.data) && "Este establecimiento no tiene administrador"}
-                                        {findAdministrador(e.attributes.users.data) && "Tiene administrador"}
+                                        {!findAdministrador(e.attributes.users.data)
+                                            ? 'Este establecimiento no tiene administrador'
+                                            : 'Tiene administrador'}
                                     </TooltipContent>
                                 </Tooltip>
                             </TooltipProvider>

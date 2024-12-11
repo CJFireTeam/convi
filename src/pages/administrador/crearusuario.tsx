@@ -26,15 +26,17 @@ export interface IFormValue {
     role: number;
     establishment: number;
     canUploadDoc: boolean;
+    region_establishment: string;
+    comuna_establishment: string;
 }
 interface IRole {
     id: number;
     name: string
 }
 
-interface IEstablishment{
+interface IEstablishment {
     id: number;
-    attributes:{
+    attributes: {
         name: string;
         comuna: string;
     };
@@ -50,12 +52,63 @@ function generateRandomPassword() {
 }
 
 export default function CrearUsuario() {
+    const [regionList, setRegionList] = useState<string[]>([]);
+    const [comunaList, setComunaList] = useState<string[]>([]);
+    const [regionEstablishmentList, setRegionEstablishmentList] = useState<string[]>([]);
+    const [comunaEstablishmentList, setComunaEstablishmentList] = useState<string[]>([]);
+    const [establishmentList, setEstablishmentList] = useState<IEstablishment[]>([]);
+    const [regionEstablecimiento, setRegionEstablecimiento] = useState<string>("");
+    const [comunaEstablecimiento, setComunaEstablecimiento] = useState<string>("");
+    const [loading, setLoading] = useState(false);
+
+    const fetchRegiones = async () => {
+        try {
+            const regionData = await getRegiones();
+            setRegionList(regionData.data.data);
+        } catch (error) {
+            console.error("Error fetching regiones:", error);
+        }
+    };
+
+    const fetchComunas = async (region: string) => {
+        try {
+            const comunaData = await getComunas(region);
+            setComunaList(comunaData.data.data);
+        } catch (error) {
+            console.error("Error fetching comunas:", error);
+        }
+    };
+
+    const fetchRegionesEstablecimiento = async () => {
+        try {
+            const regionData = await getRegiones();
+            setRegionEstablishmentList(regionData.data.data);
+        } catch (error) {
+            console.error("Error fetching regiones del establecimiento:", error);
+        }
+    };
+
+    const fetchComunasEstablecimiento = async (region: string) => {
+        try {
+            const comunaData = await getComunas(region);
+            setComunaEstablishmentList(comunaData.data.data);
+        } catch (error) {
+            console.error("Error fetching comunas del establecimiento:", error);
+        }
+    };
+
+    useEffect(() => {
+        fetchRegiones();
+        fetchRegionesEstablecimiento();
+    }, []);
+
     const { register, watch, setValue, handleSubmit, formState: { errors }, control } = useForm<IFormValue>({
         resolver: zodResolver(CreateUserByAdminSchema),
         defaultValues: {
 
         }
     });
+    
 
     const onSubmit = async (data: IFormValue) => {
         const id = toast.loading("Creando...");
@@ -82,10 +135,10 @@ export default function CrearUsuario() {
             const emailResponse = await axios.post(
                 process.env.NEXT_PUBLIC_BACKEND_URL + "send-password-email",
                 {
-                  email: data.email,
-                  password: transformedData.password
+                    email: data.email,
+                    password: transformedData.password
                 }
-              );
+            );
             toast.update(id, {
                 render: "Usuario creado correctamente",
                 type: "success",
@@ -115,45 +168,12 @@ export default function CrearUsuario() {
             }
         }
     }
+
     function atrasButton() {
         router.push("/administrador");
     }
-    const [regionList, setRegionList] = useState<string[]>([]);
-
-    useEffect(() => {
-        const Regiones = async () => {
-            const data = await getRegiones();
-            setRegionList(data.data.data);
-        };
-        Regiones();
-    }, []);
-    const [establishmentList , setEstablishmentList] = useState<IEstablishment[]>([]);
-
-    useEffect(() => {
-        const Establishment = async () => {
-            const data = await api_allEstablishment();
-            setEstablishmentList(data.data.data);
-        };
-        Establishment();
-    }, []);
-
-    const regionWatch = watch("region");
-    const [comunaList, setComunaList] = useState<string[]>([]);
-    const handleChangeRegion = async (
-        region: string
-    ) => {
-        setValue("comuna", "")
-        const comunas = await getComunas(region);
-        setComunaList(comunas.data.data);
-    };
-    useEffect(() => {
-        if (!regionWatch || regionWatch.length === 0) return;
-        handleChangeRegion(regionWatch)
-    }, [regionWatch])
 
     const [roleList, setRoleList] = useState<IRole[]>([]);
-
-
 
     useEffect(() => {
         const fetchData = async () => {
@@ -181,9 +201,10 @@ export default function CrearUsuario() {
                 </button>
             </div>
             <div className="max-w-2xl mx-auto p-6 bg-white rounded-lg shadow-md border border-primary">
-                <h2 className="text-2xl font-bold mb-2">Crear Cuenta de Usuario</h2>
-                <p className="text-gray-600 mb-6">Ingrese los detalles del nuevo usuario</p>
+                <h2 className="text-2xl font-bold mb-2 text-center">Crear Cuenta de Usuario</h2>
+                <p className="text-gray-600 mb-6 text-center">Ingrese los detalles del nuevo usuario</p>
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+                    <p className="text-black">Información personal:</p>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">Email*</label>
@@ -208,45 +229,6 @@ export default function CrearUsuario() {
                             {errors.phone?.message && (<p className="text-error text-sm mb-4 text-center">{errors.phone.message}</p>)}
                         </div>
 
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
-                            <label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-1">Rol*</label>
-                            <Controller
-                                name="role"
-                                control={control}
-                                render={({ field }) => (
-                                    <select
-                                        {...field}
-                                        className="w-full select select-primary bg-white"
-                                        onChange={(e) => field.onChange(Number(e.target.value))}
-                                    >
-                                        <option value="">Seleccione un rol</option>
-                                        {roleList.map((role) => (
-                                            <option key={role.id} value={role.id}>
-                                                {role.name}
-                                            </option>
-                                        ))}
-                                    </select>
-                                )}
-                            />
-                            {errors.role?.message && (<p className="text-error text-sm mb-4 text-center">{errors.role.message}</p>)}
-                        </div>
-                        <div>
-                            <label htmlFor="establishment" className="block text-sm font-medium text-gray-700 mb-1">Establecimiento*</label>
-                            <select {...register("establishment", { setValueAs: (value) => value === "" ? undefined : Number(value) })} className="w-full select select-primary bg-white">
-                                <option value={""}>Seleccione el establecimiento</option>
-                                {establishmentList.map((establishment: IEstablishment) => (
-                                    <option value={establishment.id} key={establishment.id}>
-                                        {establishment.attributes.name}
-                                    </option>
-                                ))}
-                            </select>
-                            {errors.establishment?.message && (<p className="text-error text-sm mb-4 text-center">{errors.establishment.message}</p>)}
-                        </div>
-
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <label htmlFor="firstname" className="block text-sm font-medium text-gray-700 mb-1">Primer Nombre*</label>
                             <input
@@ -320,16 +302,56 @@ export default function CrearUsuario() {
                             {errors.comuna?.message && (<p className="text-error text-sm mb-4 text-center">{errors.comuna.message}</p>)}
                         </div>
                     </div>
-                    <div>
-                        <label htmlFor="direccion" className="block text-sm font-medium text-gray-700 mb-1">Dirección*</label>
-                        <input
-                            id="direccion"
-                            type="text"
-                            {...register("direccion", { setValueAs: (value) => value === "" ? undefined : value })}
-                            //onChange={handleInputChange}
-                            className="w-full input input-primary bg-white"
-                        />
-                        {errors.direccion?.message && (<p className="text-error text-sm mb-4 text-center">{errors.direccion.message}</p>)}
+                    <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
+                        <div>
+                            <label htmlFor="direccion" className="block text-sm font-medium text-gray-700 mb-1">Dirección*</label>
+                            <input
+                                id="direccion"
+                                type="text"
+                                {...register("direccion", { setValueAs: (value) => value === "" ? undefined : value })}
+                                //onChange={handleInputChange}
+                                className="w-full input input-primary bg-white"
+                            />
+                            {errors.direccion?.message && (<p className="text-error text-sm mb-4 text-center">{errors.direccion.message}</p>)}
+                        </div>
+                    </div>
+                    <p className="text-black">Información laboral:</p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label htmlFor="establishment" className="block text-sm font-medium text-gray-700 mb-1">Establecimiento*</label>
+                            <select {...register("establishment", { setValueAs: (value) => value === "" ? undefined : Number(value) })} className="w-full select select-primary bg-white">
+                                <option value={""}>Seleccione el establecimiento</option>
+                                {establishmentList.map((establishment: IEstablishment) => (
+                                    <option value={establishment.id} key={establishment.id}>
+                                        {establishment.attributes.name}
+                                    </option>
+                                ))}
+                            </select>
+                            {errors.establishment?.message && (<p className="text-error text-sm mb-4 text-center">{errors.establishment.message}</p>)}
+                        </div>
+                        <div>
+                            <label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-1">Rol*</label>
+                            <Controller
+                                name="role"
+                                control={control}
+                                render={({ field }) => (
+                                    <select
+                                        {...field}
+                                        className="w-full select select-primary bg-white"
+                                        onChange={(e) => field.onChange(Number(e.target.value))}
+                                    >
+                                        <option value="">Seleccione un rol</option>
+                                        {roleList.map((role) => (
+                                            <option key={role.id} value={role.id}>
+                                                {role.name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                )}
+                            />
+                            {errors.role?.message && (<p className="text-error text-sm mb-4 text-center">{errors.role.message}</p>)}
+                        </div>
+
                     </div>
 
                     <div>

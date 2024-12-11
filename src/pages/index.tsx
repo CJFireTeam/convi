@@ -14,6 +14,8 @@ import Head from "next/head";
 import VerEstablecimientos from "@/components/root/verestablecimiento";
 import CrearEstablecimientos from "@/components/root/crearestablecimientos";
 import VerAdministradores from "@/components/root/veradmin";
+import CrearAdministrador from "@/components/root/crearadmin";
+import GraficosRoot from "@/components/root/graficosroot";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -39,8 +41,9 @@ export default function Home() {
 
             <VerAdministradores/>
 
-            {/* <CrearAdministradores/> */}
+            <CrearAdministrador/>
 
+            <GraficosRoot/>
           </div>
         </>
       }

@@ -54,7 +54,6 @@ export function api_allEstablishment() {
   return api.get(`establishments`)
 }
 
-
 export function api_allEstablishments() {
   let query = `?populate[users][populate][role]=*`
   return api.get(`establishments${query}`)

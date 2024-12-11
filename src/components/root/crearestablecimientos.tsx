@@ -21,7 +21,7 @@ import { z } from "zod";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
-import { PencilRuler } from 'lucide-react';
+import { PencilRuler, Router, Wrench } from 'lucide-react';
 import { Button } from "../ui/button";
 import { Label } from "@/components/ui/label"
 import { Input } from "../ui/input";
@@ -29,6 +29,7 @@ import { getRegiones, getComunas } from "@/services/local.services";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { api_postEstablishment } from "@/services/axios.services";
 import { toast } from "react-toastify";
+import router from "next/router";
 
 
 interface IForm {
@@ -99,7 +100,7 @@ export default function CrearEstablecimientos() {
             setLoading(true);
             const response = await api_postEstablishment(data);
             toast.success('Establecimiento creado con exito.')
-            reset();
+            router.reload();
         } catch (error) {
             console.log(error);
             setLoading(false)
@@ -116,7 +117,7 @@ export default function CrearEstablecimientos() {
                         <CardHeader>
                             <CardTitle>
                                 <Alert>
-                                    <PencilRuler className="h-4 w-4" />
+                                    <Wrench className="h-4 w-4" />
                                     <AlertTitle>Crear Establecimientos</AlertTitle>
                                     <AlertDescription>
                                         {user.firstname} {user.first_lastname}

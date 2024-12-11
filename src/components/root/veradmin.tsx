@@ -42,6 +42,9 @@ import {
 } from "@/components/ui/accordion"
 import { toast } from "react-toastify";
 import { Separator } from "../ui/separator";
+import { getComunas, getRegiones } from "@/services/local.services";
+import { api_allEstablishments } from "@/services/axios.services";
+import { IAllEstablishment } from "@/interfaces/establishment.interface";
 
 interface IRoles {
     id: number;
@@ -57,9 +60,11 @@ export default function VerAdministradores() {
     const [blockAdmin, setBlockAdmin] = useState<IAdmin[]>([]);
     const [pendientAdmin, setPendientAdmin] = useState<IAdmin[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
-    const [adminFilter, setAdminFilter] = useState<'all' | 'active' | 'pending' | 'blocked'>('all');
+    const [adminFilter, setAdminFilter] = useState<'all' | 'active' | 'pending' | 'blocked' | 'with_establishment' | 'without_establishment'>('all');
     const [currentPage, setCurrentPage] = useState(1);
-    const [editingAdmin, setEditingAdmin] = useState<IAdmin | null>(null); // Update 1
+    const [editingAdmin, setEditingAdmin] = useState<IAdmin | null>(null);
+    const [allEstablishments, setAllEstablishments] = useState<IAllEstablishment[]>([]);
+    const [selectedEstablishment, setSelectedEstablishment] = useState<number | null>(null);
     const itemsPerPage = 10;
 
     const getAllAdministradores = async () => {
@@ -77,8 +82,19 @@ export default function VerAdministradores() {
         }
     }
 
+    const loadEstablishments = async () => {
+        try {
+            const response = await api_allEstablishments();
+            setAllEstablishments(response.data.data);
+        } catch (error) {
+            console.error("Error al cargar establecimientos:", error);
+            toast.error("Error al cargar establecimientos");
+        }
+    };
+
     useEffect(() => {
         getAllAdministradores();
+        loadEstablishments();
     }, [])
 
     const filteredAdmins = totalAdmin.filter(admin => {
@@ -88,7 +104,9 @@ export default function VerAdministradores() {
                 adminFilter === 'active' ? admin.confirmed && !admin.blocked :
                     adminFilter === 'pending' ? !admin.confirmed :
                         adminFilter === 'blocked' ? admin.blocked :
-                            true;
+                            adminFilter === 'with_establishment' ? admin.establishment !== null :
+                                adminFilter === 'without_establishment' ? admin.establishment === null :
+                                    true;
         return nameMatch && statusMatch;
     });
 
@@ -97,20 +115,62 @@ export default function VerAdministradores() {
     const endIndex = startIndex + itemsPerPage;
     const currentAdmins = filteredAdmins.slice(startIndex, endIndex);
 
-    const handleEditAdmin = (admin: IAdmin) => { // Update 2
+    const handleEditAdmin = async (admin: IAdmin) => {
         setEditingAdmin(admin);
+        setSelectedRegion(admin.region);
+        const comunas = await fetchComunas(admin.region);
+        setComunaList(comunas);
+        setSelectedComuna(admin.comuna);
+        setSelectedEstablishment(admin.establishment?.id || null);
     }
 
     const handleBlockUser = async (id: number, blocked: boolean) => {
         try {
             await api_putBlockedUser(id, !blocked);
             toast.success('Usuario bloqueado con éxito')
-            await getAllAdministradores(); // Actualiza la lista de administradores
+            await getAllAdministradores();
         } catch (error) {
             console.error("Error al cambiar el estado de bloqueo:", error);
             toast.error('ha ocurrido un error inesperado')
         }
     };
+
+    const [selectedRegion, setSelectedRegion] = useState(editingAdmin?.region || '');
+    const [selectedComuna, setSelectedComuna] = useState(editingAdmin?.comuna || '');
+
+    const [regionList, setRegionList] = useState<string[]>([]);
+    useEffect(() => {
+        const Regiones = async () => {
+            const data = await getRegiones();
+            setRegionList(data.data.data);
+        };
+        Regiones();
+    }, []);
+
+    const [comunaList, setComunaList] = useState<string[]>([]);
+
+    const fetchComunas = async (region: string) => {
+        try {
+            const data = await getComunas(region);
+            return data.data.data;
+        } catch (error) {
+            console.error("Error al obtener comunas:", error);
+            return [];
+        }
+    };
+
+    useEffect(() => {
+        if (editingAdmin) {
+            setSelectedRegion(editingAdmin.region);
+            fetchComunas(editingAdmin.region).then(comunas => {
+                setComunaList(comunas);
+                setSelectedComuna(editingAdmin.comuna);
+            });
+            setSelectedEstablishment(editingAdmin.establishment?.id || null);
+        }
+    }, [editingAdmin]);
+
+    const [loading, setLoading] = useState(false);
 
     return (
         <>
@@ -188,7 +248,7 @@ export default function VerAdministradores() {
                                 className="flex-grow"
                             />
                         </div>
-                        <Select value={adminFilter} onValueChange={(value: 'all' | 'active' | 'pending' | 'blocked') => setAdminFilter(value)}>
+                        <Select value={adminFilter} onValueChange={(value: 'all' | 'active' | 'pending' | 'blocked' | 'with_establishment' | 'without_establishment') => setAdminFilter(value)}>
                             <SelectTrigger className="w-full">
                                 <SelectValue placeholder="Filtrar por estado" />
                             </SelectTrigger>
@@ -197,6 +257,8 @@ export default function VerAdministradores() {
                                 <SelectItem value="active">Activos</SelectItem>
                                 <SelectItem value="pending">Pendientes</SelectItem>
                                 <SelectItem value="blocked">Bloqueados</SelectItem>
+                                <SelectItem value="with_establishment">Con establecimiento</SelectItem>
+                                <SelectItem value="without_establishment">Sin establecimiento</SelectItem>
                             </SelectContent>
                         </Select>
                     </div>
@@ -244,6 +306,11 @@ export default function VerAdministradores() {
                                                         <Label className="col-span-2 mb-2">Datos del administrador: </Label>
                                                         <Label>Nombre completo: {admin.firstname} {admin.secondname} {admin.first_lastname} {admin.second_lastname}</Label>
                                                         <Label>Estado: {admin.confirmed ? (admin.blocked ? 'Bloqueado' : 'Activo') : 'Pendiente'}</Label>
+                                                        <Label>Email: {admin.email}</Label>
+                                                        <Label>Region: {admin.region}</Label>
+                                                        <Label>Comuna: {admin.comuna}</Label>
+                                                        <Label>Direccion: {admin.direccion}</Label>
+                                                        <Label>Telefono: {admin.phone}</Label>
                                                         <div className="col-span-2 flex justify-end">
                                                             <Button
                                                                 onClick={() => handleEditAdmin(admin)}
@@ -289,7 +356,6 @@ export default function VerAdministradores() {
                 </DialogContent>
             </Dialog>
 
-            {/* Update 3 */}
             <Dialog open={!!editingAdmin} onOpenChange={() => setEditingAdmin(null)}>
                 <DialogContent className="sm:max-w-[700px] w-[102vw] max-h-[90vh] overflow-y-auto">
                     <DialogHeader>
@@ -300,6 +366,7 @@ export default function VerAdministradores() {
                             onSubmit={async (e) => {
                                 e.preventDefault();
                                 try {
+                                    setLoading(true)
                                     const formData = new FormData(e.target as HTMLFormElement);
 
                                     const updatedData = {
@@ -313,21 +380,19 @@ export default function VerAdministradores() {
                                         direccion: formData.get("direccion") as string,
                                         region: formData.get("region") as string,
                                         comuna: formData.get("comuna") as string,
-                                        tipo: formData.get("tipo") as string,
-                                        establishment: formData.get("establishment") as string,
+                                        establishment: selectedEstablishment ? Number(selectedEstablishment) : null,
                                     };
 
-                                    // Realiza la solicitud PUT
                                     await api_putUserAdmin(editingAdmin.id, updatedData);
                                     toast.success("Administrador actualizado con éxito.");
-
-                                    // Actualiza la lista de administradores
                                     await getAllAdministradores();
                                 } catch (error) {
                                     console.error("Error al actualizar administrador:", error);
                                     toast.error("Ocurrió un error al actualizar el administrador.");
+                                    setLoading(false);
                                 } finally {
-                                    setEditingAdmin(null); // Cierra el diálogo
+                                    setEditingAdmin(null);
+                                    setLoading(false);
                                 }
                             }}
                         >
@@ -406,34 +471,82 @@ export default function VerAdministradores() {
                                 </div>
                                 <div className="grid grid-cols-4 items-center gap-4">
                                     <Label htmlFor="region" className="text-right">Región</Label>
-                                    <Input
-                                        id="region"
+                                    <Select
                                         name="region"
-                                        defaultValue={editingAdmin.region}
-                                        className="col-span-3"
-                                    />
+                                        value={selectedRegion}
+                                        onValueChange={async (value) => {
+                                            setSelectedRegion(value);
+                                            const comunas = await fetchComunas(value);
+                                            setComunaList(comunas);
+                                            setSelectedComuna('');
+                                        }}
+                                    >
+                                        <SelectTrigger className="col-span-3">
+                                            <SelectValue placeholder="Selecciona una región" />
+                                        </SelectTrigger>
+                                        <SelectContent className="max-h-52">
+                                            {regionList.map((region) => (
+                                                <SelectItem key={region} value={region}>
+                                                    {region}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
                                 </div>
                                 <div className="grid grid-cols-4 items-center gap-4">
                                     <Label htmlFor="comuna" className="text-right">Comuna</Label>
-                                    <Input
-                                        id="comuna"
+                                    <Select
                                         name="comuna"
-                                        defaultValue={editingAdmin.comuna}
+                                        value={selectedComuna}
+                                        onValueChange={(value) => setSelectedComuna(value)}
+                                    >
+                                        <SelectTrigger className="col-span-3">
+                                            <SelectValue placeholder="Selecciona una comuna" />
+                                        </SelectTrigger>
+                                        <SelectContent className="max-h-52">
+                                            {comunaList.map((comuna) => (
+                                                <SelectItem key={comuna} value={comuna}>
+                                                    {comuna}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <div className="grid grid-cols-4 items-center gap-4">
+                                    <Label htmlFor="establishment" className="text-right">Rol</Label>
+                                    <Input
+                                        id="role"
+                                        name="role"
+                                        defaultValue={editingAdmin.role.name}
                                         className="col-span-3"
+                                        readOnly
                                     />
                                 </div>
                                 <div className="grid grid-cols-4 items-center gap-4">
                                     <Label htmlFor="establishment" className="text-right">Establecimiento</Label>
-                                    {/*  <Input
-                                        id="establishment"
+                                    <Select
                                         name="establishment"
-                                        defaultValue={editingAdmin.establishment}
-                                        className="col-span-3"
-                                    /> */}
+                                        value={selectedEstablishment === null ? "null" : selectedEstablishment?.toString()}
+                                        onValueChange={(value) => setSelectedEstablishment(value === "null" ? null : Number(value))}
+                                    >
+                                        <SelectTrigger className="col-span-3">
+                                            <SelectValue placeholder="Selecciona un establecimiento" />
+                                        </SelectTrigger>
+                                        <SelectContent className="max-h-52">
+                                            <SelectItem value="null">Sin establecimiento</SelectItem>
+                                            {allEstablishments.map((establishment) => (
+                                                <SelectItem key={establishment.id} value={establishment.id.toString()}>
+                                                    {establishment.attributes.name}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
                                 </div>
                             </div>
                             <DialogFooter>
-                                <Button type="submit">Guardar cambios</Button>
+                                <Button type="submit">
+                                    {!loading ? 'Guardar cambios' : <> <span className="loading loading-spinner loading-md"></span></>}
+                                </Button>
                                 <Button type="button" variant="outline" onClick={() => setEditingAdmin(null)}>
                                     Cancelar
                                 </Button>
@@ -447,4 +560,3 @@ export default function VerAdministradores() {
         </>
     )
 }
-

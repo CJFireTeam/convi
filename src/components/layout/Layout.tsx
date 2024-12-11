@@ -324,7 +324,7 @@ const LayoutRoot = (props: LayoutProps) => {
 
   return (
     <div className="mx-auto">
-      <Card className="mx-4 mt-4 mb-2">
+      <Card className="mx-4 my-3">
         <CardHeader>
           <CardTitle>
             <Alert  className="grid grid-cols-2 gap-4">

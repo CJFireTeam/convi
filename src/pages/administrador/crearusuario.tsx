@@ -8,8 +8,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
 import { CreateUserByAdminSchema } from "@/validations/createUserByAdminSchema";
 import { getComunas, getRegiones } from "@/services/local.services";
-import { api_allEstablishment, api_role, api_updateUser } from "@/services/axios.services";
+import { api_establishmentByComuna, api_role, api_updateUser } from "@/services/axios.services";
 import axios, { AxiosError } from "axios";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
 export interface IFormValue {
     username: string;
     email: string;
@@ -108,11 +111,44 @@ export default function CrearUsuario() {
 
         }
     });
-    
+
+    const regionWatch = watch("region");
+    const regionEstablishmentWatch = watch("region_establishment");
+    const comunaEstablishmentWatch = watch("comuna_establishment")
+
+    useEffect(() => {
+        if (regionWatch) {
+            fetchComunas(regionWatch);
+            setValue("comuna", "");
+        }
+    }, [regionWatch, setValue]);
+
+    useEffect(() => {
+        if (regionEstablishmentWatch) {
+            fetchComunasEstablecimiento(regionEstablishmentWatch);
+            setValue("comuna_establishment", "");
+            setComunaEstablecimiento("");
+        }
+    }, [regionEstablishmentWatch, setValue]);
+
+    const fetchEstablishment = async (comuna_establishment: string) => {
+        try {
+            const establishmentData = await api_establishmentByComuna(comuna_establishment);
+            setEstablishmentList(establishmentData.data.data);
+        } catch (error) {
+            console.error("Error fetching stablishment:", error);
+        }
+    };
+
+    useEffect(() => {
+        if (comunaEstablecimiento) {
+            fetchEstablishment(comunaEstablecimiento);
+        }
+    }, [comunaEstablecimiento]);
 
     const onSubmit = async (data: IFormValue) => {
         const id = toast.loading("Creando...");
-
+        setLoading(true);
         const transformedData = {
             ...data,
             username: data.email,
@@ -183,8 +219,8 @@ export default function CrearUsuario() {
                     (role: IRole) => role.name === "Encargado de Convivencia Escolar" || role.name === "Profesor"
                 )
                 setRoleList(filteredRoles)
-                const regionData = await getRegiones()
-                setRegionList(regionData.data.data)
+                // const regionData = await getRegiones()
+                // setRegionList(regionData.data.data)
             } catch (error) {
                 console.error('Error fetching data:', error)
             }
@@ -206,150 +242,228 @@ export default function CrearUsuario() {
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                     <p className="text-black">Información personal:</p>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
-                            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">Email*</label>
-                            <input
-                                id="email"
-                                type="email"
-                                {...register("email", { setValueAs: (value) => value === "" ? undefined : value })}
-                                //onChange={handleInputChange}
-                                className="w-full input input-primary bg-white"
+                        <div className="flex flex-col">
+                            <Label className="mb-1">Email*</Label>
+                            <Input
+                                className="w-full bg-white"
+                                type="text"
+                                {...register('email', { setValueAs: (value) => value === '' ? undefined : value })}
                             />
-                            {errors.email?.message && (<p className="text-error text-sm mb-4 text-center">{errors.email.message}</p>)}
+                            {errors.email && <p className="text-red-500 text-sm">{errors.email.message}</p>}
                         </div>
-                        <div>
-                            <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">Teléfono*</label>
-                            <input
-                                id="phone"
-                                type="tel"
-                                {...register("phone", { setValueAs: (value) => value === "" ? undefined : value })}
-                                //onChange={handleInputChange}
-                                className="w-full input input-primary bg-white"
+                        <div className="flex flex-col">
+                            <Label className="mb-1">Teléfono*</Label>
+                            <Input
+                                className="w-full bg-white"
+                                type="text"
+                                {...register('phone', { setValueAs: (value) => value === '' ? undefined : value })}
                             />
-                            {errors.phone?.message && (<p className="text-error text-sm mb-4 text-center">{errors.phone.message}</p>)}
+                            {errors.phone && <p className="text-red-500 text-sm">{errors.phone.message}</p>}
                         </div>
 
-                        <div>
-                            <label htmlFor="firstname" className="block text-sm font-medium text-gray-700 mb-1">Primer Nombre*</label>
-                            <input
-                                id="firstname"
+                        <div className="flex flex-col">
+                            <Label className="mb-1" >Primer nombre*</Label>
+                            <Input
+                                className="w-full bg-white"
                                 type="text"
-                                {...register("firstname", { setValueAs: (value) => value === "" ? undefined : value })}
-                                //onChange={handleInputChange}
-                                className="w-full input input-primary bg-white"
+                                {...register('firstname', { setValueAs: (value) => value === '' ? undefined : value })}
                             />
-                            {errors.firstname?.message && (<p className="text-error text-sm mb-4 text-center">{errors.firstname.message}</p>)}
+                            {errors.firstname && <p className="text-red-500 text-sm">{errors.firstname.message}</p>}
                         </div>
-                        <div>
-                            <label htmlFor="secondname" className="block text-sm font-medium text-gray-700 mb-1">Segundo Nombre*</label>
-                            <input
-                                id="secondname"
+                        <div className="flex flex-col">
+                            <Label className="mb-1">Segundo nombre*</Label>
+                            <Input
+                                className="w-full bg-white"
                                 type="text"
-                                {...register("secondname", { setValueAs: (value) => value === "" ? undefined : value })}
-                                //onChange={handleInputChange}
-                                className="w-full input input-primary bg-white"
+                                {...register('secondname', { setValueAs: (value) => value === '' ? undefined : value })}
                             />
-                            {errors.secondname?.message && (<p className="text-error text-sm mb-4 text-center">{errors.secondname.message}</p>)}
+                            {errors.secondname && <p className="text-red-500 text-sm">{errors.secondname.message}</p>}
                         </div>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
-                            <label htmlFor="first_lastname" className="block text-sm font-medium text-gray-700 mb-1">Apellido Paterno*</label>
-                            <input
-                                id="first_lastname"
+
+                        <div className="flex flex-col">
+                            <Label className="mb-1">Apellido paterno*</Label>
+                            <Input
+                                className="w-full bg-white"
                                 type="text"
-                                {...register("first_lastname", { setValueAs: (value) => value === "" ? undefined : value })}
-                                //onChange={handleInputChange}
-                                className="w-full input input-primary bg-white"
+                                {...register('first_lastname', { setValueAs: (value) => value === '' ? undefined : value })}
                             />
-                            {errors.first_lastname?.message && (<p className="text-error text-sm mb-4 text-center">{errors.first_lastname.message}</p>)}
+                            {errors.first_lastname && <p className="text-red-500 text-sm">{errors.first_lastname.message}</p>}
                         </div>
-                        <div>
-                            <label htmlFor="second_lastname" className="block text-sm font-medium text-gray-700 mb-1">Apellido Materno*</label>
-                            <input
-                                id="second_lastname"
+                        <div className="flex flex-col">
+                            <Label className="mb-1">Apellido materno*</Label>
+                            <Input
+                                className="w-full bg-white"
                                 type="text"
-                                {...register("second_lastname", { setValueAs: (value) => value === "" ? undefined : value })}
-                                //onChange={handleInputChange}
-                                className="w-full input input-primary bg-white"
+                                {...register('second_lastname', { setValueAs: (value) => value === '' ? undefined : value })}
                             />
-                            {errors.second_lastname?.message && (<p className="text-error text-sm mb-4 text-center">{errors.second_lastname.message}</p>)}
+                            {errors.second_lastname && <p className="text-red-500 text-sm">{errors.second_lastname.message}</p>}
                         </div>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
-                            <label htmlFor="region" className="block text-sm font-medium text-gray-700 mb-1">Región de Residencia*</label>
-                            <select {...register("region", { setValueAs: (value) => value === "" ? undefined : value })} className="w-full select select-primary bg-white">
-                                <option value={""}>Seleccione su region de residencia</option>
-                                {regionList.map((region: string) => (
-                                    <option value={region} key={region}>
-                                        {region}
-                                    </option>
-                                ))}
-                            </select>
-                            {errors.region?.message && (<p className="text-error text-sm mb-4 text-center">{errors.region.message}</p>)}
+
+                        <div className="flex flex-col">
+                            <Label className="mb-1">Región*</Label>
+                            <Controller
+                                name="region"
+                                control={control}
+                                render={({ field }) => (
+                                    <Select onValueChange={field.onChange} value={field.value}>
+                                        <SelectTrigger className="w-full bg-white">
+                                            <SelectValue placeholder="Seleccione una región" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {regionList.map((region) => (
+                                                <SelectItem key={region} value={region}>
+                                                    {region}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                )}
+                            />
+                            {errors.region && <p className="text-red-500 text-sm">{errors.region.message}</p>}
                         </div>
-                        <div>
-                            <label htmlFor="comuna" className="block text-sm font-medium text-gray-700 mb-1">Comuna de Residencia*</label>
-                            <select {...register("comuna", { setValueAs: (value) => value === "" ? undefined : value })} className="w-full select select-primary bg-white">
-                                <option value={""}>Seleccione su comuna de residencia</option>
-                                {comunaList.map((comuna: string) => (
-                                    <option value={comuna} key={comuna}>
-                                        {comuna}
-                                    </option>
-                                ))}
-                            </select>
-                            {errors.comuna?.message && (<p className="text-error text-sm mb-4 text-center">{errors.comuna.message}</p>)}
+                        <div className="flex flex-col">
+                            <Label className="mb-1">Comuna*</Label>
+                            <Controller
+                                name="comuna"
+                                control={control}
+                                render={({ field }) => (
+                                    <Select onValueChange={field.onChange} value={field.value} disabled={!regionWatch}>
+                                        <SelectTrigger className="w-full bg-white">
+                                            <SelectValue placeholder="Seleccione una comuna" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {comunaList.map((comuna) => (
+                                                <SelectItem key={comuna} value={comuna}>
+                                                    {comuna}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                )}
+                            />
+                            {errors.comuna && <p className="text-red-500 text-sm">{errors.comuna.message}</p>}
                         </div>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
                         <div>
-                            <label htmlFor="direccion" className="block text-sm font-medium text-gray-700 mb-1">Dirección*</label>
-                            <input
-                                id="direccion"
-                                type="text"
-                                {...register("direccion", { setValueAs: (value) => value === "" ? undefined : value })}
-                                //onChange={handleInputChange}
-                                className="w-full input input-primary bg-white"
-                            />
-                            {errors.direccion?.message && (<p className="text-error text-sm mb-4 text-center">{errors.direccion.message}</p>)}
+                            <div className="flex flex-col">
+                                <Label className="mb-1">Dirección*</Label>
+                                <Input
+                                    className="w-full bg-white"
+                                    type="text"
+                                    {...register('direccion', { setValueAs: (value) => value === '' ? undefined : value })}
+                                />
+                                {errors.direccion && <p className="text-red-500 text-sm">{errors.direccion.message}</p>}
+                            </div>
                         </div>
                     </div>
                     <p className="text-black">Información laboral:</p>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
+                        <div className="flex flex-col">
+                            <Label className="mb-1">Región del establecimiento*</Label>
+                            <Controller
+                                name="region_establishment"
+                                control={control}
+                                render={({ field }) => (
+                                    <Select onValueChange={(value) => {
+                                        field.onChange(value);
+                                        setRegionEstablecimiento(value);
+                                    }} value={field.value}>
+                                        <SelectTrigger className="w-full bg-white">
+                                            <SelectValue placeholder="Seleccione una región" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {regionEstablishmentList.map((region) => (
+                                                <SelectItem key={region} value={region}>
+                                                    {region}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                )}
+                            />
+                            {errors.region_establishment && <p className="text-red-500 text-sm">{errors.region_establishment.message}</p>}
+                        </div>
+                        <div className="flex flex-col">
+                            <Label className="mb-1">Comuna del establecimiento*</Label>
+                            <Controller
+                                name="comuna_establishment"
+                                control={control}
+                                render={({ field }) => (
+                                    <Select
+                                        onValueChange={(value) => {
+                                            field.onChange(value);
+                                            setComunaEstablecimiento(value);
+                                        }}
+                                        value={field.value}
+                                        disabled={!regionEstablishmentWatch}
+                                    >
+                                        <SelectTrigger className="w-full bg-white">
+                                            <SelectValue placeholder="Seleccione una comuna" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {comunaEstablishmentList.map((comuna) => (
+                                                <SelectItem key={comuna} value={comuna}>
+                                                    {comuna}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                )}
+                            />
+                            {errors.comuna_establishment && <p className="text-red-500 text-sm">{errors.comuna_establishment.message}</p>}
+                        </div>
+
+                        <div className="flex flex-col">
                             <label htmlFor="establishment" className="block text-sm font-medium text-gray-700 mb-1">Establecimiento*</label>
-                            <select {...register("establishment", { setValueAs: (value) => value === "" ? undefined : Number(value) })} className="w-full select select-primary bg-white">
-                                <option value={""}>Seleccione el establecimiento</option>
-                                {establishmentList.map((establishment: IEstablishment) => (
-                                    <option value={establishment.id} key={establishment.id}>
-                                        {establishment.attributes.name}
-                                    </option>
-                                ))}
-                            </select>
-                            {errors.establishment?.message && (<p className="text-error text-sm mb-4 text-center">{errors.establishment.message}</p>)}
+                            <Controller
+                                name="establishment"
+                                control={control}
+                                render={({ field }) => (
+                                    <Select onValueChange={(value) => field.onChange(value === "" ? undefined : Number(value))} value={field.value?.toString() || ""} disabled={!comunaEstablishmentWatch}>
+                                        <SelectTrigger className="w-full bg-white">
+                                            <SelectValue placeholder="Seleccione el establecimiento" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {establishmentList.length > 0 ? (
+                                                establishmentList.map((establishment: IEstablishment) => (
+                                                    <SelectItem key={establishment.id} value={establishment.id.toString()}>
+                                                        {establishment.attributes.name}
+                                                    </SelectItem>
+                                                ))
+                                            ) : (
+                                                <SelectItem disabled value="no-establishments">
+                                                    No se encontraron establecimientos
+                                                </SelectItem>
+                                            )}
+                                        </SelectContent>
+                                    </Select>
+                                )}
+                            />
+                            {errors.establishment && <p className="text-red-500 text-sm">{errors.establishment.message}</p>}
+
                         </div>
                         <div>
-                            <label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-1">Rol*</label>
+                            <Label>Rol*</Label>
                             <Controller
                                 name="role"
                                 control={control}
                                 render={({ field }) => (
-                                    <select
-                                        {...field}
-                                        className="w-full select select-primary bg-white"
-                                        onChange={(e) => field.onChange(Number(e.target.value))}
-                                    >
-                                        <option value="">Seleccione un rol</option>
-                                        {roleList.map((role) => (
-                                            <option key={role.id} value={role.id}>
-                                                {role.name}
-                                            </option>
-                                        ))}
-                                    </select>
+                                    <Select onValueChange={(value) => field.onChange(Number(value))} value={field.value?.toString() || ""}>
+                                        <SelectTrigger className="w-full bg-white">
+                                            <SelectValue placeholder="Seleccione un rol" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {roleList.map((role) => (
+                                                <SelectItem key={role.id} value={role.id.toString()}>
+                                                    {role.name}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
                                 )}
                             />
-                            {errors.role?.message && (<p className="text-error text-sm mb-4 text-center">{errors.role.message}</p>)}
+                            {errors.role && <p className="text-red-500 text-sm">{errors.role.message}</p>}
                         </div>
 
                     </div>
@@ -357,6 +471,7 @@ export default function CrearUsuario() {
                     <div>
                         <button
                             type="submit"
+                            disabled={loading}
                             className="w-full px-4 py-2 bg-primary text-white font-medium rounded-md shadow-sm hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                         >
                             Crear Usuario

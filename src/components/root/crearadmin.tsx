@@ -185,7 +185,7 @@ export default function CrearAdministrador() {
         }
     }, [comunaEstablecimiento]);
 
-    ;
+    
     const onSubmit = async (data: IForm) => {
         const id = toast.loading("Creando...");
         setLoading(true);

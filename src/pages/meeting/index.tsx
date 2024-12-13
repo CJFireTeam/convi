@@ -1,14 +1,14 @@
+"use client"
+
 import React, { useCallback, useEffect, useState } from "react";
 import { useUserStore } from "@/store/userStore";
-import router, { useRouter } from "next/router"; // Importa useRouter
+import { useRouter } from "next/navigation";
 import {
   api_getEstablishmentCoursesSinPag,
-  api_GetUsersAlumnosEstablishment,
-  api_getUsersEstablishment,
   api_getUsersEstablishment2,
   api_postSendMeeting,
 } from "@/services/axios.services";
-import { Bounce, toast } from "react-toastify";
+import { toast } from "react-toastify";
 import Head from "next/head";
 import { z } from "zod";
 import Select from "react-select";
@@ -17,113 +17,83 @@ import { Controller, useForm } from "react-hook-form";
 import {
   Card,
   CardContent,
-  CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
+  CardFooter,
 } from "@/components/ui/card";
 import {
   Table,
   TableBody,
-  TableCaption,
   TableCell,
-  TableHead,
-  TableHeader,
   TableRow,
 } from "@/components/ui/table"
-
-import { Input } from "../../components/ui/input";
-import { Label } from "../../components/ui/label";
-import { Button } from "../../components/ui/button";
-import { Check, ChevronRight, Minus, Plus } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Check, Minus, Plus, CalendarIcon, Clock } from 'lucide-react';
 import { Loading } from "react-daisyui";
 import WarningAlert from "@/components/alerts/warningAlert";
+import { Calendar } from "@/components/ui/calendar"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { format, parse } from "date-fns"
+import { es } from "date-fns/locale"
+import { cn } from "@/lib/utils"
 
-interface IFormValues {
-  CreationDate: string;
-  RoomName: string;
-  RoomUrl: string;
-  Establishment: number;
-  CreatorUser: number;
-  establishment_courses?: number[] | undefined;
-  Users_destiny?: number[] | undefined;
+const MeetingSchema = z.object({
+  RoomName: z.string().min(1, "Campo requerido"),
+  establishment_courses: z.array(z.number()).optional(),
+  Users_destiny: z.array(z.number()).optional(),
+  MeetingDate: z.string().nullable().optional(),
+});
+
+type FormValues = z.infer<typeof MeetingSchema>;
+
+interface ICoursesEstablishment {
+  attributes: {
+    Grade: string;
+    Letter: string;
+  };
+  id: number;
 }
 
 interface IUser {
   id: number;
   firstname: string;
   first_lastname: string;
-  second_lastname: string;
-  role:{
-    name:string;
+  role: {
+    name: string;
   }
-  tipo:string;
+  tipo: string;
 }
-
-interface ICoursesEstablishment {
-  attributes: {
-    Grade: string;
-    Letter: string;
-    establishment: {
-      data: {
-        attributes: {
-          name: string;
-        };
-        id: number;
-      };
-    };
-  };
-  id: number;
-}
-const MeetingSchema = z.object({
-  CreationDate: z.date({
-    required_error: "Campo requerido",
-    invalid_type_error: "Tipo inválido",
-  }),
-  RoomName: z.string({
-    required_error: "Campo requerido",
-    invalid_type_error: "Tipo inválido",
-  }),
-  RoomUrl: z.string({
-    required_error: "Campo requerido",
-    invalid_type_error: "Tipo inválido",
-  }),
-  Establishment: z.number({
-    required_error: "Campo requerido",
-    invalid_type_error: "Tipo invalido",
-  }),
-  CreatorUser: z.number({
-    required_error: "Campo requerido",
-    invalid_type_error: "Tipo invalido",
-  }),
-  establishment_courses: z.array(z.number()).optional(), // Cambiado a array
-  Users_destiny: z.array(z.number()).optional(), // Cambiado a array
-});
 
 export default function MeetingPage() {
-  const [roomName, setRoomName] = useState("");
-  const [meetingWindow, setMeetingWindow] = useState<Window | null>(null);
-  const { user, GetRole } = useUserStore();
   const [coursesEs, setCoursesEs] = useState<ICoursesEstablishment[]>([]);
   const [selectedUsers, setSelectedUsers] = useState<Set<number>>(new Set());
   const [selectedCourses, setSelectedCourses] = useState<Set<number>>(new Set());
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+  const { user } = useUserStore();
+  const router = useRouter();
 
-  
-  
   const {
     register,
-    watch,
-    setValue,
     handleSubmit,
-    formState: { errors },
     control,
-  } = useForm<IFormValues>({
+    setValue,
+    watch,
+    formState: { errors },
+  } = useForm<FormValues>({
     resolver: zodResolver(MeetingSchema),
+    defaultValues: {
+      RoomName: "",
+      establishment_courses: [],
+      Users_destiny: [],
+      MeetingDate: null,
+    },
   });
 
-  const listaCursos = watch('establishment_courses');
+  const listaCursos = watch('establishment_courses') || [];
+  const meetingDate = watch('MeetingDate');
 
-  
   useEffect(() => {
     if (!user || user.establishment.id === 0) return;
     getCoursesEstablishment();
@@ -138,17 +108,11 @@ export default function MeetingPage() {
     }
   };
 
-  const handleCreateMeeting = async () => {
+  const onSubmit = async (data: FormValues) => {
     try {
-      const roomNameInput = document.getElementById("roomName") as HTMLInputElement;
-      const roomName = roomNameInput.value.trim();
-      console.log(roomName)
-      if (!roomName) {
-        toast.error("Por favor, ingrese un nombre para la sala.");
-        return;
-      }
+      toast.loading("Creando reunión...");
 
-      const formattedRoomName = roomName.replace(/\s+/g, "_");
+      const formattedRoomName = data.RoomName.replace(/\s+/g, "_");
       localStorage.setItem("currentRoom", formattedRoomName);
 
       const displayName = `${user.firstname} ${user.first_lastname} ${user.second_lastname}`;
@@ -157,12 +121,18 @@ export default function MeetingPage() {
 
       const baseUrl = `https://meet.jit.si/${formattedRoomName}?token=${randomToken}`;
       const currentTime = new Date().toISOString().split("T")[0];
-      toast.loading("Creando reunión...");
 
-      const newWindow = window.open(roomUrl, "_blank");
-      setMeetingWindow(newWindow);
+      window.open(roomUrl, "_blank");
 
-      const meetingData: IFormValues = {
+      let formattedDate = null;
+      let formattedTime = null;
+      if (data.MeetingDate) {
+        const date = new Date(data.MeetingDate);
+        formattedDate = date.toISOString().split("T")[0];
+        formattedTime = format(date, "hh:mm:ss");
+      }
+
+      const meetingData = {
         CreationDate: currentTime,
         RoomName: formattedRoomName,
         RoomUrl: baseUrl,
@@ -170,22 +140,16 @@ export default function MeetingPage() {
         CreatorUser: user.id,
         establishment_courses: selectedCourses.size > 0 ? Array.from(selectedCourses) : undefined,
         Users_destiny: selectedUsers.size > 0 ? Array.from(selectedUsers) : undefined,
+        MeetingDate: formattedDate,
+        MeetingTime: formattedTime,
       };
 
-      // Remove undefined properties
-      const cleanedMeetingData = Object.fromEntries(
-        Object.entries(meetingData).filter(([_, v]) => v !== undefined)
-      );
+      console.log('Datos a enviar:', meetingData);
 
-      console.log('Data del meeting:', cleanedMeetingData);
-
-      await api_postSendMeeting(cleanedMeetingData);
+      await api_postSendMeeting(meetingData);
 
       toast.dismiss();
       toast.success("Reunión creada correctamente");
-      setTimeout(() => {
-        router.reload();
-      }, 3000);
     } catch (error) {
       console.error("Error al enviar la información de la reunión:", error);
       toast.error("Error al crear la reunión");
@@ -202,7 +166,6 @@ export default function MeetingPage() {
       }
       return newSet;
     });
-    console.log('users: ', selectedUsers)
   }, []);
 
   const handleSelectCourse = useCallback((courseId: number) => {
@@ -215,53 +178,45 @@ export default function MeetingPage() {
       }
       return newSet;
     });
-    // Cuando se selecciona o deselecciona un curso completo, limpiamos los usuarios individuales
     setSelectedUsers(new Set());
-    console.log('users: ', selectedUsers)
-    console.log('courses: ', selectedCourses)
   }, []);
-  
-  
-  const Body = () => {
-    return (
-      <Card className="md:w-3/4">
-        <CardHeader>
-          <CardTitle>Bienvenido a la sala de reuniones</CardTitle>
-        </CardHeader>
+
+  const Body = () => (
+    <Card className="md:w-3/4">
+      <CardHeader>
+        <CardTitle>Bienvenido a la sala de reuniones</CardTitle>
+      </CardHeader>
+      <form onSubmit={handleSubmit(onSubmit)}>
         <CardContent className="md:mx-8">
-          <Label htmlFor="roomName">Nombre de la sala</Label>
+          <Label htmlFor="RoomName">Nombre de la sala</Label>
           <Input
-            id="roomName"
+            id="RoomName"
             placeholder="Ingrese el nombre de la sala"
             {...register("RoomName")}
-            onChange={(e) => {
-              setValue("RoomName", e.target.value); // Actualizar el valor en React Hook Form
-            }}
           />
+          {errors.RoomName && <span className="text-red-500">{errors.RoomName.message}</span>}
+
           <div className="w-full mt-4">
-            <label htmlFor="courses" className="mb-2 font-semibold">
-              Seleccionar cursos (opcional):
-            </label>
+            <Label htmlFor="courses">Seleccionar cursos (opcional):</Label>
             <Controller
               control={control}
               name="establishment_courses"
-              render={({ field: { onChange, value, name, ref } }) => (
-                <Select
+              render={({ field }) => (
+                <Select<ICoursesEstablishment, true>
+                  {...field}
                   placeholder="Seleccione curso"
-                  getOptionValue={(option) => option.id.toString()}
-                  getOptionLabel={(option) =>
+                  getOptionValue={(option: ICoursesEstablishment) => option.id.toString()}
+                  getOptionLabel={(option: ICoursesEstablishment) =>
                     option.attributes.Grade + " " + option.attributes.Letter
                   }
-                  value={coursesEs.filter((course) =>
-                    value?.includes(course.id)
-                  )}
                   options={coursesEs}
                   onChange={(val) => {
                     const selectedIds = val
-                      ? val.map((course) => course.id)
+                      ? (val as ICoursesEstablishment[]).map((course) => course.id)
                       : [];
-                    setValue("establishment_courses", selectedIds);
+                    field.onChange(selectedIds);
                   }}
+                  value={coursesEs.filter((course) => field.value?.includes(course.id))}
                   menuPortalTarget={document.body}
                   loadingMessage={() => "Cargando opciones..."}
                   isLoading={coursesEs.length === 0}
@@ -272,56 +227,99 @@ export default function MeetingPage() {
             />
             <span className="text-gray-400">Debe agregar todo el curso si desea enviar una reunión a este</span>
           </div>
+
+          <div className="w-full mt-4">
+            <Label htmlFor="meetingDate">Fecha y hora de la reunión (opcional)</Label>
+            <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className={cn(
+                    "w-full justify-start text-left font-normal",
+                    !meetingDate && "text-muted-foreground"
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {meetingDate ? format(new Date(meetingDate), "PPP HH:mm", { locale: es }) : <span>Seleccionar fecha y hora</span>}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0">
+                <Calendar
+                  mode="single"
+                  selected={meetingDate ? new Date(meetingDate) : undefined}
+                  onSelect={(date) => {
+                    if (date) {
+                      const currentDate = meetingDate ? new Date(meetingDate) : new Date();
+                      date.setHours(currentDate.getHours(), currentDate.getMinutes());
+                      setValue("MeetingDate", date.toISOString());
+                    } else {
+                      setValue("MeetingDate", null);
+                    }
+                    setIsCalendarOpen(false);
+                  }}
+                  initialFocus
+                  locale={es}
+                  className="max-h-60 overflow-auto"
+                />
+                <div className="p-3 border-t">
+                  <Input
+                    type="time"
+                    value={meetingDate ? format(new Date(meetingDate), "HH:mm") : ""}
+                    onChange={(e) => {
+                      if (e.target.value) {
+                        const [hours, minutes] = e.target.value.split(':');
+                        const newDate = meetingDate ? new Date(meetingDate) : new Date();
+                        newDate.setHours(parseInt(hours), parseInt(minutes));
+                        setValue("MeetingDate", newDate.toISOString());
+                      }
+                    }}
+                  />
+                </div>
+              </PopoverContent>
+            </Popover>
+          </div>
         </CardContent>
         <CardFooter>
           <Button
-            onClick={handleCreateMeeting}
+            type="submit"
             variant="outline"
             className="w-full"
           >
             Generar reunión
           </Button>
         </CardFooter>
-      </Card>
-    );
-  }
+      </form>
+    </Card>
+  );
 
-  if (["Profesor", "Encargado de Convivencia Escolar"].includes(GetRole())) {
-    return (
-      <div className="px-4">
-        <Head>
-          <title>Reunión</title>
-          <meta
-            name="viewport"
-            content="initial-scale=1.0, width=device-width"
-          />
-        </Head>
-        <div className="flex items-center justify-center">
-          <Body />
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-          {listaCursos && listaCursos.map((e, index) => (
-            <Cursos
-              key={index}
-              e={e}
-              coursesEs={coursesEs}
-              onSelectUser={handleSelectUser}
-              onSelectCourse={handleSelectCourse}
-              selectedUsers={selectedUsers}
-              selectedCourses={selectedCourses}
-            />
-          ))}
-        </div>
+  return (
+    <div className="px-4">
+      <Head>
+        <title>Reunión</title>
+        <meta
+          name="viewport"
+          content="initial-scale=1.0, width=device-width"
+        />
+      </Head>
+      <div className="flex items-center justify-center">
+        <Body />
       </div>
-    );
-  }
-
-  return null;
-}
-interface IUser {
-  id: number;
-  firstname: string;
-  first_lastname: string;
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+        {listaCursos.map((e: number, index: number) => (
+          <Cursos
+            key={index}
+            e={e}
+            coursesEs={coursesEs}
+            onSelectUser={handleSelectUser}
+            onSelectCourse={handleSelectCourse}
+            selectedUsers={selectedUsers}
+            selectedCourses={selectedCourses}
+          />
+        ))}
+      </div>
+    </div>
+  );
 }
 
 interface ICursosProps {
@@ -333,7 +331,7 @@ interface ICursosProps {
   selectedCourses: Set<number>;
 }
 
-export const Cursos: React.FC<ICursosProps> = ({
+const Cursos: React.FC<ICursosProps> = ({
   e,
   coursesEs,
   onSelectUser,
@@ -362,13 +360,11 @@ export const Cursos: React.FC<ICursosProps> = ({
   useEffect(() => {
     getUsers();
   }, [e]);
-  
-  // Lógica de paginación
+
   const indexOfLastUser = currentPage * usersPerPage;
   const indexOfFirstUser = indexOfLastUser - usersPerPage;
   const currentUsers = students.slice(indexOfFirstUser, indexOfLastUser);
 
-  // Función para manejar la navegación entre páginas
   const handlePageChange = (newPage: number) => {
     setCurrentPage(newPage);
   };
@@ -397,7 +393,6 @@ export const Cursos: React.FC<ICursosProps> = ({
                     onClick={() => onSelectUser(uc.id)}
                     disabled={isCourseSelected}
                     aria-label={selectedUsers.has(uc.id) ? "Deseleccionar usuario" : "Seleccionar usuario"}
-                    
                   >
                     {selectedUsers.has(uc.id) ? <Minus color="red" /> : <Plus color="green" />}
                   </Button>
@@ -407,8 +402,7 @@ export const Cursos: React.FC<ICursosProps> = ({
           </TableBody>
         </Table>
       </CardContent>
-            {/* Paginación */}
-            <CardFooter className="flex justify-between items-center">
+      <CardFooter className="flex justify-between items-center">
         <Button
           variant="outline"
           disabled={currentPage === 1}
@@ -431,12 +425,12 @@ export const Cursos: React.FC<ICursosProps> = ({
           onClick={() => onSelectCourse(e)}
           className={isCourseSelected ? "bg-green-500 hover:bg-green-600 w-full" : "w-full"}
           aria-label={isCourseSelected ? "Quitar todo el curso" : "Agregar todo el curso"}
-          
         >
-          {isCourseSelected ? <Check /> : <Plus/>}
+          {isCourseSelected ? <Check /> : <Plus />}
           {isCourseSelected ? "Curso seleccionado" : "Agregar todo el curso"}
         </Button>
       </CardFooter>
     </Card>
   );
 };
+

@@ -64,8 +64,9 @@ export default function Index() {
     const onSubmit = async (data: IFormEstablishmentCourse) => {
         try {
             setLoadingButton(true)
-            setRefreshCourses(prev => !prev)
             await api_postEstablishmentCourses(data)
+            // Primero actualizamos el refreshTrigger
+            setRefreshCourses(prev => !prev)
             toast.success('Curso agregado correctamente')
         } catch (error) {
             console.error(error)

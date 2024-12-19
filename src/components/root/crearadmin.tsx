@@ -351,7 +351,7 @@ export default function CrearAdministrador() {
                                             <SelectTrigger className="w-full">
                                                 <SelectValue placeholder="Seleccione una región" />
                                             </SelectTrigger>
-                                            <SelectContent>
+                                            <SelectContent className="max-h-52">
                                                 {regionList.map((region) => (
                                                     <SelectItem key={region} value={region}>
                                                         {region}
@@ -373,7 +373,7 @@ export default function CrearAdministrador() {
                                             <SelectTrigger className="w-full">
                                                 <SelectValue placeholder="Seleccione una comuna" />
                                             </SelectTrigger>
-                                            <SelectContent>
+                                            <SelectContent className="max-h-52">
                                                 {comunaList.map((comuna) => (
                                                     <SelectItem key={comuna} value={comuna}>
                                                         {comuna}
@@ -413,7 +413,7 @@ export default function CrearAdministrador() {
                                             <SelectTrigger className="w-full">
                                                 <SelectValue placeholder="Seleccione una región" />
                                             </SelectTrigger>
-                                            <SelectContent>
+                                            <SelectContent className="max-h-52">
                                                 {regionEstablishmentList.map((region) => (
                                                     <SelectItem key={region} value={region}>
                                                         {region}
@@ -465,7 +465,7 @@ export default function CrearAdministrador() {
                                             <SelectTrigger className="w-full">
                                                 <SelectValue placeholder="Seleccione el establecimiento" />
                                             </SelectTrigger>
-                                            <SelectContent>
+                                            <SelectContent className="max-h-52">
                                                 {establishmentList.length > 0 ? (
                                                     establishmentList.map((establishment: IEstablishment) => (
                                                         <SelectItem key={establishment.id} value={establishment.id.toString()}>
@@ -495,7 +495,7 @@ export default function CrearAdministrador() {
                                             <SelectTrigger className="w-full">
                                                 <SelectValue placeholder="Seleccione un rol" />
                                             </SelectTrigger>
-                                            <SelectContent>
+                                            <SelectContent className="max-h-52">
                                                 {roleList.map((role) => (
                                                     <SelectItem key={role.id} value={role.id.toString()}>
                                                         {role.name}

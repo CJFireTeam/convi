@@ -73,10 +73,38 @@ export default function ViewEstablishmentCourses({ establishmentId, refreshTrigg
 
     useEffect(() => {
         if (establishmentId) {
-            getCoursesEstablishment()
+            const actualizarDatos = async () => {
+                try {
+                    const data = await api_getEstablishmentCourses(establishmentId, 1)
+                    const totalRegistros = data.data.meta.pagination.total
+                    const nuevaPagina = metaData.pageSize > 0 ? Math.ceil(totalRegistros / metaData.pageSize) : 1;
+                    // Actualizamos el estado de metaData
+                    setMetaData(prev => ({
+                        ...prev,
+                        page: nuevaPagina,
+                        total: totalRegistros,
+                        pageCount: Math.ceil(totalRegistros / prev.pageSize)
+                    }))
+
+                    // Obtenemos los datos de la nueva página
+                    const nuevosRegistros = await api_getEstablishmentCourses(establishmentId, nuevaPagina)
+                    setCoursesEs(nuevosRegistros.data.data)
+                } catch (error) {
+                    console.error('Error al actualizar datos:', error)
+                }
+            }
+
+            actualizarDatos()
             getTeachers()
         }
-    }, [establishmentId, metaData.page, refreshTrigger])
+    }, [establishmentId, refreshTrigger])
+
+    // Agregamos un nuevo useEffect solo para cambios de página
+    useEffect(() => {
+        if (establishmentId) {
+            getCoursesEstablishment()
+        }
+    }, [metaData.page])
 
     const updatePage = (number: number) => {
         setMetaData(prev => ({ ...prev, page: number }))
@@ -152,7 +180,7 @@ export default function ViewEstablishmentCourses({ establishmentId, refreshTrigg
                                     <SelectTrigger>
                                         <SelectValue placeholder="Seleccione un profesor" />
                                     </SelectTrigger>
-                                    <SelectContent>
+                                    <SelectContent className="max-h-52">
                                         {teachers.length > 0 ? (
                                             teachers.map((teacher) => (
                                                 <SelectItem key={teacher.id} value={teacher.id.toString()}>

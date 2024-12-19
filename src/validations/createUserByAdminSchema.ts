@@ -15,8 +15,6 @@ export const CreateUserByAdminSchema = z.object({
     comuna: z.string({ required_error: "Campo Requerido", invalid_type_error: "Campo Requerido" }).min(3, { message: "Campo Requerido" }).default(""),
     direccion: z.string({ required_error: "Campo Requerido", invalid_type_error: "Campo Requerido" }),
     phone: z.string({ required_error: "Campo Requerido", invalid_type_error: "Campo Requerido" }),
-    region_establishment: z.string({ required_error: "Campo Requerido", invalid_type_error: "Campo Requerido" }).min(3, { message: "Campo Requerido" }).default(""),
-    comuna_establishment: z.string({ required_error: "Campo Requerido", invalid_type_error: "Campo Requerido" }).min(3, { message: "Campo Requerido" }).default("")
 })
 
 

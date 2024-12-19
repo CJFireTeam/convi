@@ -120,92 +120,96 @@ export default function Index() {
             </button>
           </div>
         </div>
-        {isLoading ? (
+        {isLoading ? (<>
           <p className="text-center mt-4">Cargando usuarios...</p>
-        ) : data.length === 0 ? (
-          <WarningAlert message="No se han encontrado usuarios" />
+        </>
         ) : !editAut ? (
           <>
-            <div className="mt-4 mb-4">
-              <div className="relative">
-                <input
-                  type="text"
-                  placeholder="Buscar por nombre, apellido o correo"
-                  className="w-full md:w-96 pl-10 pr-4 py-2 input input-primary bg-white"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6 absolute left-3 top-2.5 h-5 w-5 text-gray-400">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
-                </svg>
-              </div>
-            </div>
-            <div className="mt-8 flow-root">
-              <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-                <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
-                  <table className="min-w-full divide-y divide-gray-300 border ">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6">#</th>
-                        <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">ID</th>
-                        <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Nombre</th>
-                        <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Email</th>
-                        <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Comuna</th>
-                        <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Rol</th>
-                        <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Editar</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-200 bg-white">
-                      {filteredUsers.slice(indexOfFirstUser, indexOfLastUser).map((user, index) => (
-                        <tr key={user.id}>
-                          <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
-                            {indexOfFirstUser + index + 1}
-                          </td>
-                          <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
-                            {user.id}
-                          </td>
-                          <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
-                            {user.firstname} {user.first_lastname}
-                          </td>
-                          <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
-                            {user.email}
-                          </td>
-                          <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
-                            {user.comuna}
-                          </td>
-                          <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
-                            {user.role.name}
-                          </td>
-
-                          <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
-                            <button onClick={() => router.push(`/administrador/editarUsuario?id=${user.id}`)}>
-                              <PencilIcon className="h-6 w-6" aria-hidden="true" />
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+            {data.length === 0 ? (
+              <WarningAlert message="No se han encontrado usuarios" />
+            ) : (<>
+              <div className="mt-4 mb-4">
+                <div className="relative">
+                  <input
+                    type="text"
+                    placeholder="Buscar por nombre, apellido o correo"
+                    className="w-full md:w-96 pl-10 pr-4 py-2 input input-primary bg-white"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  />
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6 absolute left-3 top-2.5 h-5 w-5 text-gray-400">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+                  </svg>
                 </div>
               </div>
-            </div>
-            <div className="mt-4 flex justify-between">
-              <button
-                onClick={() => handlePageChange(currentPage - 1)}
-                disabled={currentPage === 1}
-                className="btn btn-primary btn-outline"
-              >
-                Anterior
-              </button>
-              <span>Página {currentPage} de {totalPages}</span>
-              <button
-                onClick={() => handlePageChange(currentPage + 1)}
-                disabled={currentPage === totalPages || totalPages === 0}
-                className="btn btn-primary btn-outline"
-              >
-                Siguiente
-              </button>
-            </div>
+              <div className="mt-8 flow-root">
+                <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+                  <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
+                    <table className="min-w-full divide-y divide-gray-300 border ">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6">#</th>
+                          <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">ID</th>
+                          <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Nombre</th>
+                          <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Email</th>
+                          <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Comuna</th>
+                          <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Rol</th>
+                          <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Editar</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-200 bg-white">
+                        {filteredUsers.slice(indexOfFirstUser, indexOfLastUser).map((user, index) => (
+                          <tr key={user.id}>
+                            <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
+                              {indexOfFirstUser + index + 1}
+                            </td>
+                            <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
+                              {user.id}
+                            </td>
+                            <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
+                              {user.firstname} {user.first_lastname}
+                            </td>
+                            <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
+                              {user.email}
+                            </td>
+                            <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
+                              {user.comuna}
+                            </td>
+                            <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
+                              {user.role.name}
+                            </td>
+
+                            <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
+                              <button onClick={() => router.push(`/administrador/editarUsuario?id=${user.id}`)}>
+                                <PencilIcon className="h-6 w-6" aria-hidden="true" />
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+              <div className="mt-4 flex justify-between">
+                <button
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  className="btn btn-primary btn-outline"
+                >
+                  Anterior
+                </button>
+                <span>Página {currentPage} de {totalPages}</span>
+                <button
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage === totalPages || totalPages === 0}
+                  className="btn btn-primary btn-outline"
+                >
+                  Siguiente
+                </button>
+              </div>
+            </>)
+            }
           </>
         ) : (
           <>

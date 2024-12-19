@@ -32,6 +32,10 @@ api.interceptors.response.use(
   }
 );
 
+export function api_postUsers(data: any) {
+  return api.post(`/users`, data)  // Removemos el { data: data }
+}
+
 export function api_postUser(data: any) {
   return api.post(`professionals`, { data: data })
 }
@@ -463,9 +467,10 @@ export function api_getDocumentsByUserDestinity2(establishmentId: number, userId
 }
 
 export function api_getEstablishmentCoursesByUser(establishment: number, userId: number, page: number) {
-  let query = `?filter[$and][0][establishment][id][$eq]=${establishment}`;
-  query += `&filters[$and][1][users][id][$eq]=${userId}`;
-  query += `&filters[$and][2][Eliminado][$eq]=false`; // Filtrar cursos donde Eliminado es false
+  let query = `?filters[$and][0][establishment][id][$eq]=${establishment}`;
+  query += `&filters[$or][1][users][id][$eq]=${userId}`;
+  query += `&filters[$or][2][LeadTeacher][id][$eq]=${userId}`;
+  query += `&filters[$and][3][Eliminado][$eq]=false`; // Filtrar cursos donde Eliminado es false
   query += `&populate=*`;
   query += `&sort=createdAt:desc`; // Ordenar por el campo 'createdAt' en orden descendente
   query += `&pagination[page]=${page}&pagination[pageSize]=12`;
@@ -473,7 +478,7 @@ export function api_getEstablishmentCoursesByUser(establishment: number, userId:
   return api.get(`establishment-courses${query}`);
 }
 export function api_getCoursesByUserSinPag(establishment: number, userId: number) {
-  let query = `?filter[$and][0][establishment][id][$eq]=${establishment}`;
+  let query = `?filters[$and][0][establishment][id][$eq]=${establishment}`;
   query += `&filters[$and][1][users][id][$eq]=${userId}`;
   query += `&filters[$and][2][establishment_courses][Eliminado][$eq]=false`; // Filtrar cursos donde Eliminado es false
   query += `&populate[0]=establishment_courses`; // Poblar establishment_courses
@@ -511,7 +516,7 @@ export function api_putStatusEstablishment(establishmentId: number, status: bool
 
 
 export function api_getEstablishmentCourses(establishment: number, page: number) {
-  let query = `?filter[$and][0][establishment][id][$eq]=${establishment}`
+  let query = `?filters[$and][0][establishment][id][$eq]=${establishment}`
   query += `&filters[$and][1][Eliminado][$eq]=false`
   query += `&populate=*`;
   query += `&sort=Grade:asc`; // Ordenar por el campo 'Letter' en orden ascendente
@@ -519,7 +524,7 @@ export function api_getEstablishmentCourses(establishment: number, page: number)
   return api.get(`establishment-courses${query}`)
 }
 export function api_getEstablishmentCoursesSinPag(establishment: number) {
-  let query = `?filter[$and][0][establishment][id][$eq]=${establishment}`
+  let query = `?filters[$and][0][establishment][id][$eq]=${establishment}`
   query += `&filters[$and][1][Eliminado][$eq]=false`
   query += `&populate=*`;
   query += `&sort=Grade:asc`; // Ordenar por el campo 'Letter' en orden ascendente

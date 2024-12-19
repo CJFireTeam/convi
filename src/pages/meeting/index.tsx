@@ -129,7 +129,7 @@ export default function MeetingPage() {
       if (data.MeetingDate) {
         const date = new Date(data.MeetingDate);
         formattedDate = date.toISOString().split("T")[0];
-        formattedTime = format(date, "hh:mm:ss");
+        formattedTime = format(date, "HH:mm:ss");
       }
 
       const meetingData = {
@@ -144,7 +144,6 @@ export default function MeetingPage() {
         MeetingTime: formattedTime,
       };
 
-      console.log('Datos a enviar:', meetingData);
 
       await api_postSendMeeting(meetingData);
 

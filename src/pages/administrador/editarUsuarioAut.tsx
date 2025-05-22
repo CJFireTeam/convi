@@ -407,12 +407,20 @@ export function InsertCourse(props: props) {
             const data = await api_getEstablishmentCoursesSinPag(props.establishmentId);
             const establishmentCourses = data.data.data;
 
-            // Filtrar los cursos para que solo se incluyan aquellos que el usuario no tiene inscritos
             const userCourseIds = courseByUser.map(course => course.id);
 
-            const filteredCourses = establishmentCourses.filter((course: any) =>
-                !userCourseIds.includes(course.id) && !course.attributes.Eliminado // Asegúrate de que el curso no esté marcado como eliminado
-            );
+            const filteredCourses = establishmentCourses.filter((course: any) => {
+            const isUserCourse = userCourseIds.includes(course.id);
+            const isEliminado = course.attributes.Eliminado;
+
+            // Incluir todos los cursos no eliminados para alumnos, incluso si ya están asignados
+            if (props.tipo === 'alumno') {
+                return !isEliminado;
+            } else {
+                // Para apoderados, excluir cursos ya asignados
+                return !isUserCourse && !isEliminado;
+            }
+            });
 
             setCoursesEs(filteredCourses);
         } catch (error) {
@@ -578,7 +586,7 @@ export function InsertCourse(props: props) {
 
                             <div className="md:mr-2">
                                 <label htmlFor="letra" className="font-semibold">Curso: </label>
-                                <Controller control={control} name="establishment_courses" render={({ field: { onChange, value, name, ref } }) =>
+                                <Controller control={control} name="establishment_courses" defaultValue={courseByUser.length > 0 ? courseByUser[0].id : undefined} render={({ field: { onChange, value, name, ref } }) =>
                                 (
                                     <Select placeholder="Seleccione curso" getOptionValue={(option) => option.id.toString()}
                                         getOptionLabel={(option) => option.attributes.Grade + " " + option.attributes.Letter}

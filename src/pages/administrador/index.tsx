@@ -408,6 +408,27 @@ export function EditAuthenticated(props: props) {
     }
   }, [user, currentPage, props.dataEdit]);
 
+  //estados para el eliminar
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
+
+  //funcion para eliminar
+  const handleDeleteUser = async () => {
+    if (!selectedUserId) return;
+
+    try {
+      await api_updateUser(selectedUserId, { eliminado: true });
+      toast.success("Usuario eliminado con éxito");
+      await getData();
+    } catch (error) {
+      toast.error("Error al eliminar el usuario");
+      console.error(error);
+    } finally {
+      setShowDeleteModal(false);
+      setSelectedUserId(null);
+    }
+  };
+
   const indexOfLastUser = currentPage * usersPerPage;
   const indexOfFirstUser = indexOfLastUser - usersPerPage;
   const currentUsers = data.slice(indexOfFirstUser, indexOfLastUser);
@@ -529,6 +550,12 @@ export function EditAuthenticated(props: props) {
                           >
                             Editar
                           </th>
+                          <th
+                            scope="col"
+                            className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+                          >
+                            Eliminar
+                          </th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-200 bg-white">
@@ -568,6 +595,19 @@ export function EditAuthenticated(props: props) {
                                   />
                                 </button>
                               </td>
+                              <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
+                                <button
+                                  onClick={() => {
+                                    setSelectedUserId(user.id);
+                                    setShowDeleteModal(true);
+                                  }}
+                                >
+                                  <TrashIcon
+                                    className="h-6 w-6 text-red-500 hover:text-red-700"
+                                    aria-hidden="true"
+                                  />
+                                </button>
+                              </td>
                             </tr>
                           ))}
                       </tbody>
@@ -595,6 +635,29 @@ export function EditAuthenticated(props: props) {
                 </button>
               </div>
             </>
+          )}
+          {showDeleteModal && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+              <div className="bg-white p-6 rounded-lg max-w-sm w-full">
+                <h3 className="text-lg font-semibold mb-4">
+                  ¿Estás seguro de eliminar este usuario?
+                </h3>
+                <div className="flex justify-end space-x-4">
+                  <button
+                    onClick={() => setShowDeleteModal(false)}
+                    className="btn btn-ghost"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    onClick={handleDeleteUser}
+                    className="btn btn-error text-white"
+                  >
+                    Confirmar
+                  </button>
+                </div>
+              </div>
+            </div>
           )}
         </>
       ) : (

@@ -242,12 +242,14 @@ export function api_postCase(caseData: {
 
 export function api_getOneUser(userId: number) {
   let query = `?filters[$and][0][id][$eq]=${userId}`
+  query += `&filters[$and][1][eliminado][$eq]=false`
   query += `&populate=*`
   return api.get(`users${query}`)
 }
 
 export function api_getOneUserDoc(userId: number) {
   let query = `?filters[$and][0][id][$eq]=${userId}`
+  query += `&filters[$and][1][eliminado][$eq]=false`
   query += `&populate[role]=*`
   query += `&populate[establishment]=*`
   query += `&populate[establishment_authenticateds]=*`
@@ -261,11 +263,13 @@ export function api_getOneUserDoc(userId: number) {
 export function api_getUsersEstablishment(escuelaId: number) {
   let query = `?filters[$and][0][establishment][id][$eq]=${escuelaId}`
   query += `&filters[$and][1][role][name][$ne]=admin`
+  query += `&filters[$and][2][eliminado][$eq]=false`
   return api.get(`users${query}`)
 }
 
 export function api_getAllAdministrador() {
   let query = `?filters[$and][0][role][name][$eq]=admin`
+  query += `&filters[$and][1][eliminado][$eq]=false`
   query += `&populate=*`
   return api.get(`users${query}`)
 }
@@ -273,6 +277,7 @@ export function api_getActiveAdministrador() {
   let query = `?filters[$and][0][role][name][$eq]=admin`
   query += `&filters[$and][1][blocked][$eq]=false`
   query += `&filters[$and][2][confirmed][$eq]=true`
+  query += `&filters[$and][3][eliminado][$eq]=false`
   query += `&populate=*`
   return api.get(`users${query}`)
 }
@@ -281,6 +286,7 @@ export function api_getpendientAdministrador() {
   let query = `?filters[$and][0][role][name][$eq]=admin`
   query += `&filters[$and][1][blocked][$eq]=false`
   query += `&filters[$and][2][confirmed][$eq]=false`
+  query += `&filters[$and][3][eliminado][$eq]=false`
   query += `&populate=*`
   return api.get(`users${query}`)
 }
@@ -289,6 +295,7 @@ export function api_getBlockAdministrador() {
   let query = `?filters[$and][0][role][name][$eq]=admin`
   query += `&filters[$and][1][blocked][$eq]=true`
   query += `&filters[$and][2][confirmed][$eq]=true`
+  query += `&filters[$and][3][eliminado][$eq]=false`
   query += `&populate=*`
   return api.get(`users${query}`)
 }
@@ -297,11 +304,13 @@ export function api_getBlockAdministrador() {
 
 export function api_getUsersProfeEstablishment(escuelaId: number) {
   let query = `?filters[$and][0][role][name][$eq]=Profesor&filters[$and][1][establishment][id][$eq]=${escuelaId}`
+  query += `&filters[$and][2][eliminado][$eq]=false`
   return api.get(`users${query}`)
 }
 
 export function api_getUsersEncargadoEstablishment(escuelaId: number) {
   let query = `?filters[$and][0][role][name][$eq]=Encargado de Convivencia Escolar&filters[$and][1][establishment][id][$eq]=${escuelaId}`
+  query += `&filters[$and][2][eliminado][$eq]=false`
   return api.get(`users${query}`)
 }
 
@@ -309,20 +318,23 @@ export function api_GetUsersApoderadosEstablishment(escuelaId: number) {
   let query = `?filters[$and][0][role][name][$eq]=Authenticated`
   query = query + `&filters[$and][1][tipo][$eq]=apoderado`
   query = query + `&filters[$and][2][establishment_authenticateds][id][$eq]=${escuelaId}`
+  query += `&filters[$and][3][eliminado][$eq]=false`
   return api.get(`users${query}`)
 }
 export function api_GetUsersAlumnosEstablishment(escuelaId: number, courses?: number) {
   let query = `?filters[$and][0][role][name][$eq]=Authenticated`
   query = query + `&filters[$and][1][tipo][$eq]=alumno`
   query = query + `&filters[$and][2][establishment_authenticateds][id][$eq]=${escuelaId}`
-  if (courses) query += `&filters[$and][3][establishment_courses][id][$eq]=${courses}`;
+  query += `&filters[$and][3][eliminado][$eq]=false`
+  if (courses) query += `&filters[$and][4][establishment_courses][id][$eq]=${courses}`;
   return api.get(`users${query}`)
 }
 export function api_getUsersEstablishment2(escuelaId: number, courses?: number) {
   let query = `?filters[$and][0][role][name][$ne]=admin`
   query = query + `&filters[$or][1][establishment][id][$eq]=${escuelaId}`
   query = query + `&filters[$or][2][establishment_authenticateds][id][$eq]=${escuelaId}`
-  if (courses) query += `&filters[$and][3][establishment_courses][id][$eq]=${courses}&populate=*`;
+  query += `&filters[$and][3][eliminado][$eq]=false`
+  if (courses) query += `&filters[$and][4][establishment_courses][id][$eq]=${courses}&populate=*`;
   return api.get(`users${query}`)
 }
 
@@ -330,6 +342,7 @@ export function api_getAllUsersOtrosByEstablishment({ establishment, page }: { e
   let query = `?filters[$and][0][establishment][name][$eq]=${establishment}`
   query += `&filters[$or][0][role][name][$eq]=Encargado de Convivencia Escolar`
   query += `&filters[$or][1][role][name][$eq]=Profesor`
+  query += `&filters[$and][2][eliminado][$eq]=false`
   query += `&populate[role][fields][0]=name`
   query += `&sort[0]=id:asc`
   return api.get(`users${query}`)
@@ -340,6 +353,7 @@ export function api_getAllUserByEstablishment(establishment: number, userId: num
   query += `&filters[$or][1][establishment_authenticateds][id][$eq]=${establishment}`
   query += `&filters[$and][2][role][name][$ne]=admin`
   query += `&filters[$and][3][id][$ne]=${userId}`
+  query += `&filters[$and][4][eliminado][$eq]=false`
   query += `&populate=*`
   return api.get(`users${query}`)
 }
@@ -349,6 +363,7 @@ export function api_getAllUsersAutByEstablishment({ establishment, page }: { est
   let query = `?filters[$and][0][establishment_authenticateds][name][$eq]=${establishment}`
   query += `&filters[$or][0][tipo][$eq]=alumno`
   query += `&filters[$or][1][tipo][$eq]=apoderado`
+  query += `&filters[$and][2][eliminado][$eq]=false`
   query += `&sort[0]=tipo:asc`
   return api.get(`users${query}`)
 }

@@ -47,8 +47,8 @@ export default function CambiarContrasena() {
           const updatedUser = response.data; // Extract the user data from the response
           useUserStore.getState().updateUser(updatedUser );
           setTimeout(() => {
-            router.push("/perfil");
-          }, 3000);
+            router.reload();
+          }, 1500);
         } catch (error) {
           console.log(error);
           toast.error('Ocurrió un error al procesar tu solicitud. Por favor, inténtalo de nuevo más tarde.');

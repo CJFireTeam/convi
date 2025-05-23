@@ -68,6 +68,7 @@ export default function CambiarContrasena() {
       // Cargar regiones
       const regionesData = await getRegiones();
       setRegionList(regionesData.data.data);
+      setValue("region", user.region || "");
 
       // Si existe región del usuario
       if (user.region) {
@@ -238,11 +239,7 @@ export default function CambiarContrasena() {
                 >
                   <option value={""}>Seleccione su region de residencia</option>
                   {regionList.map((region: string) => (
-                    <option
-                      value={region}
-                      key={region}
-                     
-                    >
+                    <option value={region} key={region} defaultValue={user.region}>
                       {region}
                     </option>
                   ))}
@@ -270,11 +267,7 @@ export default function CambiarContrasena() {
                 >
                   <option value={""}>Seleccione su comuna de residencia</option>
                   {comunaList.map((comuna: string) => (
-                    <option
-                      value={comuna}
-                      key={comuna}
-                     
-                    >
+                    <option value={comuna} key={comuna}>
                       {comuna}
                     </option>
                   ))}

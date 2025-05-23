@@ -68,16 +68,12 @@ export default function CambiarContrasena() {
       // Cargar regiones
       const regionesData = await getRegiones();
       setRegionList(regionesData.data.data);
-      setValue("region", user.region || "");
 
       // Si existe región del usuario
       if (user.region) {
         // Cargar comunas de la región
         const comunasData = await getComunas(user.region);
         setComunaList(comunasData.data.data);
-
-        // Establecer valor en el formulario después de cargar
-        setValue("comuna", user.comuna || "");
       }
     };
     loadInitialData();
@@ -88,14 +84,6 @@ export default function CambiarContrasena() {
   }
 
   const [regionList, setRegionList] = useState<string[]>([]);
-
-  useEffect(() => {
-    const Regiones = async () => {
-      const data = await getRegiones();
-      setRegionList(data.data.data);
-    };
-    Regiones();
-  }, []);
 
   const regionWatch = watch("region");
   const [comunaList, setComunaList] = useState<string[]>([]);
@@ -239,7 +227,7 @@ export default function CambiarContrasena() {
                 >
                   <option value={""}>Seleccione su region de residencia</option>
                   {regionList.map((region: string) => (
-                    <option value={region} key={region} defaultValue={user.region}>
+                    <option value={region} key={region}>
                       {region}
                     </option>
                   ))}

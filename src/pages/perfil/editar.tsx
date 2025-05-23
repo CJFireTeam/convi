@@ -24,6 +24,13 @@ interface Inputs {
 
 export default function CambiarContrasena() {
   const { user } = useUserStore();
+  
+  // Estados para las listas de regiones y comunas
+  const [regionList, setRegionList] = useState<string[]>([]);
+  const [comunaList, setComunaList] = useState<string[]>([]);
+  const [selectedRegion, setSelectedRegion] = useState(user.region || '');
+  const [selectedComuna, setSelectedComuna] = useState(user.comuna || '');
+
   const {
     register,
     watch,
@@ -37,12 +44,77 @@ export default function CambiarContrasena() {
       second_lastname: user.second_lastname,
       firstname: user.firstname,
       secondname: user.secondname,
-      region: user.region || "", // Usar región del usuario
-      comuna: user.comuna || "", // Usar comuna del usuario
+      region: user.region || "",
+      comuna: user.comuna || "",
       direccion: user.direccion,
       phone: user.phone,
     },
   });
+
+  // Función para obtener comunas de una región específica
+  const fetchComunas = async (region: string) => {
+    try {
+      const data = await getComunas(region);
+      return data.data.data;
+    } catch (error) {
+      console.error("Error al obtener comunas:", error);
+      return [];
+    }
+  };
+
+  // Cargar regiones al montar el componente
+  useEffect(() => {
+    const loadRegiones = async () => {
+      try {
+        const data = await getRegiones();
+        setRegionList(data.data.data);
+      } catch (error) {
+        console.error("Error al cargar regiones:", error);
+      }
+    };
+    loadRegiones();
+  }, []);
+
+  // Cargar comunas cuando se tiene una región inicial
+  useEffect(() => {
+    if (user.region) {
+      setSelectedRegion(user.region);
+      setValue('region', user.region);
+      
+      const loadComunasIniciales = async () => {
+        const comunas = await fetchComunas(user.region);
+        setComunaList(comunas);
+        
+        if (user.comuna) {
+          setSelectedComuna(user.comuna);
+          setValue('comuna', user.comuna);
+        }
+      };
+      
+      loadComunasIniciales();
+    }
+  }, [user.region, user.comuna, setValue]);
+
+  // Manejar cambio de región
+  const handleChangeRegion = async (region: string) => {
+    setSelectedRegion(region);
+    setValue("region", region);
+    setValue("comuna", ""); // Limpiar comuna al cambiar región
+    setSelectedComuna("");
+    
+    if (region) {
+      const comunas = await fetchComunas(region);
+      setComunaList(comunas);
+    } else {
+      setComunaList([]);
+    }
+  };
+
+  // Manejar cambio de comuna
+  const handleChangeComuna = (comuna: string) => {
+    setSelectedComuna(comuna);
+    setValue("comuna", comuna);
+  };
 
   const onSubmit = async (data: Inputs) => {
     try {
@@ -63,42 +135,9 @@ export default function CambiarContrasena() {
     }
   };
 
-  useEffect(() => {
-    const loadInitialData = async () => {
-      // Cargar regiones
-      const regionesData = await getRegiones();
-      setRegionList(regionesData.data.data);
-        setValue('region',user.region);
-      // Si existe región del usuario
-      if (user.region) {
-        // Cargar comunas de la región
-        const comunasData = await getComunas(user.region);
-        setComunaList(comunasData.data.data);
-        setValue('comuna',user.comuna);
-      }
-    };
-    loadInitialData();
-  }, [user.region, setValue]); // Recargar si la región del usuario cambia
-
   function atrasBoton() {
     router.push("/perfil");
   }
-
-  const [regionList, setRegionList] = useState<string[]>([]);
-
-  const regionWatch = watch("region");
-  const [comunaList, setComunaList] = useState<string[]>([]);
-  const handleChangeRegion = async (region: string) => {
-    setValue("comuna", "");
-    const comunas = await getComunas(region);
-    setComunaList(comunas.data.data);
-  };
-  useEffect(() => {
-    if (!regionWatch || regionWatch.length === 0) return;
-    handleChangeRegion(regionWatch);
-  }, [regionWatch]);
-
-  const [phone, setPhone] = useState("");
 
   return (
     <>
@@ -221,12 +260,11 @@ export default function CambiarContrasena() {
               </div>
               <div>
                 <select
-                  {...register("region", {
-                    setValueAs: (value) => (value === "" ? undefined : value),
-                  })}
+                  value={selectedRegion}
+                  onChange={(e) => handleChangeRegion(e.target.value)}
                   className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-primary sm:text-sm sm:leading-6"
                 >
-                  <option value={""}>Seleccione su region de residencia</option>
+                  <option value="">Seleccione su region de residencia</option>
                   {regionList.map((region: string) => (
                     <option value={region} key={region}>
                       {region}
@@ -249,12 +287,12 @@ export default function CambiarContrasena() {
               </div>
               <div>
                 <select
-                  {...register("comuna", {
-                    setValueAs: (value) => (value === "" ? undefined : value),
-                  })}
+                  value={selectedComuna}
+                  onChange={(e) => handleChangeComuna(e.target.value)}
                   className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-primary sm:text-sm sm:leading-6"
+                  disabled={!selectedRegion}
                 >
-                  <option value={""}>Seleccione su comuna de residencia</option>
+                  <option value="">Seleccione su comuna de residencia</option>
                   {comunaList.map((comuna: string) => (
                     <option value={comuna} key={comuna}>
                       {comuna}

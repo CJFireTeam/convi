@@ -119,7 +119,7 @@ export default function CambiarContrasena() {
   const onSubmit = async (data: Inputs) => {
     try {
       const resp = await api_updateUser(user.id, data);
-      toast.success("Perfil guardado correctamente");
+      toast.success("Perfil actualizado correctamente");
       // Actualiza el estado del usuario en el store con la información actualizada
       const response = await api_getOneUser(user.id);
       const updatedUser = response.data; // Extract the user data from the response

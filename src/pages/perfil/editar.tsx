@@ -68,12 +68,13 @@ export default function CambiarContrasena() {
       // Cargar regiones
       const regionesData = await getRegiones();
       setRegionList(regionesData.data.data);
-
+        setValue('region',user.region);
       // Si existe región del usuario
       if (user.region) {
         // Cargar comunas de la región
         const comunasData = await getComunas(user.region);
         setComunaList(comunasData.data.data);
+        setValue('comuna',user.comuna);
       }
     };
     loadInitialData();

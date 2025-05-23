@@ -55,6 +55,20 @@ export default function CambiarContrasena() {
         }
       }
 
+       useEffect(() => {
+        const loadInitialData = async () => {
+            const regionesData = await getRegiones();
+            setRegionList(regionesData.data.data);
+            
+            // Cargar comunas si el usuario ya tiene región
+            if (user.region) {
+                const comunasData = await getComunas(user.region);
+                setComunaList(comunasData.data.data);
+            }
+        };
+        loadInitialData();
+    }, [user.region]); // Recargar si la región del usuario cambia
+
     function atrasBoton() {
         router.push("/perfil");
     }
@@ -85,19 +99,7 @@ export default function CambiarContrasena() {
 
     const [phone, setPhone] = useState('');
 
-    useEffect(() => {
-        const loadInitialData = async () => {
-            const regionesData = await getRegiones();
-            setRegionList(regionesData.data.data);
-            
-            // Cargar comunas si el usuario ya tiene región
-            if (user.region) {
-                const comunasData = await getComunas(user.region);
-                setComunaList(comunasData.data.data);
-            }
-        };
-        loadInitialData();
-    }, [user.region]); // Recargar si la región del usuario cambia
+   
 
 
     return (<>

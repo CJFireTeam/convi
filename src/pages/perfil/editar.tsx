@@ -31,8 +31,8 @@ export default function CambiarContrasena() {
             second_lastname: user.second_lastname,
             firstname: user.firstname,
             secondname: user.secondname,
-            region: '',
-            comuna: '',
+            region: user.region || '', // Usar región del usuario
+            comuna: user.comuna || '', // Usar comuna del usuario
             direccion: user.direccion,
             phone: user.phone
         }
@@ -84,6 +84,20 @@ export default function CambiarContrasena() {
     }, [regionWatch])
 
     const [phone, setPhone] = useState('');
+
+    useEffect(() => {
+        const loadInitialData = async () => {
+            const regionesData = await getRegiones();
+            setRegionList(regionesData.data.data);
+            
+            // Cargar comunas si el usuario ya tiene región
+            if (user.region) {
+                const comunasData = await getComunas(user.region);
+                setComunaList(comunasData.data.data);
+            }
+        };
+        loadInitialData();
+    }, [user.region]); // Recargar si la región del usuario cambia
 
 
     return (<>
@@ -168,7 +182,7 @@ export default function CambiarContrasena() {
                             <select {...register("region", { setValueAs: (value) => value === "" ? undefined : value })} className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-primary sm:text-sm sm:leading-6">
                                 <option value={""}>Seleccione su region de residencia</option>
                                 {regionList.map((region: string) => (
-                                    <option value={region} key={region}>
+                                    <option value={region} key={region} selected={region === user.region}>
                                         {region}
                                     </option>
                                 ))}
@@ -185,7 +199,7 @@ export default function CambiarContrasena() {
                             <select {...register("comuna", { setValueAs: (value) => value === "" ? undefined : value })} className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-primary sm:text-sm sm:leading-6">
                                 <option value={""}>Seleccione su comuna de residencia</option>
                                 {comunaList.map((comuna: string) => (
-                                    <option value={comuna} key={comuna}>
+                                    <option value={comuna} key={comuna} selected={comuna === user.comuna}>
                                         {comuna}
                                     </option>
                                 ))}

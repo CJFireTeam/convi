@@ -138,10 +138,27 @@ export function api_updateComplaint(id: number, data: any) {
   return api.put(`complaints/${id}`, { data: data })
 }
 
-export function api_getPositions({ Stablishment, page }: { Stablishment: string, page: number }) {
+export function api_getPositions({ 
+  Stablishment, 
+  page, 
+  search = "", 
+  pageSize = 5 
+}: { 
+  Stablishment: string, 
+  page: number,
+  search?: string,
+  pageSize?: number 
+}) {
   let query = `?filters[$and][0][establishment][name][$eq]=${Stablishment}`
-  query = query + `&pagination[page]=${page}&pagination[pageSize]=5`
+  query = query + `&pagination[page]=${page}&pagination[pageSize]=${pageSize}`
   query = query + `&sort[0]=id:asc`
+  
+  // Agregar filtro de búsqueda si existe
+  if (search && search.trim() !== "") {
+    // Buscar en el nombre del cargo
+    query = query + `&filters[$and][1][name][$containsi]=${encodeURIComponent(search)}`
+  }
+  
   return api.get(`positions${query}`)
 }
 export function api_postPositions(data: any) {
@@ -150,11 +167,32 @@ export function api_postPositions(data: any) {
 export function api_putPositions(id: number, data: any) {
   return api.put(`positions/${id}`, { data: data })
 }
-export function api_getProfessionals({ position, Stablishment, page }: { position: string, Stablishment: string, page: number }) {
+export function api_getProfessionals({ 
+  position, 
+  Stablishment, 
+  page, 
+  search = "", 
+  pageSize = 5 
+}: { 
+  position: string, 
+  Stablishment: string, 
+  page: number,
+  search?: string,
+  pageSize?: number 
+}) {
   let query = `?filters[$and][0][establishment][name][$eq]=${Stablishment}`
-  // query = query + `&pagination[page]=${page}&pagination[pageSize]=5`
-  query = query + `&filters[$and][0][position][name][$eq]=${position}`
-  // query = query + `&sort[0]=id:asc`
+  query = query + `&filters[$and][1][position][name][$eq]=${position}`
+  query = query + `&pagination[page]=${page}&pagination[pageSize]=${pageSize}`
+  query = query + `&sort[0]=id:asc`
+  
+  // Agregar filtro de búsqueda si existe
+  if (search && search.trim() !== "") {
+    // Buscar en nombres, apellidos o email
+    query = query + `&filters[$and][2][$or][0][names][$containsi]=${encodeURIComponent(search)}`
+    query = query + `&filters[$and][2][$or][1][surnames][$containsi]=${encodeURIComponent(search)}`
+    query = query + `&filters[$and][2][$or][2][email][$containsi]=${encodeURIComponent(search)}`
+  }
+  
   return api.get(`professionals${query}`)
 }
 export function api_postProfessionals(data: any) {

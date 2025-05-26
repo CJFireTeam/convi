@@ -78,7 +78,7 @@ export function api_surveys({ createdBy, userId, page = 1 }: { createdBy: number
   let query = `?populate[creador][populate][0]=role`
   query = query + `&filters[creador]=${createdBy}`
   query = query + `&pagination[page]=${page}&pagination[pageSize]=10`
-  query = query + `&sort[0]=FechaInicio%3Adesc`
+  query = query + `&sort=createdAt:desc`
   return api.get(`formularios${query}`)
 }
 export function api_getOneSurvey({ surveyId }: { surveyId?: number }) {

@@ -18,19 +18,15 @@ export default async function  handler (req: NextApiRequest, res: NextApiRespons
       const stablishmentName  = (stablishment.data.data.attributes.name);
       
       const users = await axios.get(`${backendUrl}users?filters[$and][0][establishment_authenticateds][name][$eq]=${stablishmentName}&filters[$or][1][tipo][$ne]=otro`,{headers:{"Content-Type":'application/json;charset=utf-8',Authorization: req.headers.authorization}})
-      for (const element of users.data) {
-        try {
-          // console.log(element.id)
-          const response = await axios.post(`${backendUrl}userforms`, { data:{formulario: body.formulary,user:element.id} },{headers:{"Content-Type":'application/json;charset=utf-8',Authorization: req.headers.authorization}});
-          // console.log(response)
-        } catch (error) {
-          if (axios.isAxiosError(error)) {
-            // console.log(error.response?.data)
-            
-          }
-          return res.status(400).json({ error: `Error a procesar usuario ${element.id}` });
-        }
-      }
+     // Reemplaza tu bucle for con esto:
+      const promises = users.data.map((element:any) => 
+      axios.post(`${backendUrl}userforms`, 
+    { data: { formulario: body.formulary, user: element.id } },
+    { headers: { "Content-Type": 'application/json;charset=utf-8', Authorization: req.headers.authorization } }
+  ).catch(error => ({ error, userId: element.id }))
+);
+
+const results = await Promise.allSettled(promises);
     } catch (error) {
       if (axios.isAxiosError(error)) {
         // console.log(error.response?.data)

@@ -1,5 +1,13 @@
-import { ArrowLeftIcon, PencilIcon, PlusIcon, StarIcon, TrashIcon, XCircleIcon } from "@heroicons/react/20/solid";
-import { Router, useRouter } from "next/router";
+"use client";
+
+import {
+  ArrowLeftIcon,
+  PencilIcon,
+  StarIcon,
+  TrashIcon,
+  XCircleIcon,
+} from "@heroicons/react/20/solid";
+import { useRouter } from "next/router";
 import { Button, Input, Textarea } from "react-daisyui";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -11,8 +19,8 @@ import {
   useFormContext,
 } from "react-hook-form";
 import { useEffect, useRef, useState } from "react";
-import DatePicker, { registerLocale } from 'react-datepicker';
-import 'react-datepicker/dist/react-datepicker.css';
+import DatePicker, { registerLocale } from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 import { es } from "date-fns/locale/es";
 import { toast } from "react-toastify";
 import { api_postQuestions, api_postSurveys } from "@/services/axios.services";
@@ -36,16 +44,21 @@ interface QuestionI {
   opciones: string[];
 }
 
-const options = z.string({
-  required_error: "Se requiere ingresar datos para la opción a mostrar",
-}).min(1, 'Se requieren mínimo 1 caracteres');
+const options = z
+  .string({
+    required_error: "Se requiere ingresar datos para la opción a mostrar",
+  })
+  .min(1, "Se requieren mínimo 1 caracteres");
 
 const QuestionZod = z.object({
-  Titulo: z.string({ required_error: "Se requiere título de la pregunta." }).min(1, "Se requiere título de la pregunta."),
-  Tipo: z.enum(["text", "option", "multipleChoice", "qualification"], { required_error: "Seleccione una opción" }),
+  Titulo: z
+    .string({ required_error: "Se requiere título de la pregunta." })
+    .min(1, "Se requiere título de la pregunta."),
+  Tipo: z.enum(["text", "option", "multipleChoice", "qualification"], {
+    required_error: "Seleccione una opción",
+  }),
   opciones: z.array(options),
 });
-
 
 const FormularyZod = z.object({
   Titulo: z.string({ required_error: "Se requiere título del formulario." }),
@@ -55,15 +68,28 @@ const FormularyZod = z.object({
   FechaFin: z.date({
     required_error: "Se requiere fecha de finalización del formulario.",
   }),
-  creador: z.number({ required_error: "Campo Requerido", invalid_type_error: "Tipo invalido" }),
-  Descripcion: z.string({ required_error: "Campo Requerido", invalid_type_error: "Tipo Invalido" }),
-  establishment: z.number({ required_error: "Campo Requerido", invalid_type_error: "Tipo Invalido" }),
+  creador: z.number({
+    required_error: "Campo Requerido",
+    invalid_type_error: "Tipo invalido",
+  }),
+  Descripcion: z.string({
+    required_error: "Campo Requerido",
+    invalid_type_error: "Tipo Invalido",
+  }),
+  establishment: z.number({
+    required_error: "Campo Requerido",
+    invalid_type_error: "Tipo Invalido",
+  }),
   Question: z.array(QuestionZod),
 });
 
 export default function Creacion() {
   const methods = useForm<FormularyI>({
     resolver: zodResolver(FormularyZod),
+    defaultValues: {
+      FechaInicio: new Date(),
+      FechaFin: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+    },
   });
   const { user, GetRole, role } = useUserStore();
   const {
@@ -89,18 +115,17 @@ export default function Creacion() {
     append(data);
   };
 
-  const handleDateChange = (field: "FechaInicio" | "FechaFin") => (date: Date | null) => {
-    if (date) {
-      setValue(field, date);
-    }
-  };
+  const handleDateChange =
+    (field: "FechaInicio" | "FechaFin") => (date: Date | null) => {
+      if (date) {
+        setValue(field, date, { shouldValidate: true });
+      }
+    };
 
   useEffect(() => {
-
-    setValue('creador', user.id);
-    setValue('establishment', user.establishment.id);
+    setValue("creador", user.id);
+    setValue("establishment", user.establishment.id);
   }, [user]);
-
 
   const [loading, setLoading] = useState(false);
   const onSubmit = async (dataSurvey: FormularyI) => {
@@ -110,7 +135,10 @@ export default function Creacion() {
       const surveyResponse = await api_postSurveys(dataSurvey);
       // Rescatar la ID de la encuesta recién creada
       const formulario = surveyResponse.data.data.id; // Asegúrate de que la respuesta tenga el campo "id"
-      const respUsers = await assignFormUsers(dataSurvey.establishment, formulario);
+      const respUsers = await assignFormUsers(
+        dataSurvey.establishment,
+        formulario
+      );
 
       // Ahora procesa las preguntas, asignando valores por defecto si Opciones está vacío
       const processedQuestions = dataSurvey.Question.map((question) => {
@@ -127,29 +155,31 @@ export default function Creacion() {
       // Prepara las preguntas con el campo `formulario`
       const questionsWithSurveyId = processedQuestions.map((question) => ({
         ...question,
-        "formulario": formulario // Asigna el surveyId a cada pregunta
+        formulario: formulario, // Asigna el surveyId a cada pregunta
       }));
 
       // Realiza el POST de cada pregunta asociada al surveyId
-      await Promise.all(questionsWithSurveyId.map((question) => api_postQuestions(question)));
+      await Promise.all(
+        questionsWithSurveyId.map((question) => api_postQuestions(question))
+      );
 
-      toast.success('Encuesta y preguntas creadas correctamente');
-      setTimeout(() => { router.push("/encuestas") }, 2000)
+      toast.success("Encuesta y preguntas creadas correctamente");
+      setTimeout(() => {
+        router.push("/encuestas");
+      }, 2000);
     } catch (error) {
       console.error("Error al crear la encuesta o las preguntas:", error);
-      toast.error('Ocurrió un error al crear la encuesta o las preguntas');
+      toast.error("Ocurrió un error al crear la encuesta o las preguntas");
       setLoading(false);
     } finally {
       setLoading(false);
     }
   };
 
-
-
   // Acceder a las fechas desde el formulario
   const fechaInicio = watch("FechaInicio");
   const fechaFin = watch("FechaFin");
-  const descripcionForm = watch('Descripcion');
+  const descripcionForm = watch("Descripcion");
 
   const fechaActual = new Date();
 
@@ -163,14 +193,15 @@ export default function Creacion() {
       >
         <ArrowLeftIcon className="h-5 w-5" aria-hidden="true" />
       </Button>
-      <h1 className="text-center font-bold text-lg sm:text-md md:text-xl mb-2">Creación de encuesta</h1>
+      <h1 className="text-center font-bold text-lg sm:text-md md:text-xl mb-2">
+        Creación de encuesta
+      </h1>
       <div className="grid grid-cols-1 md:grid-cols-2 sm:grid-cols-1 gap-1 sm:gap-2 md:gap-4 w-12/12 sm:w-11/12 md:w-10/12 mx-auto">
         {/* Formulario de creación */}
         <fieldset className="border shadow-md rounded-lg p-2 sm:p-3 md:p-4 md:m-3 m-0">
           <legend className="text-center">Editor de Formulario</legend>
           <FormProvider {...methods}>
             <div className="w-full max-w-4xl mx-auto p-2 sm:p-3 md:p-4 bg-white shadow-md rounded-lg">
-
               <form
                 onSubmit={methods.handleSubmit(onSubmit)}
                 className="space-y-3 sm:space-y-4 md:space-y-6"
@@ -180,70 +211,115 @@ export default function Creacion() {
                     <TitleComponent />
                   </h2>
                   {errors.Titulo && (
-                    <p className="text-red-500 text-sm mt-1">{errors.Titulo.message}</p>
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.Titulo.message}
+                    </p>
                   )}
                 </div>
 
                 <div className="grid md:grid-cols-2 gap-2 sm:gap-3 md:gap-4">
                   <div className="space-y-2">
-                    <label className="block text-sm font-medium text-gray-700">Fecha de Inicio:</label>
-                    <DatePicker
-                      selected={new Date()}
-                      onChange={handleDateChange("FechaInicio")}
-                      className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary"
-                      dropdownMode="select"
-                      yearDropdownItemNumber={15}
-                      peekNextMonth
-                      showYearDropdown
-                      showMonthDropdown
-                      dateFormat={"dd/MM/yyyy"}
-                      selectsStart
-                      startDate={fechaInicio}
-                      endDate={fechaFin}
-                      minDate={fechaActual}
-                      locale="es"
-
+                    <label className="block text-sm font-medium text-gray-700">
+                      Fecha de Inicio:
+                    </label>
+                    <Controller
+                      control={control}
+                      name="FechaInicio"
+                      render={({ field }) => (
+                        <DatePicker
+                          selected={field.value}
+                          onChange={(date) => field.onChange(date)}
+                          className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary"
+                          dropdownMode="select"
+                          yearDropdownItemNumber={15}
+                          peekNextMonth
+                          showYearDropdown
+                          showMonthDropdown
+                          dateFormat={"dd/MM/yyyy"}
+                          selectsStart
+                          startDate={fechaInicio}
+                          endDate={fechaFin}
+                          minDate={fechaActual}
+                          locale="es"
+                        />
+                      )}
                     />
-                    {errors.FechaInicio && <p className="text-red-500 text-sm">{errors.FechaInicio.message}</p>}
+                    {errors.FechaInicio && (
+                      <p className="text-red-500 text-sm">
+                        {errors.FechaInicio.message}
+                      </p>
+                    )}
                   </div>
                   <div className="space-y-2">
-                    <label className="block text-sm font-medium text-gray-700">Fecha de Fin:</label>
-                    <DatePicker
-                      selected={new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)}
-                      onChange={handleDateChange("FechaFin")}
-                      className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary"
-                      dropdownMode="select"
-                      yearDropdownItemNumber={15}
-                      peekNextMonth
-                      showYearDropdown
-                      showMonthDropdown
-                      dateFormat={"dd/MM/yyyy"}
-                      selectsEnd
-                      startDate={fechaInicio}
-                      endDate={fechaFin}
-                      minDate={fechaInicio || fechaActual}
-                      locale="es"
+                    <label className="block text-sm font-medium text-gray-700">
+                      Fecha de Fin:
+                    </label>
+                    <Controller
+                      control={control}
+                      name="FechaFin"
+                      render={({ field }) => (
+                        <DatePicker
+                          selected={field.value}
+                          onChange={(date) => field.onChange(date)}
+                          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary"
+                          dropdownMode="select"
+                          yearDropdownItemNumber={15}
+                          peekNextMonth
+                          showYearDropdown
+                          showMonthDropdown
+                          dateFormat={"dd/MM/yyyy"}
+                          selectsEnd
+                          startDate={fechaInicio}
+                          endDate={fechaFin}
+                          minDate={fechaInicio || fechaActual}
+                          locale="es"
+                        />
+                      )}
                     />
-                    {errors.FechaFin && <p className="text-red-500 text-sm">{errors.FechaFin.message}</p>}
+                    {errors.FechaFin && (
+                      <p className="text-red-500 text-sm">
+                        {errors.FechaFin.message}
+                      </p>
+                    )}
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">Descripción del formulario</label>
-                  <Textarea {...register('Descripcion')} className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary" />
-                  {errors.Descripcion && <p className="text-red-500">{errors.Descripcion.message}</p>}
+                  <label className="block text-sm font-medium text-gray-700">
+                    Descripción del formulario
+                  </label>
+                  <Textarea
+                    {...register("Descripcion")}
+                    className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary"
+                  />
+                  {errors.Descripcion && (
+                    <p className="text-red-500">{errors.Descripcion.message}</p>
+                  )}
                 </div>
 
                 <div className="space-y-4">
                   {fields.map((field, index) => (
-                    <QuestionComponent key={field.id} index={index} remove={remove} />
+                    <QuestionComponent
+                      key={field.id}
+                      index={index}
+                      remove={remove}
+                    />
                   ))}
                   <AddQuestionComponent append={append} />
                 </div>
                 <div className="text-center my-2">
-                  <Button className="btn btn-primary text-white w-full sm:w-auto  px-6 py-2" disabled={loading}>
-                    {!loading ? 'Crear encuesta': <>Cargando<span className="loading loading-spinner loading-md"></span>
-                      </>}
+                  <Button
+                    className="btn btn-primary text-white w-full sm:w-auto  px-6 py-2"
+                    disabled={loading}
+                  >
+                    {!loading ? (
+                      "Crear encuesta"
+                    ) : (
+                      <>
+                        Cargando
+                        <span className="loading loading-spinner loading-md"></span>
+                      </>
+                    )}
                   </Button>
                 </div>
               </form>
@@ -263,16 +339,32 @@ export default function Creacion() {
               </div>
               <div className="grid md:grid-cols-2 sm:grid-cols-2 gap-2 sm:gap-3 md:gap-4 mt-2 sm:mt-3">
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-700 flex items-center justify-center">Fecha de Inicio:</label>
-                  <p className="flex items-center justify-center">{fechaInicio ? fechaInicio.toLocaleDateString() : "No definida."}</p>
+                  <label className="text-sm font-medium text-gray-700 flex items-center justify-center">
+                    Fecha de Inicio:
+                  </label>
+                  <p className="flex items-center justify-center">
+                    {fechaInicio
+                      ? fechaInicio.toLocaleDateString()
+                      : "No definida."}
+                  </p>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-700 flex items-center justify-center">Fecha de Fin:</label>
-                  <p className="flex items-center justify-center">{fechaFin ? fechaFin.toLocaleDateString() : "No definida."}</p>
+                  <label className="text-sm font-medium text-gray-700 flex items-center justify-center">
+                    Fecha de Fin:
+                  </label>
+                  <p className="flex items-center justify-center">
+                    {fechaFin ? fechaFin.toLocaleDateString() : "No definida."}
+                  </p>
                 </div>
               </div>
               <div className="mt-2 sm:mt-3">
-                <p className="w-full border-none">{descripcionForm ? descripcionForm : <span className="font-medium">Sin Descripción.</span>}</p>
+                <p className="w-full border-none">
+                  {descripcionForm ? (
+                    descripcionForm
+                  ) : (
+                    <span className="font-medium">Sin Descripción.</span>
+                  )}
+                </p>
               </div>
               <div className="">
                 <div className="my-3 sm:my-4 p-3 sm:p-4  text-center items-center">
@@ -284,7 +376,6 @@ export default function Creacion() {
             </div>
           </FormProvider>
         </fieldset>
-
       </div>
     </>
   );
@@ -294,7 +385,12 @@ function TitleComponent() {
   const [isOpen, setIsOpen] = useState(false);
   const componentRef = useRef<HTMLDivElement>(null);
   const methods = useFormContext<FormularyI>();
-  const { register, watch, setValue, formState: { errors } } = methods;
+  const {
+    register,
+    watch,
+    setValue,
+    formState: { errors },
+  } = methods;
   const watchTitle = watch("Titulo");
   const handleClear = () => {
     setValue("Titulo", "");
@@ -363,7 +459,11 @@ function TitleComponent() {
   );
 }
 
-function AddQuestionComponent({ append }: { append: (data: QuestionI) => void }) {
+function AddQuestionComponent({
+  append,
+}: {
+  append: (data: QuestionI) => void;
+}) {
   const nuevaPregunta: QuestionI = {
     Titulo: "",
     Tipo: "text",
@@ -376,19 +476,38 @@ function AddQuestionComponent({ append }: { append: (data: QuestionI) => void })
   const agregarPregunta = () => {
     append(nuevaPregunta);
   };
-  const { register, watch, setValue, formState: { errors } } = methods;
+  const {
+    register,
+    watch,
+    setValue,
+    formState: { errors },
+  } = methods;
 
   return (
     <div className="text-center my-4">
-      <Button onClick={agregarPregunta} className="btn btn-primary bg-blue-500 hover:bg-blue-700 text-white py-2 px-4 rounded">
+      <Button
+        onClick={agregarPregunta}
+        className="btn btn-primary bg-blue-500 hover:bg-blue-700 text-white py-2 px-4 rounded"
+      >
         Agregar una pregunta
       </Button>
     </div>
   );
 }
 
-function QuestionComponent({ index, remove }: { index: number, remove: (index: number) => void }) {
-  const { register, watch, setValue, formState: { errors } } = useFormContext<FormularyI>();
+function QuestionComponent({
+  index,
+  remove,
+}: {
+  index: number;
+  remove: (index: number) => void;
+}) {
+  const {
+    register,
+    watch,
+    setValue,
+    formState: { errors },
+  } = useFormContext<FormularyI>();
   const tipoPregunta = watch(`Question.${index}.Tipo`);
 
   const addOption = () => {
@@ -402,7 +521,10 @@ function QuestionComponent({ index, remove }: { index: number, remove: (index: n
 
   const deleteOption = (optionIndex: number) => {
     const currentOptions = watch(`Question.${index}.opciones`) || [];
-    setValue(`Question.${index}.opciones`, currentOptions.filter((_, idx) => idx !== optionIndex));
+    setValue(
+      `Question.${index}.opciones`,
+      currentOptions.filter((_, idx) => idx !== optionIndex)
+    );
   };
 
   return (
@@ -413,16 +535,27 @@ function QuestionComponent({ index, remove }: { index: number, remove: (index: n
           placeholder="Ingrese el título de la pregunta..."
           className="w-full mb-2"
         />
-        {errors?.Question?.[index]?.Titulo && <p className="text-red-500 text-sm">{errors.Question?.[index]?.Titulo?.message}</p>}
+        {errors?.Question?.[index]?.Titulo && (
+          <p className="text-red-500 text-sm">
+            {errors.Question?.[index]?.Titulo?.message}
+          </p>
+        )}
       </div>
       <div className="space-y-2">
-        <select {...register(`Question.${index}.Tipo`)} className="w-full mb-2 border border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary">
+        <select
+          {...register(`Question.${index}.Tipo`)}
+          className="w-full mb-2 border border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary"
+        >
           <option value="text">Texto</option>
           <option value="option">Opción</option>
           <option value="multipleChoice">Múltiple elección</option>
           <option value="qualification">Calificación</option>
         </select>
-        {errors?.Question?.[index]?.Tipo && <p className="text-red-500 text-sm">{errors.Question?.[index]?.Tipo?.message}</p>}
+        {errors?.Question?.[index]?.Tipo && (
+          <p className="text-red-500 text-sm">
+            {errors.Question?.[index]?.Tipo?.message}
+          </p>
+        )}
       </div>
 
       {tipoPregunta === "text" && (
@@ -455,7 +588,11 @@ function QuestionComponent({ index, remove }: { index: number, remove: (index: n
             </div>
           ))}
           <div className="space-y-2 flex items-center justify-center">
-            <Button type="button" onClick={addOption} className="bg-blue-500 hover:bg-blue-700 text-white">
+            <Button
+              type="button"
+              onClick={addOption}
+              className="bg-blue-500 hover:bg-blue-700 text-white"
+            >
               Añadir Opción
             </Button>
           </div>
@@ -478,19 +615,23 @@ function QuestionComponent({ index, remove }: { index: number, remove: (index: n
   );
 }
 
-
 function PreviewQuestionComponent({ index }: { index: number }) {
   const { watch } = useFormContext<FormularyI>();
   const tipoPregunta = watch(`Question.${index}.Tipo`);
   const opciones = watch(`Question.${index}.opciones`) || [];
   const titulo = watch(`Question.${index}.Titulo`);
 
-
   return (
     <div className="space-y-2">
       <h3 className="font-semibold mb-2 mt-2">{titulo}</h3>
 
-      {tipoPregunta === "text" && <input type="text" className="w-full border border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary" disabled />}
+      {tipoPregunta === "text" && (
+        <input
+          type="text"
+          className="w-full border border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary"
+          disabled
+        />
+      )}
 
       {tipoPregunta === "option" && (
         <div className="grid grid-cols-3 gap-2">
@@ -524,4 +665,3 @@ function PreviewQuestionComponent({ index }: { index: number }) {
     </div>
   );
 }
-

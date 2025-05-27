@@ -261,10 +261,10 @@ export function api_getQuestionResponses({ questionId }: { questionId: number })
 }
 
 
-export function api_postSendMeeting(data: any) {
+/* export function api_postSendMeeting(data: any) {
   console.log('Sending meeting data:', data);
   return api.post(`meetings`, data);
-}
+} */
 
 export function api_postCase(caseData: {
   directed?: number,

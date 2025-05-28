@@ -16,6 +16,8 @@ import CrearEstablecimientos from "@/components/root/crearestablecimientos";
 import VerAdministradores from "@/components/root/veradmin";
 import CrearAdministrador from "@/components/root/crearadmin";
 import GraficosRoot from "@/components/root/graficosroot";
+import HomeProfesor from "@/components/profesor/homeProfesor";
+
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -47,6 +49,7 @@ export default function Home() {
           </div>
         </>
       }
+      {role.name === 'Profesor' && <HomeProfesor/>}
     </>
   );
 }

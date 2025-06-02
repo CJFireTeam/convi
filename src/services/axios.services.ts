@@ -222,14 +222,20 @@ export function api_postQuestions(data: any) {
 
 export function api_getQuestions(user: string, populate?: boolean) {
   // Obtener la fecha actual en formato ISO sin hora
-  const currentDate = format(new Date(), 'yyyy-MM-dd');
+  const currentDate = format(new Date(), "yyyy-MM-dd")
 
-  let query = `?filters[$and][0][isCompleted][$eq]=${false}&filters[$and][1][user][username][$eq]=${user}&filters[$and][2][formulario][FechaFin][$gte]=${currentDate}&sort=createdAt:desc`
+  // Sintaxis correcta para filtrar por campos de relación en Strapi
+  let query = `?filters[$and][0][isCompleted][$eq]=${false}`
+  query += `&filters[$and][1][user][username][$eq]=${user}`
+  //sintaxis correcta para acceder a campos de relaciones
+  query += `&filters[$and][2][formulario][FechaFin][$gte]=${currentDate}`
+  query += `&sort=createdAt:desc`
+
   if (populate) {
-    query = query + '&populate=*'
+    query = query + "&populate=*"
   }
 
-  return api.get(`userforms${query}`);
+  return api.get(`userforms${query}`)
 }
 
 

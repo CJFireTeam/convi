@@ -1,66 +1,61 @@
-"use client";
+"use client"
 
-import router, { useRouter } from "next/router";
-import { Button, Input } from "react-daisyui";
-import WarningAlert from "@/components/alerts/warningAlert";
-import { useEffect, useState } from "react";
-import { useUserStore } from "@/store/userStore";
-import type metaI from "@/interfaces/meta.interface";
+import router, { useRouter } from "next/router"
+import { Button, Input } from "react-daisyui"
+import WarningAlert from "@/components/alerts/warningAlert"
+import { useEffect, useState } from "react"
+import { useUserStore } from "@/store/userStore"
+import type metaI from "@/interfaces/meta.interface"
 import {
   api_getQuestions,
   api_getQuestionsByForm,
   api_postResponseForm,
   api_surveys,
   api_updateUserForm,
-} from "@/services/axios.services";
-import { differenceInDays } from "date-fns";
-import {
-  EyeIcon,
-  MagnifyingGlassIcon,
-  ChevronLeftIcon,
-  ChevronRightIcon,
-} from "@heroicons/react/20/solid";
-import { z } from "zod";
-import { useFieldArray, useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { toast } from "react-toastify";
-import Head from "next/head";
+} from "@/services/axios.services"
+import { differenceInDays } from "date-fns"
+import { EyeIcon, MagnifyingGlassIcon, ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/20/solid"
+import { z } from "zod"
+import { useFieldArray, useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { toast } from "react-toastify"
+import Head from "next/head"
 
 interface questionaryI {
-  id: number;
+  id: number
   attributes: {
     formulario: {
       data: {
-        id: number;
+        id: number
         attributes: {
-          Descripcion: string;
-          Titulo: string;
-          FechaInicio: string;
-          FechaFin: string;
-          status: boolean;
-        };
-      };
-    };
-    isCompleted: boolean;
-  };
+          Descripcion: string
+          Titulo: string
+          FechaInicio: string
+          FechaFin: string
+          status: boolean
+        }
+      }
+    }
+    isCompleted: boolean
+  }
 }
 
 interface surveyInterface {
-  id: number;
+  id: number
   attributes: {
-    Titulo: string;
-    Descripcion: string;
-    FechaInicio: string;
-    FechaFin: string;
-  };
+    Titulo: string
+    Descripcion: string
+    FechaInicio: string
+    FechaFin: string
+  }
 }
 
 export default function Index() {
-  const { push } = useRouter();
+  const { push } = useRouter()
   const redirect = () => {
-    push("encuestas/creacion");
-  };
-  const { user, GetRole, role } = useUserStore();
+    push("encuestas/creacion")
+  }
+  const { user, GetRole, role } = useUserStore()
 
   // Estados originales (sin cambios en las peticiones)
   const [metaData, setMetaData] = useState<metaI>({
@@ -68,128 +63,120 @@ export default function Index() {
     pageCount: 0,
     pageSize: 0,
     total: 0,
-  });
-  const [data, setData] = useState<surveyInterface[]>([]);
-  const [dataQuestionary, setdataQuestionary] = useState<questionaryI[]>([]);
+  })
+  const [data, setData] = useState<surveyInterface[]>([])
+  const [dataQuestionary, setdataQuestionary] = useState<questionaryI[]>([])
 
   // Estados para funcionalidad frontend
-  const [searchTerm, setSearchTerm] = useState("");
-  const [searchTermQuestionary, setSearchTermQuestionary] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
-  const [currentPageQuestionary, setCurrentPageQuestionary] = useState(1);
-  const [itemsPerPage] = useState(5); // Elementos por página
-  const [itemsPerPageQuestionary] = useState(3); // Elementos por página para cuestionarios
+  const [searchTerm, setSearchTerm] = useState("")
+  const [searchTermQuestionary, setSearchTermQuestionary] = useState("")
+  const [currentPage, setCurrentPage] = useState(1)
+  const [currentPageQuestionary, setCurrentPageQuestionary] = useState(1)
+  const [itemsPerPage] = useState(10) // Elementos por página
+  const [itemsPerPageQuestionary] = useState(10) // Elementos por página para cuestionarios
 
   // Funciones originales (sin cambios)
   const getQuestionary = async () => {
-    const questions = await api_getQuestions(user.username, true);
-    setMetaData(questions.data.meta.pagination);
-    setdataQuestionary(questions.data.data);
-  };
+    const questions = await api_getQuestions(user.username, true)
+    setMetaData(questions.data.meta.pagination)
+    setdataQuestionary(questions.data.data)
+  }
 
   const getData = async () => {
-    let assigned: number | undefined = undefined;
+    let assigned: number | undefined = undefined
     try {
-      assigned = user?.id;
+      assigned = user?.id
       const response = await api_surveys({
         createdBy: user?.id,
         userId: assigned,
         page: metaData.page,
-      });
-      setData((prevData) => [...prevData, ...response.data.data]);
-      setMetaData(response.data.meta.pagination);
+      })
+      setData((prevData) => [...prevData, ...response.data.data])
+      setMetaData(response.data.meta.pagination)
     } catch (error) {
-      console.log(error);
+      console.log(error)
     }
-  };
+  }
 
   // Lógica de filtrado y paginación FRONTEND
   const getFilteredData = () => {
     if (searchTerm === "") {
-      return data;
+      return data
     }
     return data.filter(
       (survey) =>
-        survey.attributes.Titulo.toLowerCase().includes(
-          searchTerm.toLowerCase()
-        ) ||
-        survey.attributes.Descripcion.toLowerCase().includes(
-          searchTerm.toLowerCase()
-        )
-    );
-  };
+        survey.attributes.Titulo.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        survey.attributes.Descripcion.toLowerCase().includes(searchTerm.toLowerCase()),
+    )
+  }
 
   const getFilteredQuestionary = () => {
     if (searchTermQuestionary === "") {
-      return dataQuestionary;
+      return dataQuestionary
     }
     return dataQuestionary.filter(
       (questionary) =>
         questionary.attributes.formulario.data.attributes.Titulo.toLowerCase().includes(
-          searchTermQuestionary.toLowerCase()
+          searchTermQuestionary.toLowerCase(),
         ) ||
         questionary.attributes.formulario.data.attributes.Descripcion.toLowerCase().includes(
-          searchTermQuestionary.toLowerCase()
-        )
-    );
-  };
+          searchTermQuestionary.toLowerCase(),
+        ),
+    )
+  }
 
   const getPaginatedData = () => {
-    const filteredData = getFilteredData();
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    const endIndex = startIndex + itemsPerPage;
+    const filteredData = getFilteredData()
+    const startIndex = (currentPage - 1) * itemsPerPage
+    const endIndex = startIndex + itemsPerPage
     return {
       data: filteredData.slice(startIndex, endIndex),
       totalPages: Math.ceil(filteredData.length / itemsPerPage),
       totalItems: filteredData.length,
-    };
-  };
+    }
+  }
 
   const getPaginatedQuestionary = () => {
-    const filteredData = getFilteredQuestionary();
-    const startIndex = (currentPageQuestionary - 1) * itemsPerPageQuestionary;
-    const endIndex = startIndex + itemsPerPageQuestionary;
+    const filteredData = getFilteredQuestionary()
+    const startIndex = (currentPageQuestionary - 1) * itemsPerPageQuestionary
+    const endIndex = startIndex + itemsPerPageQuestionary
     return {
       data: filteredData.slice(startIndex, endIndex),
       totalPages: Math.ceil(filteredData.length / itemsPerPageQuestionary),
       totalItems: filteredData.length,
-    };
-  };
+    }
+  }
 
   // useEffects originales (sin cambios)
   useEffect(() => {
-    if (
-      user?.id !== 0 &&
-      (GetRole() === "Profesor" ||
-        GetRole() === "Encargado de Convivencia Escolar")
-    ) {
-      getData();
+    if (user?.id !== 0 && (GetRole() === "Profesor" || GetRole() === "Encargado de Convivencia Escolar")) {
+      getData()
     }
-  }, [user, metaData.page]);
+  }, [user, metaData.page])
 
   const handleLoadMore = () => {
     setMetaData((prevMeta) => ({
       ...prevMeta,
       page: prevMeta.page + 1,
-    }));
-  };
+    }))
+  }
 
   useEffect(() => {
-    if (user?.id === 0) return;
-    if (GetRole() === "Authenticated") getQuestionary();
-  }, [user]);
+    if (user?.id === 0) return
+    if (GetRole() === "Authenticated") getQuestionary()
+  }, [user])
 
   // Reset página cuando cambia la búsqueda
   useEffect(() => {
-    setCurrentPage(1);
-  }, [searchTerm]);
+    setCurrentPage(1)
+  }, [searchTerm])
 
   useEffect(() => {
-    setCurrentPageQuestionary(1);
-  }, [searchTermQuestionary]);
+    setCurrentPageQuestionary(1)
+  }, [searchTermQuestionary])
 
-  const [form, setForm] = useState(false);
-  const [selectedForm, setSelectedForm] = useState<questionaryI | null>(null);
+  const [form, setForm] = useState(false)
+  const [selectedForm, setSelectedForm] = useState<questionaryI | null>(null)
 
   // Componente de paginación frontend
   const FrontendPagination = ({
@@ -197,41 +184,37 @@ export default function Index() {
     totalPages,
     onPageChange,
   }: {
-    currentPage: number;
-    totalPages: number;
-    onPageChange: (page: number) => void;
+    currentPage: number
+    totalPages: number
+    onPageChange: (page: number) => void
   }) => {
-    if (totalPages <= 1) return null;
+    if (totalPages <= 1) return null
 
     const getVisiblePages = () => {
-      const delta = 2;
-      const range = [];
-      const rangeWithDots = [];
+      const delta = 2
+      const range = []
+      const rangeWithDots = []
 
-      for (
-        let i = Math.max(2, currentPage - delta);
-        i <= Math.min(totalPages - 1, currentPage + delta);
-        i++
-      ) {
-        range.push(i);
+      for (let i = Math.max(2, currentPage - delta); i <= Math.min(totalPages - 1, currentPage + delta); i++) {
+        range.push(i)
       }
 
       if (currentPage - delta > 2) {
-        rangeWithDots.push(1, "...");
+        rangeWithDots.push(1, "...")
       } else {
-        rangeWithDots.push(1);
+        rangeWithDots.push(1)
       }
 
-      rangeWithDots.push(...range);
+      rangeWithDots.push(...range)
 
       if (currentPage + delta < totalPages - 1) {
-        rangeWithDots.push("...", totalPages);
+        rangeWithDots.push("...", totalPages)
       } else if (totalPages > 1) {
-        rangeWithDots.push(totalPages);
+        rangeWithDots.push(totalPages)
       }
 
-      return rangeWithDots;
-    };
+      return rangeWithDots
+    }
 
     return (
       <div className="flex items-center justify-center space-x-2 mt-6">
@@ -271,34 +254,22 @@ export default function Index() {
           <ChevronRightIcon className="h-4 w-4" />
         </Button>
       </div>
-    );
-  };
+    )
+  }
 
-  if (
-    GetRole() === "Profesor" ||
-    GetRole() === "Encargado de Convivencia Escolar"
-  ) {
-    const paginatedResult = getPaginatedData();
+  if (GetRole() === "Profesor" || GetRole() === "Encargado de Convivencia Escolar") {
+    const paginatedResult = getPaginatedData()
 
     return (
       <>
         <Head>
           <title>Encuestas</title>
-          <meta
-            name="viewport"
-            content="initial-scale=1.0, width=device-width"
-          />
+          <meta name="viewport" content="initial-scale=1.0, width=device-width" />
         </Head>
         <div className="px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
             <div className="sm:flex-auto">
-              <h1 className="text-base font-semibold leading-6 text-gray-900">
-                Mis Encuestas
-              </h1>
-              <p className="mt-2 text-sm text-gray-700">
-                Mostrando {paginatedResult.data.length} de{" "}
-                {paginatedResult.totalItems} encuestas
-              </p>
+              <h1 className="text-base font-semibold leading-6 text-gray-900">Mis Encuestas</h1>
             </div>
             <div className="sm:ml-16 sm:mt-0 sm:flex-none">
               <Button onClick={redirect} color="primary">
@@ -344,11 +315,7 @@ export default function Index() {
               {/* Botón original "Cargar más" si hay más páginas en el backend */}
               {metaData.page < metaData.pageCount && (
                 <div className="flex justify-center mt-4">
-                  <Button
-                    onClick={handleLoadMore}
-                    color="secondary"
-                    variant="outline"
-                  >
+                  <Button onClick={handleLoadMore} color="secondary" variant="outline">
                     Cargar más encuestas del servidor
                   </Button>
                 </div>
@@ -365,33 +332,24 @@ export default function Index() {
           )}
         </div>
       </>
-    );
+    )
   }
 
   if (GetRole() === "Authenticated") {
-    const paginatedQuestionaryResult = getPaginatedQuestionary();
+    const paginatedQuestionaryResult = getPaginatedQuestionary()
 
     return (
       <>
         <Head>
           <title>Encuestas</title>
-          <meta
-            name="viewport"
-            content="initial-scale=1.0, width=device-width"
-          />
+          <meta name="viewport" content="initial-scale=1.0, width=device-width" />
         </Head>
         {!form && (
           <>
             <div className="w-4/5 mx-auto">
               <div className="mb-6">
-                <h1 className="text-2xl font-bold text-gray-900 mb-2">
-                  Encuestas Disponibles
-                </h1>
-                <p className="text-sm text-gray-700 mb-4">
-                  Mostrando {paginatedQuestionaryResult.data.length} de{" "}
-                  {paginatedQuestionaryResult.totalItems} encuestas
-                </p>
-
+                <h1 className="text-2xl font-bold text-gray-900 mb-2">Encuestas Disponibles</h1>
+                
                 {/* Buscador para usuarios autenticados */}
                 <div className="max-w-md">
                   <div className="relative">
@@ -413,19 +371,17 @@ export default function Index() {
                 <>
                   {paginatedQuestionaryResult.data.map((e, index) => {
                     const daysRemaining = differenceInDays(
-                      new Date(
-                        e.attributes.formulario.data.attributes.FechaFin
-                      ),
-                      new Date()
-                    );
-                    const isExpired = daysRemaining < 0;
+                      new Date(e.attributes.formulario.data.attributes.FechaFin + "T00:00:00"),
+                      new Date(),
+                    )
+                    const isExpired = daysRemaining < 0
                     return (
                       <div
                         key={index}
                         onClick={() => {
                           if (!isExpired) {
-                            setSelectedForm(e);
-                            setForm(true);
+                            setSelectedForm(e)
+                            setForm(true)
                           }
                         }}
                         className={`bg-white shadow-md rounded-md p-4 my-2 ${
@@ -435,49 +391,40 @@ export default function Index() {
                         }`}
                       >
                         <div className="flex justify-between mb-2">
-                          <h2 className="font-bold text-lg">
-                            {e.attributes.formulario.data.attributes.Titulo}
-                          </h2>
+                          <h2 className="font-bold text-lg">{e.attributes.formulario.data.attributes.Titulo}</h2>
                           <div>
                             <span
                               className={`font-bold ${
-                                isExpired
-                                  ? "text-red-600"
-                                  : daysRemaining >= 5
-                                  ? "text-green-600"
-                                  : "text-red-600"
+                                isExpired ? "text-red-600" : daysRemaining >= 5 ? "text-green-600" : "text-red-600"
                               }`}
                             >
                               {isExpired
                                 ? "Encuesta no respondida"
-                                : `Termina en ${daysRemaining} días.`}
+                                : daysRemaining === 0
+                                  ? "Termina hoy"
+                                  : `Termina en ${daysRemaining} días.`}
                             </span>
                           </div>
                         </div>
                         <div className="flex justify-between">
-                          <p className="text-gray-600">
-                            {
-                              e.attributes.formulario.data.attributes
-                                .Descripcion
-                            }
-                          </p>
+                          <p className="text-gray-600">{e.attributes.formulario.data.attributes.Descripcion}</p>
                           <div className="flex flex-col md:flex-row">
                             <p className="text-gray-500 mr-4">
                               Fecha de Inicio:{" "}
                               {new Date(
-                                e.attributes.formulario.data.attributes.FechaInicio
+                                e.attributes.formulario.data.attributes.FechaInicio + "T00:00:00",
                               ).toLocaleDateString()}
                             </p>
                             <p className="text-gray-500">
                               Fecha de Fin:{" "}
                               {new Date(
-                                e.attributes.formulario.data.attributes.FechaFin
+                                e.attributes.formulario.data.attributes.FechaFin + "T00:00:00",
                               ).toLocaleDateString()}
                             </p>
                           </div>
                         </div>
                       </div>
-                    );
+                    )
                   })}
 
                   <FrontendPagination
@@ -500,50 +447,50 @@ export default function Index() {
         )}
         {form && selectedForm && <FomrularyResponse form={selectedForm} />}
       </>
-    );
+    )
   }
-  return null;
+  return null
 }
 
 // Resto de componentes sin cambios...
 interface IPreguntas {
-  id: number;
+  id: number
   attributes: {
-    Tipo: string;
-    Titulo: string;
-    opciones: [];
-  };
+    Tipo: string
+    Titulo: string
+    opciones: []
+  }
 }
 
 interface props {
-  form: questionaryI;
+  form: questionaryI
 }
 
 interface IResForm {
   respuestas: {
-    userform: number;
-    pregunta: number;
-    response: any;
-  }[];
+    userform: number
+    pregunta: number
+    response: any
+  }[]
 }
 
 function FomrularyResponse(props: props) {
-  const formId = props.form.attributes.formulario.data.id;
-  const userFormId = props.form.id;
+  const formId = props.form.attributes.formulario.data.id
+  const userFormId = props.form.id
 
-  const [dataPreguntas, setDataPreguntas] = useState<IPreguntas[]>([]);
+  const [dataPreguntas, setDataPreguntas] = useState<IPreguntas[]>([])
   const getQuestionsByForm = async () => {
     try {
-      const response = await api_getQuestionsByForm({ formId });
-      setDataPreguntas(response.data.data);
+      const response = await api_getQuestionsByForm({ formId })
+      setDataPreguntas(response.data.data)
     } catch (error) {
-      console.log(error);
+      console.log(error)
     }
-  };
+  }
 
   useEffect(() => {
-    getQuestionsByForm();
-  }, [formId]);
+    getQuestionsByForm()
+  }, [formId])
 
   const resZod = z.object({
     userform: z.number({
@@ -565,21 +512,21 @@ function FomrularyResponse(props: props) {
         z.string({
           required_error: "Campo Requerido",
           invalid_type_error: "Tipo Invalido",
-        })
+        }),
       ),
     ]),
-  });
+  })
 
   const validationSchema = z.object({
     respuestas: z.array(resZod),
-  });
+  })
 
   const methods = useForm<IResForm>({
     resolver: zodResolver(validationSchema),
     defaultValues: {
       respuestas: [],
     },
-  });
+  })
 
   const {
     register,
@@ -590,12 +537,12 @@ function FomrularyResponse(props: props) {
     getValues,
     formState: { errors },
     reset,
-  } = methods;
+  } = methods
 
   const { fields, append, remove } = useFieldArray({
     control,
     name: "respuestas",
-  });
+  })
 
   useEffect(() => {
     if (dataPreguntas.length > 0) {
@@ -605,26 +552,26 @@ function FomrularyResponse(props: props) {
           userform: userFormId,
           pregunta: pregunta.id,
           response: "",
-        }))
-      );
+        })),
+      )
     }
-  }, [dataPreguntas, props.form, setValue]);
+  }, [dataPreguntas, props.form, setValue])
 
   const onSubmit = async (data: IResForm) => {
     try {
       for (const respuesta of data.respuestas) {
-        const { userform, pregunta, response } = respuesta;
-        await api_postResponseForm({ userform, pregunta, response });
+        const { userform, pregunta, response } = respuesta
+        await api_postResponseForm({ userform, pregunta, response })
       }
-      await api_updateUserForm(userFormId, { isCompleted: true });
-      toast.success("Respuestas enviadas con éxito");
+      await api_updateUserForm(userFormId, { isCompleted: true })
+      toast.success("Respuestas enviadas con éxito")
       setTimeout(() => {
-        router.reload();
-      }, 1500);
+        router.reload()
+      }, 1500)
     } catch (error) {
-      toast.error("Error al enviar las respuestas");
+      toast.error("Error al enviar las respuestas")
     }
-  };
+  }
 
   return (
     <>
@@ -647,25 +594,16 @@ function FomrularyResponse(props: props) {
               />
             </svg>
             <div className="grid col-span-2 gap-4 text-center">
-              <h1 className="font-bold text-3xl">
-                {props.form.attributes.formulario.data.attributes.Titulo}
-              </h1>
+              <h1 className="font-bold text-3xl">{props.form.attributes.formulario.data.attributes.Titulo}</h1>
             </div>
             <div className="grid col-span-2 gap-4 text-center">
-              <p className="font-semibold text-lg">
-                {props.form.attributes.formulario.data.attributes.Descripcion}
-              </p>
+              <p className="font-semibold text-lg">{props.form.attributes.formulario.data.attributes.Descripcion}</p>
             </div>
             {fields.map((field, index) => {
-              const pregunta = dataPreguntas[index];
+              const pregunta = dataPreguntas[index]
               return (
-                <div
-                  key={field.id}
-                  className="grid col-span-2 md:col-span-1 w-full"
-                >
-                  <label className="label font-semibold mb-2 mx-auto">
-                    {pregunta.attributes.Titulo}
-                  </label>
+                <div key={field.id} className="grid col-span-2 md:col-span-1 w-full">
+                  <label className="label font-semibold mb-2 mx-auto">{pregunta.attributes.Titulo}</label>
                   {pregunta.attributes.Tipo === "text" && (
                     <>
                       <div className="flex flex-col items-center">
@@ -676,14 +614,8 @@ function FomrularyResponse(props: props) {
                           className="textarea textarea-primary w-full"
                         />
                         {errors.respuestas?.[index]?.response && (
-                          <p
-                            className="text-red-500 text-sm mt-1 text-center"
-                            role="alert"
-                          >
-                            {
-                              errors.respuestas[index]?.response
-                                ?.message as string
-                            }
+                          <p className="text-red-500 text-sm mt-1 text-center" role="alert">
+                            {errors.respuestas[index]?.response?.message as string}
                           </p>
                         )}
                       </div>
@@ -693,10 +625,7 @@ function FomrularyResponse(props: props) {
                   {pregunta.attributes.Tipo === "option" && (
                     <>
                       {pregunta.attributes.opciones.map((opcion, i) => (
-                        <div
-                          key={i}
-                          className="flex flex-row justify-center ml-4 mb-2"
-                        >
+                        <div key={i} className="flex flex-row justify-center ml-4 mb-2">
                           <input
                             type="radio"
                             {...register(`respuestas.${index}.response`)}
@@ -707,14 +636,8 @@ function FomrularyResponse(props: props) {
                         </div>
                       ))}
                       {errors.respuestas?.[index]?.response && (
-                        <p
-                          className="text-red-500 text-sm mt-1 text-center"
-                          role="alert"
-                        >
-                          {
-                            errors.respuestas[index]?.response
-                              ?.message as string
-                          }
+                        <p className="text-red-500 text-sm mt-1 text-center" role="alert">
+                          {errors.respuestas[index]?.response?.message as string}
                         </p>
                       )}
                     </>
@@ -724,25 +647,12 @@ function FomrularyResponse(props: props) {
                     <>
                       <div className="flex flex-row justify-center">
                         <StarRating
-                          value={Number(
-                            watch(`respuestas.${index}.response`) || 0
-                          )}
-                          onChange={(value) =>
-                            setValue(
-                              `respuestas.${index}.response`,
-                              value.toString()
-                            )
-                          }
+                          value={Number(watch(`respuestas.${index}.response`) || 0)}
+                          onChange={(value) => setValue(`respuestas.${index}.response`, value.toString())}
                         />
                         {errors.respuestas?.[index]?.response && (
-                          <p
-                            className="text-red-500 text-sm mt-1 ml-6 md:ml-9"
-                            role="alert"
-                          >
-                            {
-                              errors.respuestas[index]?.response
-                                ?.message as string
-                            }
+                          <p className="text-red-500 text-sm mt-1 ml-6 md:ml-9" role="alert">
+                            {errors.respuestas[index]?.response?.message as string}
                           </p>
                         )}
                       </div>
@@ -751,10 +661,7 @@ function FomrularyResponse(props: props) {
                   {pregunta.attributes.Tipo === "multipleChoice" && (
                     <>
                       {pregunta.attributes.opciones.map((opcion, i) => (
-                        <div
-                          key={i}
-                          className="flex flex-row justify-center mb-2"
-                        >
+                        <div key={i} className="flex flex-row justify-center mb-2">
                           <input
                             type="checkbox"
                             value={opcion}
@@ -765,20 +672,14 @@ function FomrularyResponse(props: props) {
                         </div>
                       ))}
                       {errors.respuestas?.[index]?.response && (
-                        <p
-                          className="text-red-500 text-sm mt-1 text-center"
-                          role="alert"
-                        >
-                          {
-                            errors.respuestas[index]?.response
-                              ?.message as string
-                          }
+                        <p className="text-red-500 text-sm mt-1 text-center" role="alert">
+                          {errors.respuestas[index]?.response?.message as string}
                         </p>
                       )}
                     </>
                   )}
                 </div>
-              );
+              )
             })}
             <div className="grid col-span-2 gap-2 w-2/5 mx-auto">
               <button type="submit" className="btn btn-outline btn-primary">
@@ -789,18 +690,18 @@ function FomrularyResponse(props: props) {
         </form>
       </div>
     </>
-  );
+  )
 }
 
 interface StarRatingProps {
-  onChange: (value: number) => void;
-  value: number;
+  onChange: (value: number) => void
+  value: number
 }
 
 function StarRating({ onChange, value }: StarRatingProps) {
   const handleClick = (newValue: number) => {
-    onChange(newValue);
-  };
+    onChange(newValue)
+  }
 
   return (
     <div className="flex space-x-2 ml-4">
@@ -808,9 +709,7 @@ function StarRating({ onChange, value }: StarRatingProps) {
         <svg
           key={index}
           onClick={() => handleClick(index)}
-          className={`h-6 w-6 cursor-pointer ${
-            index <= value ? "text-yellow-500" : "text-gray-400"
-          }`}
+          className={`h-6 w-6 cursor-pointer ${index <= value ? "text-yellow-500" : "text-gray-400"}`}
           fill="currentColor"
           viewBox="0 0 24 24"
         >
@@ -818,48 +717,33 @@ function StarRating({ onChange, value }: StarRatingProps) {
         </svg>
       ))}
     </div>
-  );
+  )
 }
 
 function Table({ data }: { data: surveyInterface[] }) {
   const handleRouter = (id: number) => {
-    sessionStorage.setItem("id_survey", id.toString());
-    router.push("/encuestas/visualizar");
-  };
+    sessionStorage.setItem("id_survey", id.toString())
+    router.push("/encuestas/visualizar")
+  }
   return (
     <>
       {data.length !== 0 ? (
         <table className="min-w-full divide-y divide-gray-300">
           <thead className="bg-gray-50">
             <tr>
-              <th
-                scope="col"
-                className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
-              >
+              <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
                 Nombre Encuesta
               </th>
-              <th
-                scope="col"
-                className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
-              >
+              <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
                 Descripción
               </th>
-              <th
-                scope="col"
-                className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
-              >
+              <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
                 Fecha Inicio
               </th>
-              <th
-                scope="col"
-                className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
-              >
+              <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
                 Fecha Terminó
               </th>
-              <th
-                scope="col"
-                className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
-              >
+              <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
                 Ver
               </th>
             </tr>
@@ -892,5 +776,5 @@ function Table({ data }: { data: surveyInterface[] }) {
         <WarningAlert message="No se han encontrado encuestas." />
       )}
     </>
-  );
+  )
 }

@@ -8,8 +8,14 @@ import {
   LightBulbIcon,
   UsersIcon,
   FolderIcon,
-  PencilIcon
+  PencilIcon,
+  ClipboardDocumentListIcon,
+  ClipboardIcon,
+  FolderOpenIcon,
+  ChatBubbleLeftIcon,
+  ChatBubbleLeftRightIcon
 } from "@heroicons/react/20/solid";
+import { ClipboardEditIcon, ClipboardListIcon, FileTextIcon, FolderOpen } from "lucide-react";
 export interface Imenus {
   name: string;
   href: string;
@@ -38,7 +44,7 @@ const AuthenticatedMenus: IMenuChildren[] = [
   {
     name: "Casos",
     href: "/",
-    icon: HomeIcon,
+    icon: ClipboardDocumentListIcon,
     current: false,
     children: [],
   },
@@ -46,21 +52,21 @@ const AuthenticatedMenus: IMenuChildren[] = [
   {
     name: "Consulta y sugerencia",
     href: "/sugerencia",
-    icon: LightBulbIcon,
+    icon: ChatBubbleLeftRightIcon,
     current: false,
     children: [],
   },
   {
     name: "Encuestas",
     href: "/encuestas",
-    icon: FolderIcon,
+    icon: ClipboardIcon,
     children: [],
     current: false,
   },
   {
     name: "Documentos",
     href: "/documentos",
-    icon: FolderIcon,
+    icon: FolderOpenIcon,
     children: [],
     current: false,
   },
@@ -79,7 +85,7 @@ const EncargadoMenus: IMenuChildren[] = [
         icon: Cog6ToothIcon,
       },
     ],
-    icon: Cog6ToothIcon,
+    icon: ClipboardDocumentListIcon,
     current: false,
   },
   {
@@ -90,16 +96,23 @@ const EncargadoMenus: IMenuChildren[] = [
     current: false,
   },
   {
+    name: "Consulta y sugerencia",
+    href: "/sugerencia",
+    icon: ChatBubbleLeftRightIcon,
+    current: false,
+    children: [],
+  },
+  {
     name: "Encuestas",
     href: "/encuestas",
-    icon: FolderIcon,
+    icon: ClipboardIcon,
     children: [],
     current: false,
   },
   {
     name: "Documentos",
     href: "/documentos",
-    icon: FolderIcon,
+    icon: FolderOpenIcon,
     children: [],
     current: false,
   },
@@ -117,21 +130,21 @@ const ProfesorMenus: IMenuChildren[] = [
   {
     name: "Lista de casos",
     href: "/casos",
-    icon: ArchiveBoxIcon,
+    icon: ClipboardDocumentListIcon,
     children: [],
     current: false,
   },
   {
     name: "Encuestas",
     href: "/encuestas",
-    icon: FolderIcon,
+    icon: ClipboardIcon,
     children: [],
     current: false,
   },
   {
     name: "Documentos",
     href: "/documentos",
-    icon: FolderIcon,
+    icon: FolderOpenIcon,
     children: [],
     current: false,
   },

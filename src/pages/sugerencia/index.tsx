@@ -211,7 +211,7 @@ export default function Sugerencia() {
     resolver: zodResolver(suggestionSchema),
   });
 
-  const { user } = useUserStore();
+  const { user, role } = useUserStore();
 
   const onSubmit = async (data: any) => {
     try {
@@ -260,6 +260,13 @@ export default function Sugerencia() {
   useEffect(() => {
     console.log(errors);
   }, [errors]);
+
+  //vista consulta y sugerencia para encargado de convivencia.
+  if (role.name === "Encargado de Convivencia Escolar") return (
+    <>
+    
+    </>
+  )
 
   return (
     <>
@@ -312,4 +319,5 @@ export default function Sugerencia() {
       </div>
     </>
   );
+
 }

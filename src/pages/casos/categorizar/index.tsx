@@ -58,7 +58,7 @@ export default function Categorizar() {
         try {
             if (!data) return;
             await api_updateCases(data.id, dataZod);
-            toast.success('Se categorizo correctamente');
+            toast.success('Se categorizó correctamente');
             localStorage.removeItem("case")
             localStorage.removeItem("derivado")
             back();

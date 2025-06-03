@@ -590,6 +590,44 @@ export function api_getEstablishmentCoursesSinPag(establishment: number) {
   return api.get(`establishment-courses${query}`)
 }
 
+//sugerencia con paginado y buscador.
+export function api_getSuggestionBySchool({
+  establishment,
+  page,
+  pageSize,
+  search = ""
+}: {
+  establishment: number;
+  page: number;       // ahora obligatorio
+  pageSize: number;   // ahora obligatorio
+  search?: string;
+}) {
+  let query = `?filters[$and][0][establishment][id][$eq]=${establishment}`;
+
+  // Paginación (ya no hay valores por defecto; page y pageSize vienen siempre)
+  query += `&pagination[page]=${page}&pagination[pageSize]=${pageSize}`;
+
+  // Poblar relaciones
+  query += `&populate=*`;
+
+  // Ordenamiento
+  query += `&sort[0]=createdAt:desc`;
+
+  // Búsqueda condicional
+  if (search && search.trim() !== "") {
+    query += `&filters[$and][2][$or][0][suggestion][$containsi]=${encodeURIComponent(search)}`;
+    query += `&filters[$and][2][$or][1][created][email][$containsi]=${encodeURIComponent(search)}`;
+    query += `&filters[$and][2][$or][2][created][firstname][$containsi]=${encodeURIComponent(search)}`;
+    query += `&filters[$and][2][$or][3][created][first_lastname][$containsi]=${encodeURIComponent(search)}`;
+    query += `&filters[$and][2][$or][4][created][second_lastname][$containsi]=${encodeURIComponent(search)}`;
+  }
+
+  return api.get(`suggestions${query}`);
+}
+////api/suggestions
+
+
+
 export function api_putEliminadoEstablishmenCourses(CourseEsId: number, isDeleted: boolean) {
   // Define la URL del documento que deseas actualizar
   const url = `establishment-courses/${CourseEsId}`; // Asegúrate de que la URL sea correcta

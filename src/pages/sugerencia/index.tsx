@@ -21,6 +21,7 @@ import axios, { AxiosError } from "axios";
 import Cookies from "js-cookie";
 import { useUserStore } from "@/store/userStore";
 import Head from "next/head";
+import InicioEncargado from "@/components/ConsultaYSugerencia/InicioEncargado";
 
 interface Inputs {
   suggestion: string;
@@ -264,7 +265,7 @@ export default function Sugerencia() {
   //vista consulta y sugerencia para encargado de convivencia.
   if (role.name === "Encargado de Convivencia Escolar") return (
     <>
-    
+    <InicioEncargado/>
     </>
   )
 

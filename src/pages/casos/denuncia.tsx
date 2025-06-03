@@ -15,8 +15,6 @@ import {
 import { useRouter } from "next/router";
 import Head from "next/head";
 
-
-
 interface Inputs {
   first_case: number | undefined;
   derived: number | undefined;
@@ -54,23 +52,30 @@ interface ICase {
                       firstname: string;
                       first_lastname: string;
                       secod_lastname: string;
-                    }
-                  }
-                }
-              }
-            }[]
-          }
+                    };
+                  };
+                };
+              };
+            }[];
+          };
           tipo: string;
-        }
-      }
-    }
-  }
+        };
+      };
+    };
+  };
 }
 
 export default function Denuncia() {
   const { push } = useRouter();
   const methods = useForm<Inputs>({
     resolver: zodResolver(denunciationSchema),
+    defaultValues: {
+      // Valores iniciales explícitos (opcional)
+      nameSchoolar: "",
+      course: "",
+      Teacher: "",
+      date: "",
+    },
   });
   const {
     register,
@@ -83,50 +88,96 @@ export default function Denuncia() {
     control,
     formState: { errors },
   } = methods;
-  const { user } = useUserStore()
+  const { user } = useUserStore();
 
   useEffect(() => {
-    user && user.id ? setValue('created', user.id) : setValue('created', undefined);
+    user && user.id
+      ? setValue("created", user.id)
+      : setValue("created", undefined);
   }, [user]);
 
   const [userCase, setUserCase] = useState<ICase[]>([]);
+  const [isLoading, setIsLoading] = useState(true); // Para controlar la carga
+
+  // Cargar datos de userCase
   const FetchCase = async () => {
     const firstCaseId = Number(sessionStorage.getItem("first_case"));
     try {
       const data = await api_CasesOnes(firstCaseId);
       setUserCase(data.data.data);
+      // Actualizar campos del formulario cuando los datos estén listos
+      if (data.data.data.length > 0) {
+        const caseData = data.data.data[0];
+        const tipo = caseData.attributes.created.data.attributes.tipo;
+
+        if (tipo === "alumno") {
+          const estudiante = caseData.attributes.created.data.attributes;
+          const curso = estudiante.establishment_courses.data[0]?.attributes;
+
+          methods.setValue(
+            "nameSchoolar",
+            `${estudiante.firstname} ${estudiante.secondname} ${estudiante.first_lastname} ${estudiante.second_lastname}`
+          );
+          methods.setValue("course", `${curso.Grade} ${curso.Letter}`);
+          methods.setValue(
+            "Teacher",
+            `${curso.LeadTeacher.data.attributes.firstname} ${curso.LeadTeacher.data.attributes.first_lastname}`
+          );
+          methods.setValue("date", formatDate(caseData.attributes.createdAt));
+        }
+      }
     } catch (error) {
-      console.log(error)
+      console.error("Error al cargar userCase:", error);
+    } finally {
+      setIsLoading(false);
     }
-  }
+  };
 
   useEffect(() => {
-    FetchCase()
-  }, [])
+    FetchCase();
+  }, []);
 
-  const nameEstudent = userCase[0]?.attributes.created.data.attributes.tipo === 'alumno' ?
-    userCase[0]?.attributes.created.data.attributes.firstname + " " +
-    userCase[0]?.attributes.created.data.attributes.secondname + " " +
-    userCase[0]?.attributes.created.data.attributes.first_lastname + " " +
-    userCase[0]?.attributes.created.data.attributes.second_lastname : '';
+  const nameEstudent =
+    userCase[0]?.attributes.created.data.attributes.tipo === "alumno"
+      ? userCase[0]?.attributes.created.data.attributes.firstname +
+        " " +
+        userCase[0]?.attributes.created.data.attributes.secondname +
+        " " +
+        userCase[0]?.attributes.created.data.attributes.first_lastname +
+        " " +
+        userCase[0]?.attributes.created.data.attributes.second_lastname
+      : "";
 
-  const courseEstudent = userCase[0]?.attributes.created.data.attributes.tipo === 'alumno' ?
-    userCase[0]?.attributes.created.data.attributes.establishment_courses.data[0]?.attributes.Grade + " " +
-    userCase[0]?.attributes.created.data.attributes.establishment_courses.data[0]?.attributes.Letter
-    : '';
+  const courseEstudent =
+    userCase[0]?.attributes.created.data.attributes.tipo === "alumno"
+      ? userCase[0]?.attributes.created.data.attributes.establishment_courses
+          .data[0]?.attributes.Grade +
+        " " +
+        userCase[0]?.attributes.created.data.attributes.establishment_courses
+          .data[0]?.attributes.Letter
+      : "";
 
   const formatDate = (dateString: any) => {
     const date = new Date(dateString);
-    const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000); // Ajustar a la zona horaria local
+    const localDate = new Date(
+      date.getTime() - date.getTimezoneOffset() * 60000
+    ); // Ajustar a la zona horaria local
     return localDate.toISOString().slice(0, 16); // Formato YYYY-MM-DDTHH:MM
   };
 
-  const fechaEstudent = userCase[0]?.attributes.created.data.attributes.tipo === 'alumno' ?
-    formatDate(userCase[0]?.attributes.createdAt) : '';
+  const fechaEstudent =
+    userCase[0]?.attributes.created.data.attributes.tipo === "alumno"
+      ? formatDate(userCase[0]?.attributes.createdAt)
+      : "";
 
-  const nameLeadTeacher = userCase[0]?.attributes.created.data.attributes.tipo === 'alumno' ? 
-  userCase[0]?.attributes.created.data.attributes.establishment_courses.data[0].attributes.LeadTeacher.data.attributes.firstname
-  + " " + userCase[0]?.attributes.created.data.attributes.establishment_courses.data[0].attributes.LeadTeacher.data.attributes.first_lastname : "";
+  const nameLeadTeacher =
+    userCase[0]?.attributes.created.data.attributes.tipo === "alumno"
+      ? userCase[0]?.attributes.created.data.attributes.establishment_courses
+          .data[0].attributes.LeadTeacher.data.attributes.firstname +
+        " " +
+        userCase[0]?.attributes.created.data.attributes.establishment_courses
+          .data[0].attributes.LeadTeacher.data.attributes.first_lastname
+      : "";
 
   const isNameReadOnly = !!nameEstudent; // Solo lectura si hay un nombre
   const isCourseReadOnly = !!courseEstudent; // Solo lectura si hay un curso
@@ -134,27 +185,37 @@ export default function Denuncia() {
 
   const isNameLeadTeacherReadOnly = !!nameLeadTeacher;
 
-
   const [userList, setUserList] = useState<UserInterface[]>([]);
 
   useEffect(() => {
     const fetchUsers = async () => {
       try {
         const data = await api_usersByRole(5, user.establishment.id);
-        setUserList(data.data.data.attributes.users.data);
+        const userListData = data.data.data.attributes.users.data;
+        setUserList(userListData);
+
+        // Si hay un solo encargado, seleccionarlo automáticamente
+        if (userListData.length === 1) {
+          setValue("derived", userListData[0].id);
+        }
       } catch (error) {
         console.error("Error al obtener la lista de usuarios:", error);
       }
     };
+
     if (user.establishment.id === 0) return;
     fetchUsers();
   }, [user]);
 
-  const measuresText = watch('measures');
-  const storyText = watch('details');
-  const directedId = watch('derived')
+  const measuresText = watch("measures");
+  const storyText = watch("details");
+  const directedId = watch("derived");
 
   const onSubmit = async (data: Inputs) => {
+    if (isLoading) {
+      toast.error("Espera a que se carguen todos los datos antes de enviar.");
+      return;
+    }
     try {
       const firstCaseId = sessionStorage.getItem("first_case");
       const selectedUserId = methods.getValues("derived");
@@ -170,7 +231,7 @@ export default function Denuncia() {
           fase: 2,
           derived: true,
           story: storyText,
-          measures: measuresText
+          measures: measuresText,
         });
         // se asume que api_postCase devuelve el objeto del caso creado con su id
         data.first_case = caseResponse.data.data.id;
@@ -190,27 +251,28 @@ export default function Denuncia() {
             {
               data: {
                 directed: selectedUserId,
-                derived: true
-              }
+                derived: true,
+              },
             },
             {
               headers: {
-                Authorization: "Bearer " + Cookies.get("bearer")
-              }
+                Authorization: "Bearer " + Cookies.get("bearer"),
+              },
             }
           );
         }
       }
 
-      toast.success('Se envió la denuncia correctamente');
+      toast.success("Se envió la denuncia correctamente");
       reset();
       push("/casos");
     } catch (error) {
-      console.error('Error al enviar la denuncia:', error);
-      toast.error('Ocurrió un error al enviar la denuncia. Por favor, inténtalo de nuevo más tarde.');
+      console.error("Error al enviar la denuncia:", error);
+      toast.error(
+        "Ocurrió un error al enviar la denuncia. Por favor, inténtalo de nuevo más tarde."
+      );
     }
   };
-
 
   return (
     <>
@@ -223,7 +285,9 @@ export default function Denuncia() {
           <div className="space-y-4 divide-y divide-gray-900/10">
             <div className="grid grid-cols-1 gap-x-8 gap-y-8 pt-10 pb-10 pr-10 pl-10 md:grid-cols-3 bg-slate-50">
               <div className="px-4 sm:px-0">
-                <h2 className="text-base font-semibold leading-7 text-gray-900">Origen de la denuncia</h2>
+                <h2 className="text-base font-semibold leading-7 text-gray-900">
+                  Origen de la denuncia
+                </h2>
               </div>
 
               <div className="bg-white shadow-sm ring-1 ring-gray-900/5 sm:rounded-xl md:col-span-2">
@@ -231,27 +295,42 @@ export default function Denuncia() {
                   <div className="px-4 py-5 sm:p-6">
                     <div className="md:flex-1 divide-y md:mx-1 my-1 divide-gray-200 overflow-hidden rounded-lg bg-white shadow animate-fadein">
                       <div className="sm:col-span-4 mx-4 my-4">
-                        <label htmlFor="website" className="block text-sm font-medium leading-6 text-gray-900">
+                        <label
+                          htmlFor="website"
+                          className="block text-sm font-medium leading-6 text-gray-900"
+                        >
                           Derivar
                         </label>
                         <div className="mt-2">
-
                           <select
                             {...methods.register("derived", {
-                              setValueAs: (value) => value === "" ? undefined : Number(value)
+                              setValueAs: (value) =>
+                                value === "" ? undefined : Number(value),
+                              required: true, // Asegura que siempre haya un valor
                             })}
-
                             className="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-primary sm:text-sm sm:leading-6"
+                            disabled={userList.length === 1} // Deshabilitado si hay un solo encargado
                           >
-                            <option value="" selected disabled>Seleccione una opción</option>
-                            {userList.length > 0 &&
-                              userList.map((user: UserInterface) => (
-                                <option value={user.id} key={user.id}>
-                                  Derivar a {user.attributes.firstname} {user.attributes.first_lastname}
-                                </option>
-                              ))}
+                            {/* Mostrar placeholder solo si hay múltiples opciones */}
+                            {userList.length > 1 && (
+                              <option value="" disabled>
+                                Seleccione una opción
+                              </option>
+                            )}
+
+                            {/* Mapear usuarios */}
+                            {userList.map((user: UserInterface) => (
+                              <option value={user.id} key={user.id}>
+                                Derivar a {user.attributes.firstname}{" "}
+                                {user.attributes.first_lastname}
+                              </option>
+                            ))}
                           </select>
-                          {errors.derived?.message && (<p className="text-red-600 text-sm mt-1">{errors.derived.message}</p>)}
+                          {errors.derived?.message && (
+                            <p className="text-red-600 text-sm mt-1">
+                              {errors.derived.message}
+                            </p>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -262,87 +341,124 @@ export default function Denuncia() {
 
             <div className="grid grid-cols-1 gap-x-8 gap-y-8 pt-10 pb-10 pr-10 pl-10 md:grid-cols-3 bg-slate-50">
               <div className="px-4 sm:px-0">
-                <h2 className="text-base font-semibold leading-7 text-gray-900">Antecedentes</h2>
+                <h2 className="text-base font-semibold leading-7 text-gray-900">
+                  Antecedentes
+                </h2>
               </div>
 
               <div className="bg-white shadow-sm ring-1 ring-gray-900/5 sm:rounded-xl md:col-span-2">
                 <div className="px-4 py-6 sm:p-8">
                   <div className="px-4 py-5 sm:p-6">
                     <div className="md:flex-1 divide-y md:mx-1 my-1 divide-gray-200 overflow-hidden rounded-lg bg-white shadow animate-fadein">
-
                       <div className="sm:col-span-4 mx-4 my-4">
-                        <label htmlFor="website" className="block text-sm font-medium leading-6 text-gray-900">
+                        <label
+                          htmlFor="website"
+                          className="block text-sm font-medium leading-6 text-gray-900"
+                        >
                           Nombre del estudiante
                         </label>
                         <div className="mt-2">
                           <div className="flex rounded-md shadow-sm ring-1 ring-inset ring-gray-300 focus-within:ring-2 focus-within:ring-inset focus-within:ring-indigo-600">
                             <input
-                              {...register('nameSchoolar', { setValueAs: (value) => value === "" ? undefined : value })}
-                              defaultValue={nameEstudent}
+                              {...register("nameSchoolar", {
+                                setValueAs: (value) =>
+                                  value === "" ? undefined : value,
+                              })}
                               readOnly={isNameReadOnly}
                               type="text"
                               id="nameSchoolar"
                               className="block flex-1 border-0 bg-transparent py-1.5 pl-1 text-gray-900 placeholder:text-gray-400 focus:ring-0 sm:text-sm sm:leading-6"
                             />
                           </div>
-                          {errors.nameSchoolar?.message && (<p className="text-red-600 text-sm mt-1">{errors.nameSchoolar.message}</p>)}
+                          {errors.nameSchoolar?.message && (
+                            <p className="text-red-600 text-sm mt-1">
+                              {errors.nameSchoolar.message}
+                            </p>
+                          )}
                         </div>
                       </div>
 
                       <div className="sm:col-span-4 mx-4 my-4">
-                        <label htmlFor="website" className="block text-sm font-medium leading-6 text-gray-900">
+                        <label
+                          htmlFor="website"
+                          className="block text-sm font-medium leading-6 text-gray-900"
+                        >
                           Curso del estudiante
                         </label>
                         <div className="mt-2">
                           <div className="flex rounded-md shadow-sm ring-1 ring-inset ring-gray-300 focus-within:ring-2 focus-within:ring-inset focus-within:ring-indigo-600">
                             <input
-                              {...register('course', { setValueAs: (value) => value === "" ? undefined : value })}
-                              defaultValue={courseEstudent}
+                              {...register("course", {
+                                setValueAs: (value) =>
+                                  value === "" ? undefined : value,
+                              })}
                               readOnly={isCourseReadOnly}
                               type="text"
                               id="course"
                               className="block flex-1 border-0 bg-transparent py-1.5 pl-1 text-gray-900 placeholder:text-gray-400 focus:ring-0 sm:text-sm sm:leading-6"
                             />
                           </div>
-                          {errors.course?.message && (<p className="text-red-600 text-sm mt-1">{errors.course.message}</p>)}
+                          {errors.course?.message && (
+                            <p className="text-red-600 text-sm mt-1">
+                              {errors.course.message}
+                            </p>
+                          )}
                         </div>
                       </div>
 
                       <div className="sm:col-span-4 mx-4 my-4">
-                        <label htmlFor="website" className="block text-sm font-medium leading-6 text-gray-900">
+                        <label
+                          htmlFor="website"
+                          className="block text-sm font-medium leading-6 text-gray-900"
+                        >
                           Profesor jefe
                         </label>
                         <div className="mt-2">
                           <div className="flex rounded-md shadow-sm ring-1 ring-inset ring-gray-300 focus-within:ring-2 focus-within:ring-inset focus-within:ring-indigo-600">
                             <input
-                              {...register('Teacher', { setValueAs: (value) => value === "" ? undefined : value })}
+                              {...register("Teacher", {
+                                setValueAs: (value) =>
+                                  value === "" ? undefined : value,
+                              })}
                               type="text"
-                              defaultValue={nameLeadTeacher}
                               readOnly={isNameLeadTeacherReadOnly}
                               id="Teacher"
                               className="block flex-1 border-0 bg-transparent py-1.5 pl-1 text-gray-900 placeholder:text-gray-400 focus:ring-0 sm:text-sm sm:leading-6"
                             />
                           </div>
-                          {errors.Teacher?.message && (<p className="text-red-600 text-sm mt-1">{errors.Teacher.message}</p>)}
+                          {errors.Teacher?.message && (
+                            <p className="text-red-600 text-sm mt-1">
+                              {errors.Teacher.message}
+                            </p>
+                          )}
                         </div>
                       </div>
 
                       <div className="sm:col-span-4 mx-4 my-4">
-                        <label htmlFor="website" className="block text-sm font-medium leading-6 text-gray-900">
+                        <label
+                          htmlFor="website"
+                          className="block text-sm font-medium leading-6 text-gray-900"
+                        >
                           Fecha
                         </label>
                         <div className="mt-2">
                           <div className="flex rounded-md shadow-sm ring-1 ring-inset ring-gray-300 focus-within:ring-2 focus-within:ring-inset focus-within:ring-indigo-600">
                             <input
-                              {...register('date', { setValueAs: (value) => value === "" ? undefined : value })}
+                              {...register("date", {
+                                setValueAs: (value) =>
+                                  value === "" ? undefined : value,
+                              })}
                               type="datetime-local"
-                              defaultValue={fechaEstudent}
                               readOnly={isDateReadOnly}
                               id="date"
                               className="block flex-1 border-0 bg-transparent py-1.5 pl-1 text-gray-900 placeholder:text-gray-400 focus:ring-0 sm:text-sm sm:leading-6"
                             />
                           </div>
-                          {errors.date?.message && (<p className="text-red-600 text-sm mt-1">{errors.date.message}</p>)}
+                          {errors.date?.message && (
+                            <p className="text-red-600 text-sm mt-1">
+                              {errors.date.message}
+                            </p>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -352,7 +468,9 @@ export default function Denuncia() {
             </div>
             <div className="grid grid-cols-1 gap-x-8 gap-y-8 pt-10 pb-10 pr-10 pl-10 md:grid-cols-3 bg-slate-50">
               <div className="px-4 sm:px-0">
-                <h2 className="text-base font-semibold leading-7 text-gray-900">Descripción de la situación</h2>
+                <h2 className="text-base font-semibold leading-7 text-gray-900">
+                  Descripción de la situación
+                </h2>
               </div>
 
               <div className="bg-white shadow-sm ring-1 ring-gray-900/5 sm:rounded-xl md:col-span-2 ">
@@ -362,20 +480,28 @@ export default function Denuncia() {
                       <div className="md:flex-1 divide-y md:mx-1 my-1 divide-gray-200 overflow-hidden rounded-lg bg-white shadow animate-fadein">
                         <div className="px-4 py-5 sm:px-6 text-left">
                           <h6 className="font-bold md:text-base text-sm h-full">
-                            Describe la situacion: Se solicita la mayor precisión y detalles posibles
+                            Describe la situacion: Se solicita la mayor
+                            precisión y detalles posibles
                           </h6>
                           <br />
                         </div>
                         <div className="flex items-center justify-center">
                           <div className="mx-4 w-full mt-2">
                             <textarea
-                              {...register('details', { setValueAs: (value) => value === "" ? undefined : value })}
+                              {...register("details", {
+                                setValueAs: (value) =>
+                                  value === "" ? undefined : value,
+                              })}
                               id="details"
                               className="border rounded-lg bg-gray-100 focus:outline-none focus:ring-primary focus:border-primary  p-2 resize-y w-full h-full"
                               rows={5}
                             ></textarea>
                             <div className="mt-2">
-                              {errors.details?.message && (<p className="text-red-600 text-sm mt-1">{errors.details.message}</p>)}
+                              {errors.details?.message && (
+                                <p className="text-red-600 text-sm mt-1">
+                                  {errors.details.message}
+                                </p>
+                              )}
                             </div>
                           </div>
                         </div>
@@ -384,22 +510,29 @@ export default function Denuncia() {
                       <div className="md:flex-1 divide-y md:mx-1 my-1 divide-gray-200 overflow-hidden rounded-lg bg-white shadow animate-fadein">
                         <div className="px-4 py-5 sm:px-6 text-left">
                           <h6 className="font-bold md:text-base text-sm h-full">
-                            ¿Se tomaron medidas inmediatas frente a los hechos ocurridos
-                            para proteger la integridad de los involucrados? Relatar
+                            ¿Se tomaron medidas inmediatas frente a los hechos
+                            ocurridos para proteger la integridad de los
+                            involucrados? Relatar
                           </h6>
                         </div>
                         <div className="flex items-center justify-center">
                           <div className="mx-4 w-full mt-2">
                             <textarea
-                              {...register('measures', { setValueAs: (value) => value === "" ? undefined : value })}
+                              {...register("measures", {
+                                setValueAs: (value) =>
+                                  value === "" ? undefined : value,
+                              })}
                               id="measures"
                               className="border rounded-lg bg-gray-100 focus:outline-none focus:ring-primary focus:border-primary  p-2 resize-y w-full h-full"
                               rows={5}
                             ></textarea>
                             <div className="mt-2">
-                              {errors.measures?.message && (<p className="text-red-600 text-sm mt-1">{errors.measures.message}</p>)}
+                              {errors.measures?.message && (
+                                <p className="text-red-600 text-sm mt-1">
+                                  {errors.measures.message}
+                                </p>
+                              )}
                             </div>
-
                           </div>
                         </div>
                       </div>
@@ -407,14 +540,18 @@ export default function Denuncia() {
                   </div>
                 </div>
                 <div className="flex items-center justify-end gap-x-6 border-t border-gray-900/10 px-4 py-4 sm:px-8">
-                  <button type="button" className="text-sm font-semibold leading-6 text-gray-900">
+                  <button
+                    type="button"
+                    className="text-sm font-semibold leading-6 text-gray-900"
+                  >
                     Cancelar
                   </button>
                   <button
                     type="submit"
+                    disabled={isLoading} // Deshabilitar mientras se cargan datos
                     className="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
                   >
-                    Enviar
+                    {isLoading ? "Cargando..." : "Enviar"}
                   </button>
                 </div>
               </div>

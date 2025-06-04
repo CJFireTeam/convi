@@ -612,7 +612,7 @@ export function api_getSuggestionBySchool({
 
   // Ordenamiento modificado: 
   // 1. Primero por existencia de respuesta (null primero)
-  query += `&sort[0]=response:asc`;
+  query += `&sort[0]=response:desc`;
   // 2. Luego por fecha de actualización descendente
   query += `&sort[1]=updatedAt:desc`;
 

@@ -12,6 +12,7 @@ import { EyeIcon } from "@heroicons/react/24/outline";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { ChatBubbleLeftIcon } from "@heroicons/react/20/solid";
 
 export default function InicioEncargado() {
   const { user } = useUserStore();
@@ -178,6 +179,7 @@ export default function InicioEncargado() {
               <th>Correo</th>
               <th>Establecimiento</th>
               <th>Fecha</th>
+              <th>Estado</th> {/* Nueva columna */}
             </tr>
           </thead>
           <tbody>
@@ -186,6 +188,9 @@ export default function InicioEncargado() {
                 const userData = suggestion.attributes.created.data.attributes;
                 const establishmentData =
                   suggestion.attributes.establishment.data.attributes;
+
+                // Determinar si tiene respuesta
+                const hasResponse = suggestion.attributes.user_response?.data;
 
                 return (
                   <tr key={suggestion.id} className="hover:bg-gray-100">
@@ -199,24 +204,17 @@ export default function InicioEncargado() {
                     <td>{establishmentData.name}</td>
                     <td>{formatDate(suggestion.attributes.createdAt)}</td>
                     <td>
+                      {/* Nuevo ícono condicional */}
                       <button
                         className="btn btn-ghost btn-circle hover:scale-110 hover:text-primary transition-all duration-200"
                         onClick={() => setSelectedSuggestion(suggestion)}
-                        aria-label="Ver detalle"
+                        aria-label={hasResponse ? "Ver detalle" : "Responder"}
                       >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="h-5 w-5"
-                          viewBox="0 0 20 20"
-                          fill="currentColor"
-                        >
-                          <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
-                          <path
-                            fillRule="evenodd"
-                            d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z"
-                            clipRule="evenodd"
-                          />
-                        </svg>
+                        {hasResponse ? (
+                          <EyeIcon className="h-5 w-5" />
+                        ) : (
+                          <ChatBubbleLeftIcon className="h-5 w-5" />
+                        )}
                       </button>
                     </td>
                   </tr>
@@ -309,6 +307,12 @@ function ModalSuggestion({
   const userData = suggestion.attributes.created.data.attributes;
   const establishmentData = suggestion.attributes.establishment.data.attributes;
 
+  // Determinar si tiene respuesta
+  const hasResponse = suggestion.attributes.user_response?.data;
+  const responderData = hasResponse
+    ? suggestion.attributes.user_response?.data?.attributes
+    : null;
+
   return (
     <>
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
@@ -325,6 +329,7 @@ function ModalSuggestion({
           </h2>
 
           <div className="space-y-4 p-4 bg-neutral rounded-box">
+            {/* Detalle de la sugerencia */}
             <div className="card bg-base-200 shadow-md p-4 border border-base-300">
               <p>
                 <strong>Texto:</strong>{" "}
@@ -334,6 +339,7 @@ function ModalSuggestion({
               </p>
             </div>
 
+            {/* detalles del usuario */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="card bg-base-200 shadow p-4 border border-base-300">
                 <h3 className="font-semibold text-lg mb-2 text-info">
@@ -343,6 +349,7 @@ function ModalSuggestion({
                 <p className="text-sm text-gray-600 mt-1">{userData.email}</p>
               </div>
 
+              {/* detalles del establecimiento */}
               <div className="card bg-base-200 shadow p-4 border border-base-300">
                 <h3 className="font-semibold text-lg mb-2 text-info">
                   Establecimiento
@@ -358,21 +365,47 @@ function ModalSuggestion({
             </div>
           </div>
 
+          {/* Mostrar respuesta si existe */}
+          {hasResponse && (
+            <div className="card bg-green-50 shadow-md p-4 border border-green-200">
+              <p>
+                <strong>Respuesta:</strong>{" "}
+                <span className="text-gray-700">
+                  {suggestion.attributes.response}
+                </span>
+              </p>
+              {/* {responderData && (
+                  <p className="text-sm text-gray-600 mt-2">
+                    Respondido por: {responderData.firstname}{" "}
+                    {responderData.first_lastname}
+                  </p>
+                )} */}
+              <p className="text-sm text-gray-500 mt-2">
+                Respondido :{" "}
+                {new Date(suggestion.attributes.updatedAt).toLocaleString()}
+              </p>
+            </div>
+          )}
+
           <div className="modal-action">
             <button className="btn btn-ghost" onClick={onClose}>
               Cerrar
             </button>
-            <button
-              className="btn btn-primary"
-              onClick={() => setIsResponding(true)}
-            >
-              Responder
-            </button>
+
+            {/* Mostrar botón de responder solo si no tiene respuesta */}
+            {!hasResponse && (
+              <button
+                className="btn btn-primary"
+                onClick={() => setIsResponding(true)}
+              >
+                Responder
+              </button>
+            )}
           </div>
         </div>
       </div>
-      {/* Modal de respuesta */}
-      {isResponding && suggestion && (
+      {/* Modal de respuesta (solo si no tiene respuesta) */}
+      {isResponding && !hasResponse && suggestion && (
         <ResponseFormModal
           suggestionId={suggestion.id}
           currentUserId={currentUserId}
@@ -406,7 +439,7 @@ function ResponseFormModal({
         required_error: "Campo requerido",
         invalid_type_error: "Tipo de dato inválido",
       })
-      .min(3,"Por favor ingrese una respuesta mas larga."),
+      .min(3, "Por favor ingrese una respuesta mas larga."),
   });
 
   // Tipo inferido del esquema

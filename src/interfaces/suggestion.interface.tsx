@@ -18,11 +18,22 @@ export interface ISuggestion {
         attributes: {
           name: string;
           Region: string;
-          Comuna:string;
+          Comuna: string;
         };
       };
     };
     suggestion: string;
-    createdAt:string;
+    createdAt: string;
+    updatedAt: string;
+    response?: string;
+    user_response?: {
+      data: {
+        id: number;
+        attributes: {
+          firstname: string;
+          first_lastname: string;
+        };
+      } | null;
+    } | null;
   };
 }

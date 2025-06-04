@@ -2,6 +2,7 @@ import { useUserStore } from "@/store/userStore";
 import { useEffect, useState, useCallback } from "react";
 import {
   api_getSuggestionBySchool,
+  api_softDeleteSuggestion,
   api_updateSuggestionResponse,
 } from "@/services/axios.services";
 import { toast } from "react-toastify";
@@ -12,7 +13,7 @@ import { EyeIcon } from "@heroicons/react/24/outline";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ChatBubbleLeftIcon } from "@heroicons/react/20/solid";
+import { ChatBubbleLeftIcon, TrashIcon } from "@heroicons/react/20/solid";
 
 export default function InicioEncargado() {
   const { user } = useUserStore();
@@ -109,6 +110,35 @@ export default function InicioEncargado() {
   const refreshCurrentPage = useCallback(() => {
     fetchSuggestions(pagination.page, pagination.pageSize, searchQuery);
   }, [pagination.page, pagination.pageSize, searchQuery]);
+
+  //estados para el eliminado
+  const [suggestionToDelete, setSuggestionToDelete] =
+    useState<ISuggestion | null>(null);
+
+  // Función para manejar eliminación
+  const handleDeleteConfirmation = (suggestion: ISuggestion) => {
+    setSuggestionToDelete(suggestion);
+  };
+
+  const [loading, setLoading] = useState(false);
+  // Función para ejecutar la eliminación
+  const executeDelete = useCallback(async () => {
+    if (!suggestionToDelete) return;
+
+    try {
+      setLoading(true);
+      await api_softDeleteSuggestion(suggestionToDelete.id);
+      toast.success("Sugerencia eliminada correctamente");
+      setSuggestionToDelete(null);
+      fetchSuggestions(pagination.page, pagination.pageSize, searchQuery);
+    } catch (error) {
+      setLoading(false);
+      console.error("Error al eliminar sugerencia:", error);
+      toast.error("Error al eliminar la sugerencia");
+    } finally {
+      setLoading(false);
+    }
+  }, [suggestionToDelete, pagination, searchQuery]);
 
   //spinner de loading mientras carga las peticiones
   if (isLoading) {
@@ -216,6 +246,14 @@ export default function InicioEncargado() {
                           <ChatBubbleLeftIcon className="h-5 w-5" />
                         )}
                       </button>
+                      {/* Nuevo botón de eliminar */}
+                      <button
+                        className="btn btn-ghost btn-circle hover:scale-110 hover:text-red-500 transition-all duration-200"
+                        onClick={() => handleDeleteConfirmation(suggestion)}
+                        aria-label="Eliminar"
+                      >
+                        <TrashIcon className="h-5 w-5" />
+                      </button>
                     </td>
                   </tr>
                 );
@@ -279,6 +317,15 @@ export default function InicioEncargado() {
           onClose={() => setSelectedSuggestion(null)}
           onRefresh={refreshCurrentPage}
           currentUserId={user.id}
+        />
+      )}
+      {/* Modal de confirmación para eliminar */}
+      {suggestionToDelete && (
+        <DeleteConfirmationModal
+          suggestion={suggestionToDelete}
+          onClose={() => setSuggestionToDelete(null)}
+          onConfirm={executeDelete}
+          loading={loading}
         />
       )}
     </>
@@ -527,6 +574,57 @@ function ResponseFormModal({
             </button>
           </div>
         </form>
+      </div>
+    </div>
+  );
+}
+
+// Nuevo componente modal para confirmar eliminación
+interface DeleteConfirmationModalProps {
+  suggestion: ISuggestion;
+  onClose: () => void;
+  onConfirm: () => void;
+  loading:boolean;
+}
+
+function DeleteConfirmationModal({
+  suggestion,
+  onClose,
+  onConfirm,
+  loading,
+}: DeleteConfirmationModalProps) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+      <div className="modal-box rounded-box shadow-2xl bg-base-100">
+        <button
+          className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2 hover:bg-red-500 hover:text-white"
+          onClick={onClose}
+        >
+          ✕
+        </button>
+
+        <h2 className="text-2xl font-bold mb-4 text-error">
+          Eliminar Sugerencia
+        </h2>
+        <p className="mb-4">
+          ¿Estás seguro de que deseas eliminar esta sugerencia?
+        </p>
+
+        <div className="card bg-base-200 p-4 mb-4">
+          <p className="truncate">{suggestion.attributes.suggestion}</p>
+          <p className="text-sm text-gray-500 mt-2">
+            De: {suggestion.attributes.created.data.attributes.email}
+          </p>
+        </div>
+
+        <div className="modal-action">
+          <button className="btn btn-ghost" onClick={onClose}>
+            Cancelar
+          </button>
+          <button className="btn btn-error" onClick={onConfirm} disabled={loading}>
+           {loading ? "cargando.." : "Sí, Eliminar"} 
+          </button>
+        </div>
       </div>
     </div>
   );

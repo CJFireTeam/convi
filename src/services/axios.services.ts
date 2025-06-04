@@ -646,6 +646,15 @@ export function api_updateSuggestionResponse(
   });
 }
 
+// Soft delete: marcar eliminado=true
+export function api_softDeleteSuggestion(id: number) {
+  return api.put(`/suggestions/${id}`, {
+    data: {
+      eliminado: true
+    }
+  });
+}
+
 
 export function api_putEliminadoEstablishmenCourses(CourseEsId: number, isDeleted: boolean) {
   // Define la URL del documento que deseas actualizar

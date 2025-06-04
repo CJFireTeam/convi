@@ -5,6 +5,7 @@ import { toast } from "react-toastify";
 import { ISuggestion } from "@/interfaces/suggestion.interface";
 import metaI from "@/interfaces/meta.interface";
 import Head from "next/head";
+import { EyeIcon } from "@heroicons/react/24/outline";
 
 export default function InicioEncargado() {
   const { user } = useUserStore();
@@ -85,13 +86,17 @@ export default function InicioEncargado() {
   const formatDate = (dateString: string): string => {
     const date = new Date(dateString);
     if (isNaN(date.getTime())) return "Fecha inválida";
-    
-    const day = String(date.getUTCDate()).padStart(2, '0');
-    const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+
+    const day = String(date.getUTCDate()).padStart(2, "0");
+    const month = String(date.getUTCMonth() + 1).padStart(2, "0");
     const year = date.getUTCFullYear();
-    
+
     return `${day}-${month}-${year}`;
   };
+
+  //componente para enviar props a el modal
+  const [selectedSuggestion, setSelectedSuggestion] =
+    useState<ISuggestion | null>(null);
 
   //spinner de loading mientras carga las peticiones
   if (isLoading) {
@@ -139,11 +144,14 @@ export default function InicioEncargado() {
           <input
             type="text"
             placeholder="Buscar sugerencias..."
-            className="input input-primary bg-white w-2/5 m-2 md:w-auto"
+            className="input input-primary bg-white w-64 md:auto m-2"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
-          <button type="submit" className="btn btn-primary btn-outline w-2/5 m-2 md:w-auto">
+          <button
+            type="submit"
+            className="btn btn-primary btn-outline w-64 m-2 md:w-auto"
+          >
             Buscar
           </button>
         </form>
@@ -158,8 +166,6 @@ export default function InicioEncargado() {
               <th>Nombre</th>
               <th>Correo</th>
               <th>Establecimiento</th>
-              <th>Region establecimiento</th>
-              <th>Comuna establecimiento</th>
               <th>Fecha</th>
             </tr>
           </thead>
@@ -180,9 +186,28 @@ export default function InicioEncargado() {
                     </td>
                     <td>{userData.email}</td>
                     <td>{establishmentData.name}</td>
-                    <td>{establishmentData.Region}</td>
-                    <td>{establishmentData.Comuna}</td>
                     <td>{formatDate(suggestion.attributes.createdAt)}</td>
+                    <td>
+                      <button
+                        className="btn btn-ghost btn-circle hover:scale-110 hover:text-primary transition-all duration-200"
+                        onClick={() => setSelectedSuggestion(suggestion)}
+                        aria-label="Ver detalle"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-5 w-5"
+                          viewBox="0 0 20 20"
+                          fill="currentColor"
+                        >
+                          <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+                          <path
+                            fillRule="evenodd"
+                            d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                      </button>
+                    </td>
                   </tr>
                 );
               })
@@ -238,6 +263,83 @@ export default function InicioEncargado() {
           <option value="50">50 por página</option>
         </select>
       </div>
+      {/* modal para ver la sugerencia */}
+      {selectedSuggestion && (
+        <ModalSuggestion
+          suggestion={selectedSuggestion}
+          onClose={() => setSelectedSuggestion(null)}
+        />
+      )}
     </>
+  );
+}
+
+//props para el modal
+interface ModalSuggestionProps {
+  suggestion: ISuggestion | null;
+  onClose: () => void;
+}
+
+//modal para ver la sugerencia
+function ModalSuggestion({ suggestion, onClose }: ModalSuggestionProps) {
+  if (!suggestion) return null;
+
+  const userData = suggestion.attributes.created.data.attributes;
+  const establishmentData = suggestion.attributes.establishment.data.attributes;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+      <div className="modal-box max-w-2xl rounded-box shadow-2xl bg-base-100 font-medium text-gray-900">
+        <button
+          className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2 hover:bg-red-500 hover:text-white"
+          onClick={onClose}
+        >
+          ✕
+        </button>
+
+        <h2 className="text-2xl font-bold mb-4 text-primary">
+          Detalle de la Sugerencia
+        </h2>
+
+        <div className="space-y-4 p-4 bg-neutral rounded-box">
+          <div className="card bg-base-200 shadow-md p-4 border border-base-300">
+            <p>
+              <strong>Texto:</strong>{" "}
+              <span className="text-gray-700">
+                {suggestion.attributes.suggestion}
+              </span>
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="card bg-base-200 shadow p-4 border border-base-300">
+              <h3 className="font-semibold text-lg mb-2 text-info">
+                Usuario
+              </h3>
+              <p>{`${userData.firstname} ${userData.first_lastname} ${userData.second_lastname}`}</p>
+              <p className="text-sm text-gray-600 mt-1">{userData.email}</p>
+            </div>
+
+            <div className="card bg-base-200 shadow p-4 border border-base-300">
+              <h3 className="font-semibold text-lg mb-2 text-info">
+                Establecimiento
+              </h3>
+              <p>{establishmentData.name}</p>
+              <p className="text-sm text-gray-600 mt-1">{`${establishmentData.Region} - ${establishmentData.Comuna}`}</p>
+            </div>
+          </div>
+
+          <div className="text-right text-sm text-gray-500">
+            <span>Creado :</span> {new Date(suggestion.attributes.createdAt).toLocaleString()}
+          </div>
+        </div>
+
+        <div className="modal-action">
+          <button className="btn btn-primary" onClick={onClose}>
+            Cerrar
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }

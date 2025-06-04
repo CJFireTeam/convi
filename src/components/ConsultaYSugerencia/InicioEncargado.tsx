@@ -1,11 +1,17 @@
 import { useUserStore } from "@/store/userStore";
 import { useEffect, useState, useCallback } from "react";
-import { api_getSuggestionBySchool } from "@/services/axios.services";
+import {
+  api_getSuggestionBySchool,
+  api_updateSuggestionResponse,
+} from "@/services/axios.services";
 import { toast } from "react-toastify";
 import { ISuggestion } from "@/interfaces/suggestion.interface";
 import metaI from "@/interfaces/meta.interface";
 import Head from "next/head";
 import { EyeIcon } from "@heroicons/react/24/outline";
+import { z } from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 export default function InicioEncargado() {
   const { user } = useUserStore();
@@ -97,6 +103,11 @@ export default function InicioEncargado() {
   //componente para enviar props a el modal
   const [selectedSuggestion, setSelectedSuggestion] =
     useState<ISuggestion | null>(null);
+
+  //refrescar la pagina una vez sale del modal
+  const refreshCurrentPage = useCallback(() => {
+    fetchSuggestions(pagination.page, pagination.pageSize, searchQuery);
+  }, [pagination.page, pagination.pageSize, searchQuery]);
 
   //spinner de loading mientras carga las peticiones
   if (isLoading) {
@@ -268,6 +279,8 @@ export default function InicioEncargado() {
         <ModalSuggestion
           suggestion={selectedSuggestion}
           onClose={() => setSelectedSuggestion(null)}
+          onRefresh={refreshCurrentPage}
+          currentUserId={user.id}
         />
       )}
     </>
@@ -278,18 +291,159 @@ export default function InicioEncargado() {
 interface ModalSuggestionProps {
   suggestion: ISuggestion | null;
   onClose: () => void;
+  onRefresh: () => void;
+  currentUserId: number;
 }
 
 //modal para ver la sugerencia
-function ModalSuggestion({ suggestion, onClose }: ModalSuggestionProps) {
+function ModalSuggestion({
+  suggestion,
+  onClose,
+  onRefresh,
+  currentUserId,
+}: ModalSuggestionProps) {
+  //estado para saber si responde el encargado
+  const [isResponding, setIsResponding] = useState(false);
   if (!suggestion) return null;
 
   const userData = suggestion.attributes.created.data.attributes;
   const establishmentData = suggestion.attributes.establishment.data.attributes;
 
   return (
+    <>
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+        <div className="modal-box max-w-2xl rounded-box shadow-2xl bg-base-100 font-medium text-gray-900">
+          <button
+            className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2 hover:bg-red-500 hover:text-white"
+            onClick={onClose}
+          >
+            ✕
+          </button>
+
+          <h2 className="text-2xl font-bold mb-4 text-primary">
+            Detalle de la Sugerencia
+          </h2>
+
+          <div className="space-y-4 p-4 bg-neutral rounded-box">
+            <div className="card bg-base-200 shadow-md p-4 border border-base-300">
+              <p>
+                <strong>Texto:</strong>{" "}
+                <span className="text-gray-700">
+                  {suggestion.attributes.suggestion}
+                </span>
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="card bg-base-200 shadow p-4 border border-base-300">
+                <h3 className="font-semibold text-lg mb-2 text-info">
+                  Usuario
+                </h3>
+                <p>{`${userData.firstname} ${userData.first_lastname} ${userData.second_lastname}`}</p>
+                <p className="text-sm text-gray-600 mt-1">{userData.email}</p>
+              </div>
+
+              <div className="card bg-base-200 shadow p-4 border border-base-300">
+                <h3 className="font-semibold text-lg mb-2 text-info">
+                  Establecimiento
+                </h3>
+                <p>{establishmentData.name}</p>
+                <p className="text-sm text-gray-600 mt-1">{`${establishmentData.Region} - ${establishmentData.Comuna}`}</p>
+              </div>
+            </div>
+
+            <div className="text-right text-sm text-gray-500">
+              <span>Creado :</span>{" "}
+              {new Date(suggestion.attributes.createdAt).toLocaleString()}
+            </div>
+          </div>
+
+          <div className="modal-action">
+            <button className="btn btn-ghost" onClick={onClose}>
+              Cerrar
+            </button>
+            <button
+              className="btn btn-primary"
+              onClick={() => setIsResponding(true)}
+            >
+              Responder
+            </button>
+          </div>
+        </div>
+      </div>
+      {/* Modal de respuesta */}
+      {isResponding && suggestion && (
+        <ResponseFormModal
+          suggestionId={suggestion.id}
+          currentUserId={currentUserId}
+          onClose={() => setIsResponding(false)}
+          onSuccess={() => {
+            onRefresh();
+            onClose();
+          }}
+        />
+      )}
+    </>
+  );
+}
+
+//sub componente modal de respuesta
+function ResponseFormModal({
+  suggestionId,
+  currentUserId,
+  onClose,
+  onSuccess,
+}: {
+  suggestionId: number;
+  currentUserId: number;
+  onClose: () => void;
+  onSuccess: () => void;
+}) {
+  //zod para el update
+  const responseSchema = z.object({
+    response: z
+      .string({
+        required_error: "Campo requerido",
+        invalid_type_error: "Tipo de dato inválido",
+      })
+      .min(3,"Por favor ingrese una respuesta mas larga."),
+  });
+
+  // Tipo inferido del esquema
+  type ResponseFormData = z.infer<typeof responseSchema>;
+
+  //react hook form
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    setValue,
+    reset,
+  } = useForm<ResponseFormData>({
+    resolver: zodResolver(responseSchema),
+  });
+
+  const onSubmit = async (data: ResponseFormData) => {
+    if (!currentUserId) {
+      toast.error("sin id de usuario.");
+      return;
+    }
+    try {
+      await api_updateSuggestionResponse(suggestionId, {
+        response: data.response,
+        user_response: currentUserId,
+      });
+      toast.success("Respuesta enviada correctamente");
+      onSuccess();
+    } catch (error) {
+      toast.error("Error al enviar la respuesta");
+      console.error(error);
+    }
+  };
+
+  return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-      <div className="modal-box max-w-2xl rounded-box shadow-2xl bg-base-100 font-medium text-gray-900">
+      <div className="modal-box max-w-2xl rounded-box shadow-2xl bg-base-100">
         <button
           className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2 hover:bg-red-500 hover:text-white"
           onClick={onClose}
@@ -298,47 +452,48 @@ function ModalSuggestion({ suggestion, onClose }: ModalSuggestionProps) {
         </button>
 
         <h2 className="text-2xl font-bold mb-4 text-primary">
-          Detalle de la Sugerencia
+          Responder Sugerencia
         </h2>
 
-        <div className="space-y-4 p-4 bg-neutral rounded-box">
-          <div className="card bg-base-200 shadow-md p-4 border border-base-300">
-            <p>
-              <strong>Texto:</strong>{" "}
-              <span className="text-gray-700">
-                {suggestion.attributes.suggestion}
+        <form onSubmit={handleSubmit(onSubmit)}>
+          <div className="form-control">
+            <label className="label">
+              <span className="label-text">Tu respuesta</span>
+            </label>
+            <textarea
+              {...register("response", {
+                setValueAs: (value) => (value === "" ? undefined : value),
+              })}
+              className={`textarea textarea-primary h-32 ${
+                errors.response ? "textarea-error" : ""
+              }`}
+              placeholder="Escribe tu respuesta aquí..."
+            />
+            {errors.response && (
+              <span className="text-error text-sm mt-1">
+                {errors.response.message}
               </span>
-            </p>
+            )}
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="card bg-base-200 shadow p-4 border border-base-300">
-              <h3 className="font-semibold text-lg mb-2 text-info">
-                Usuario
-              </h3>
-              <p>{`${userData.firstname} ${userData.first_lastname} ${userData.second_lastname}`}</p>
-              <p className="text-sm text-gray-600 mt-1">{userData.email}</p>
-            </div>
-
-            <div className="card bg-base-200 shadow p-4 border border-base-300">
-              <h3 className="font-semibold text-lg mb-2 text-info">
-                Establecimiento
-              </h3>
-              <p>{establishmentData.name}</p>
-              <p className="text-sm text-gray-600 mt-1">{`${establishmentData.Region} - ${establishmentData.Comuna}`}</p>
-            </div>
+          <div className="modal-action">
+            <button
+              type="button"
+              className="btn btn-ghost"
+              onClick={onClose}
+              disabled={isSubmitting}
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              className="btn btn-primary"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? "Enviando..." : "Enviar Respuesta"}
+            </button>
           </div>
-
-          <div className="text-right text-sm text-gray-500">
-            <span>Creado :</span> {new Date(suggestion.attributes.createdAt).toLocaleString()}
-          </div>
-        </div>
-
-        <div className="modal-action">
-          <button className="btn btn-primary" onClick={onClose}>
-            Cerrar
-          </button>
-        </div>
+        </form>
       </div>
     </div>
   );

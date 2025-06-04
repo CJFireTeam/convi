@@ -610,8 +610,12 @@ export function api_getSuggestionBySchool({
   // Poblar relaciones
   query += `&populate=*`;
 
-  // Ordenamiento
-  query += `&sort[0]=createdAt:desc`;
+  // Ordenamiento modificado: 
+  // 1. Primero por existencia de respuesta (null primero)
+  query += `&sort[0]=response:asc`;
+  // 2. Luego por fecha de actualización descendente
+  query += `&sort[1]=updatedAt:desc`;
+
 
   // Búsqueda condicional
   if (search && search.trim() !== "") {
@@ -621,11 +625,26 @@ export function api_getSuggestionBySchool({
     query += `&filters[$and][2][$or][3][created][first_lastname][$containsi]=${encodeURIComponent(search)}`;
     query += `&filters[$and][2][$or][4][created][second_lastname][$containsi]=${encodeURIComponent(search)}`;
   }
+  query += `&filters[$and][3][eliminado][$eq]=false`
 
   return api.get(`suggestions${query}`);
 }
-////api/suggestions
 
+//update de suggestions
+export function api_updateSuggestionResponse(
+  id: number,
+  data: {
+    response: string;
+    user_response: number; // Solo necesita el ID del usuario
+  }
+) {
+  return api.put(`/suggestions/${id}`, {
+    data: {
+      response: data.response,
+      user_response: data.user_response,
+    },
+  });
+}
 
 
 export function api_putEliminadoEstablishmenCourses(CourseEsId: number, isDeleted: boolean) {

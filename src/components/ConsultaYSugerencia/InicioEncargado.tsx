@@ -13,7 +13,7 @@ import { EyeIcon } from "@heroicons/react/24/outline";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ChatBubbleLeftIcon, TrashIcon } from "@heroicons/react/20/solid";
+import { ChatBubbleLeftIcon, TrashIcon, XMarkIcon } from "@heroicons/react/20/solid";
 
 export default function InicioEncargado() {
   const { user } = useUserStore();
@@ -182,14 +182,33 @@ export default function InicioEncargado() {
       </Head>
       {/* Buscador */}
       <div className="mb-6">
-        <form onSubmit={handleSearch} className="flex flex-col md:flex-row">
-          <input
-            type="text"
-            placeholder="Buscar sugerencias..."
-            className="input input-primary bg-white w-64 md:auto m-2"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
+        <form
+          onSubmit={handleSearch}
+          className="flex flex-col md:flex-row items-center"
+        >
+          <div className="relative">
+            <input
+              type="text"
+              placeholder="Buscar sugerencias..."
+              className="input input-primary bg-white w-64 md:auto m-2 pr-10" // Añade padding a la derecha
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+            {/* Botón para limpiar búsqueda */}
+            {searchQuery && (
+              <button
+                type="button"
+                className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                onClick={() => {
+                  setSearchQuery("");
+                  fetchSuggestions(1, pagination.pageSize, "");
+                }}
+                aria-label="Limpiar búsqueda"
+              >
+                <XMarkIcon className="h-5 w-5" />
+              </button>
+            )}
+          </div>
           <button
             type="submit"
             className="btn btn-primary btn-outline w-64 m-2 md:w-auto"
@@ -584,7 +603,7 @@ interface DeleteConfirmationModalProps {
   suggestion: ISuggestion;
   onClose: () => void;
   onConfirm: () => void;
-  loading:boolean;
+  loading: boolean;
 }
 
 function DeleteConfirmationModal({
@@ -621,8 +640,12 @@ function DeleteConfirmationModal({
           <button className="btn btn-ghost" onClick={onClose}>
             Cancelar
           </button>
-          <button className="btn btn-error" onClick={onConfirm} disabled={loading}>
-           {loading ? "cargando.." : "Sí, Eliminar"} 
+          <button
+            className="btn btn-error"
+            onClick={onConfirm}
+            disabled={loading}
+          >
+            {loading ? "cargando.." : "Sí, Eliminar"}
           </button>
         </div>
       </div>

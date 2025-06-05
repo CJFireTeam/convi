@@ -33,6 +33,7 @@ export interface IMenuChildren extends Imenus {
 }
 
 const AuthenticatedMenus: IMenuChildren[] = [
+  { name: "Home", href: "/", icon: HomeIcon, children: [], current: false },
   {
     name: "Te Escuchamos",
     children: [],
@@ -43,7 +44,7 @@ const AuthenticatedMenus: IMenuChildren[] = [
   },
   {
     name: "Casos",
-    href: "/",
+    href: "/casos_autenticados",
     icon: ClipboardDocumentListIcon,
     current: false,
     children: [],

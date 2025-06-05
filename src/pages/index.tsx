@@ -29,7 +29,7 @@ export default function Home() {
         <title>Home</title>
         <meta name="viewport" content="initial-scale=1.0, width=device-width" />
       </Head>
-      {role.name === "Authenticated" && <><Greetings_Authenticated /><CasesAuthenticated /></>}
+      {role.name === "Authenticated" && <><HomeProfesor/></>}
       {role.name === "Encargado de Convivencia Escolar" && <><Grafico /></>}
       {role.name === "admin" && <div className="h-full">
         <ContadorUsuarios />

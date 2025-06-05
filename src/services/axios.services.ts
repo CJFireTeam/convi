@@ -590,6 +590,7 @@ export function api_getEstablishmentCoursesSinPag(establishment: number) {
   return api.get(`establishment-courses${query}`)
 }
 
+//APIS SUGGESTION
 //sugerencia con paginado y buscador.
 export function api_getSuggestionBySchool({
   establishment,
@@ -655,6 +656,45 @@ export function api_softDeleteSuggestion(id: number) {
   });
 }
 
+//api para traer las sugerencias de los que la crearon
+export function api_getSuggestionsByUser({
+  userId,
+  page,
+  pageSize,
+  search = ""
+}: {
+  userId: number;
+  page: number;
+  pageSize: number;
+  search?: string;
+}) {
+  let query = `?filters[$and][0][created][id][$eq]=${userId}`;
+  query += `&filters[$and][1][eliminado][$eq]=false`;
+
+  // Paginación
+  query += `&pagination[page]=${page}&pagination[pageSize]=${pageSize}`;
+
+  // Poblar relaciones
+  query += `&populate=*`;
+
+  // Ordenamiento modificado:
+  // 1. Primero por existencia de respuesta (null primero para las sin responder)
+  query += `&sort[0]=response:asc`;
+  // 2. Luego para las sin responder: fecha de creación descendente (más nuevas primero)
+  query += `&sort[1]=createdAt:desc`;
+  // 3. Para las respondidas: fecha de actualización descendente (más recientes primero)
+  query += `&sort[2]=updatedAt:desc`;
+
+  // Búsqueda condicional
+  if (search && search.trim() !== "") {
+    query += `&filters[$and][2][$or][0][suggestion][$containsi]=${encodeURIComponent(search)}`;
+    query += `&filters[$and][2][$or][1][establishment][name][$containsi]=${encodeURIComponent(search)}`;
+  }
+
+  return api.get(`suggestions${query}`);
+}
+
+//FIN APIS SUGGESTION
 
 export function api_putEliminadoEstablishmenCourses(CourseEsId: number, isDeleted: boolean) {
   // Define la URL del documento que deseas actualizar

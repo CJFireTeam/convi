@@ -221,8 +221,8 @@ export default function InicioEncargado() {
       {/* Tabla */}
       <div className="overflow-x-auto border rounded-md">
         <table className="table text-sm font-medium text-gray-900">
-          <thead className="text-left">
-            <tr>
+          <thead>
+            <tr className="bg-base-200">
               <th>N°</th>
               <th>Nombre</th>
               <th>Correo</th>
@@ -298,17 +298,17 @@ export default function InicioEncargado() {
 
         <div className="join">
           <button
-            className="join-item btn btn-secondary btn-md"
+            className="join-item btn btn-secondary btn-outline btn-md"
             onClick={() => handlePageChange(pagination.page - 1)}
             disabled={pagination.page === 1}
           >
             «
           </button>
-          <button className="join-item btn btn-secondary btn-md">
+          <button className="join-item btn btn-secondary btn-outline btn-md">
             Página {pagination.page}
           </button>
           <button
-            className="join-item btn btn-secondary btn-md"
+            className="join-item btn btn-secondary btn-outline btn-md"
             onClick={() => handlePageChange(pagination.page + 1)}
             disabled={pagination.page >= pagination.pageCount}
           >

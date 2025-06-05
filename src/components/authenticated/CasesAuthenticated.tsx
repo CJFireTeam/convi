@@ -98,7 +98,7 @@ function Table({ data }: { data: caseInterface[] }) {
                 }
               </td>
               <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
-                {paseDate(person.attributes.createdAt)}
+                {new Date(person.attributes.createdAt).toLocaleString()}
               </td>
               <td className="py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6  space-x-2 items-center">
                 <button onClick={() => { handleShowModal(person) }}>

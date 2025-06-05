@@ -251,7 +251,7 @@ export default function InicioEncargado() {
                     </td>
                     <td>{userData.email}</td>
                     <td>{establishmentData.name}</td>
-                    <td>{formatDate(suggestion.attributes.createdAt)}</td>
+                    <td>{new Date(suggestion.attributes.createdAt).toLocaleString()}</td>
                     <td>
                       {/* Nuevo ícono condicional */}
                       <button

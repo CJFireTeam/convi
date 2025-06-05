@@ -184,14 +184,7 @@ export default function DocApoderado() {
                                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{doc.attributes.descriptionDoc}</td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{doc.attributes.userId.data.attributes.firstname + " " + doc.attributes.userId.data.attributes.first_lastname}</td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                                    {new Date(doc.attributes.createdAt).toLocaleString('es-ES', {
-                                                        year: 'numeric',
-                                                        month: 'long',
-                                                        day: 'numeric',
-                                                        hour: '2-digit',
-                                                        minute: '2-digit',
-                                                        second: '2-digit',
-                                                    })}
+                                                    {new Date(doc.attributes.createdAt).toLocaleString()}
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{getDestinatario(doc)}</td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">

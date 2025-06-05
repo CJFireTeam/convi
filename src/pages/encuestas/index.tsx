@@ -729,26 +729,26 @@ function Table({ data }: { data: surveyInterface[] }) {
     <>
       {data.length !== 0 ? (
         <table className="min-w-full divide-y divide-gray-300">
-          <thead className="bg-gray-50">
+          <thead className="bg-gray-50 text-center">
             <tr>
-              <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+              <th scope="col" className="px-3 py-3.5 text-sm font-semibold text-gray-900">
                 Nombre Encuesta
               </th>
-              <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+              <th scope="col" className="px-3 py-3.5 text-sm font-semibold text-gray-900">
                 Descripción
               </th>
-              <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+              <th scope="col" className="px-3 py-3.5 text-sm font-semibold text-gray-900">
                 Fecha Inicio
               </th>
-              <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+              <th scope="col" className="px-3 py-3.5 text-sm font-semibold text-gray-900">
                 Fecha Terminó
               </th>
-              <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+              <th scope="col" className="px-3 py-3.5 text-sm font-semibold text-gray-900">
                 Ver
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-200 bg-white">
+          <tbody className="divide-y divide-gray-200 bg-white text-center">
             {data.map((survey, index) => (
               <tr key={index}>
                 <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
@@ -758,10 +758,10 @@ function Table({ data }: { data: surveyInterface[] }) {
                   {survey.attributes.Descripcion}
                 </td>
                 <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
-                  {survey.attributes.FechaInicio}
+                  {new Date(survey.attributes.FechaInicio).toLocaleString()}
                 </td>
                 <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
-                  {survey.attributes.FechaFin}
+                 {new Date(survey.attributes.FechaFin).toLocaleString()}
                 </td>
                 <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
                   <button onClick={() => handleRouter(survey.id)}>

@@ -101,14 +101,7 @@ export default function DocumentosRecibidos(props: props) {
                                             <p><span className="font-semibold">creador: </span>{doc.attributes.userId.data.attributes.firstname + " " + doc.attributes.userId.data.attributes.first_lastname}</p>
                                         )}
                                         {doc.attributes.createdAt && (
-                                            <p><span className="font-semibold">Fecha: </span>{new Date(doc.attributes.createdAt).toLocaleString('es-ES', {
-                                                year: 'numeric',
-                                                month: 'long',
-                                                day: 'numeric',
-                                                hour: '2-digit',
-                                                minute: '2-digit',
-                                                second: '2-digit',
-                                            })}</p>
+                                            <p><span className="font-semibold">Fecha: </span>{new Date(doc.attributes.createdAt).toLocaleString()}</p>
                                         )}
                                     </div>
                                     <div className="grid lg:grid-cols-3">

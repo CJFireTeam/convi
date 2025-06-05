@@ -71,7 +71,7 @@ export default function ResumenCaseComponent({ data, caseId, derived }: { data: 
                 <tbody className='divide-y divide-gray-300'>
                     <tr>
                         <th className="px-3 py-3.5 w-1/3 text-left text-sm font-semibold text-gray-900 border-r border-gray-300">Fecha</th>
-                        <td className="px-3 py-3.5 w-2/3 text-left text-sm font-normal	 text-gray-900">{paseDate(data.attributes.createdAt)}</td>
+                        <td className="px-3 py-3.5 w-2/3 text-left text-sm font-normal	 text-gray-900">{new Date(data.attributes.createdAt).toLocaleString()}</td>
                     </tr>
                     <tr>
                         <th className="px-3 py-3.5 w-1/3 text-left text-sm font-semibold text-gray-900 border-r border-gray-300">Hora</th>

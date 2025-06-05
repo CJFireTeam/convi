@@ -223,7 +223,7 @@ export default function InicioUsuario() {
                   <tr key={suggestion.id} className="hover:bg-base-100">
                     <td>{startNumber + index}</td>
                     <td>{establishmentData.name}</td>
-                    <td>{formatDate(suggestion.attributes.createdAt)}</td>
+                    <td>{new Date(suggestion.attributes.createdAt).toLocaleString()}</td>
                     <td>
                       <span
                         className={`badge ${

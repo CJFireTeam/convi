@@ -102,14 +102,7 @@ export default function DocumentosCurso(props: props) {
                                         <p><span className="font-semibold">Creador: </span>{currentDocument.attributes.userId.data.attributes.firstname + " " + currentDocument.attributes.userId.data.attributes.first_lastname}</p>
                                     )}
                                     {currentDocument.attributes.createdAt && (
-                                        <p><span className="font-semibold">Fecha: </span>{new Date(currentDocument.attributes.createdAt).toLocaleString('es-ES', {
-                                            year: 'numeric',
-                                            month: 'long',
-                                            day: 'numeric',
-                                            hour: '2-digit',
-                                            minute: '2-digit',
-                                            second: '2-digit',
-                                        })}</p>
+                                        <p><span className="font-semibold">Fecha: </span>{new Date(currentDocument.attributes.createdAt).toLocaleString()}</p>
                                     )}
                                 </div>
                                 <div className="grid lg:grid-cols-3">

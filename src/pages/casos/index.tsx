@@ -143,6 +143,12 @@ function Table({ data }: { data: caseInterface[] }) {
                   scope="col"
                   className="px-3 py-3.5 text-center text-sm font-semibold text-gray-900"
                 >
+                  Estado
+                </th>
+                <th
+                  scope="col"
+                  className="px-3 py-3.5 text-center text-sm font-semibold text-gray-900"
+                >
                   Gestionar
                 </th>
                 <th
@@ -211,7 +217,7 @@ function Table({ data }: { data: caseInterface[] }) {
                     </td>
                   ) : (
                     <td className="py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6 space-x-2 items-center">
-                      <p className="font-semibold">Derivacion completada.</p>
+                      <p className="font-semibold badge badge-primary">Derivacion completada.</p>
                     </td>
                   )}
                 </>
@@ -219,29 +225,59 @@ function Table({ data }: { data: caseInterface[] }) {
 
               {role.name === "Encargado de Convivencia Escolar" && (
                 <>
-                  <td className="py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6 hover:text-primary space-x-2 items-center">
+                  <td className="py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6 space-x-2 items-center">
                     {person.attributes.derived !== true && (
-                      <button onClick={() => handleEdit(person.id)}>
+                      <span
+                        className="badge badge-warning"
+                      >
+                        Revisar
+                      </span>
+                    )}
+
+                    {person.attributes.derived === true && person.attributes.fase === 1 && (
+                       <span
+                        className="badge badge-primary"
+                      >
+                        Categorizar
+                      </span>
+                    )}
+
+                    {person.attributes.derived === true && person.attributes.fase === 2 && (
+                        <span
+                        className="badge badge-success"
+                      >
+                        Aprobar
+                      </span>
+                    )}
+                  </td>
+                </>
+              )}
+
+              {role.name === "Encargado de Convivencia Escolar" && (
+                <>
+                  <td className="py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6 space-x-2 items-center">
+                    {person.attributes.derived !== true && (
+                      <button onClick={() => handleEdit(person.id)} className="btn btn-ghost btn-sm hover:text-warning">
                         <h1>{person.attributes.derived}</h1>
                         <PencilIcon className="h-6 w-6" aria-hidden="true" />
                       </button>
                     )}
 
                     {person.attributes.derived === true && person.attributes.fase === 1 && (
-                      <button onClick={() => handleDerivedEdit(person.id, person.attributes.derived)}>
+                      <button onClick={() => handleDerivedEdit(person.id, person.attributes.derived)} className="btn btn-ghost btn-sm hover:text-cyan-700">
                         <FolderIcon className="h-6 w-6" aria-hidden="true" />
                       </button>
                     )}
 
                     {person.attributes.derived === true && person.attributes.fase === 2 && (
-                      <button onClick={() => handleClickGestionar(person.id, person.attributes.derived)}>
+                      <button onClick={() => handleClickGestionar(person.id, person.attributes.derived)} className="btn btn-ghost btn-sm hover:text-lime-800">
                         <EnvelopeIcon className="h-6 w-6" aria-hidden="true" />
                       </button>
                     )}
                   </td>
 
                   <td className="py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6 hover:text-primary space-x-2 items-center">
-                    <button onClick={() => { handleShowModal(person) }}>
+                    <button onClick={() => { handleShowModal(person) }} className="btn btn-ghost btn-sm hover:text-primary">
                       <EyeIcon className="h-6 w-6" aria-hidden="true" />
                     </button>
                   </td>

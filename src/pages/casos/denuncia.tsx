@@ -66,7 +66,7 @@ interface ICase {
 }
 
 export default function Denuncia() {
-  const { push } = useRouter();
+  const { push,back } = useRouter();
   const methods = useForm<Inputs>({
     resolver: zodResolver(denunciationSchema),
     defaultValues: {
@@ -543,6 +543,7 @@ export default function Denuncia() {
                   <button
                     type="button"
                     className="text-sm font-semibold leading-6 text-gray-900"
+                    onClick={()=>{back()}}
                   >
                     Cancelar
                   </button>

@@ -4,7 +4,13 @@ import axios from "axios";
 import Layout from "../../components/layout/Layout";
 import { useCallback, useEffect, useRef, useState } from "react";
 import metaI from "../../interfaces/meta.interface";
-import { ChevronLeftIcon, ChevronRightIcon, EnvelopeIcon, EnvelopeOpenIcon, FolderIcon } from "@heroicons/react/20/solid";
+import {
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  EnvelopeIcon,
+  EnvelopeOpenIcon,
+  FolderIcon,
+} from "@heroicons/react/20/solid";
 import { capitalizeFirstLetter } from "../../shared/functions";
 import { useUserStore } from "../../store/userStore";
 import { api_cases } from "../../services/axios.services";
@@ -18,15 +24,19 @@ enum UserTypes {
   "otro" = "No configurado",
 }
 function Table({ data }: { data: caseInterface[] }) {
-
-  const [selectedPerson, setSelectedPerson] = useState<caseInterface | null>(null);
+  const [selectedPerson, setSelectedPerson] = useState<caseInterface | null>(
+    null
+  );
 
   const creationRef = useRef<HTMLDialogElement>(null);
 
-  const handleShowModal = useCallback((person: caseInterface) => {
-    setSelectedPerson(person);
-    creationRef.current?.showModal();
-  }, [creationRef]);
+  const handleShowModal = useCallback(
+    (person: caseInterface) => {
+      setSelectedPerson(person);
+      creationRef.current?.showModal();
+    },
+    [creationRef]
+  );
 
   const handleCloseModal = useCallback(() => {
     setSelectedPerson(null);
@@ -58,35 +68,32 @@ function Table({ data }: { data: caseInterface[] }) {
   };
 
   const handleClickGestionar = (id: number, derived: boolean) => {
-    localStorage.setItem("complaint", id.toString())
+    localStorage.setItem("complaint", id.toString());
     localStorage.setItem("case", id.toString());
     localStorage.setItem("derivado", derived.toString());
-    router.push("/casos/gestionar")
-  }
+    router.push("/casos/gestionar");
+  };
 
   const colorsBG = (colors: number) => {
-    console.log(colors)
+    console.log(colors);
     switch (colors) {
       case 1:
-        return "bg-white"
+        return "bg-white";
         break;
       case 2:
-        return "bg-emerald-100"
+        return "bg-emerald-100";
         break;
       case 3:
-        return "bg-emerald-200"
+        return "bg-emerald-200";
         break;
       case 4:
-        return "bg-emerald-300"
+        return "bg-emerald-300";
         break;
       default:
-        return "bg-white"
+        return "bg-white";
         break;
     }
-    ;
-  }
-
-
+  };
 
   return (
     <>
@@ -176,13 +183,13 @@ function Table({ data }: { data: caseInterface[] }) {
                   person.attributes.created.data.attributes.first_lastname
                 )}
                 <br />
-                {
-                  person.attributes.created.data.attributes.role.data.attributes.name === "Authenticated" &&
-                  person.attributes.created.data.attributes.tipo
-                }
-                {
-                  person.attributes.created.data.attributes.role.data.attributes.name !== "Authenticated" && person.attributes.created.data.attributes.role.data.attributes.name
-                }
+                {person.attributes.created.data.attributes.role.data.attributes
+                  .name === "Authenticated" &&
+                  person.attributes.created.data.attributes.tipo}
+                {person.attributes.created.data.attributes.role.data.attributes
+                  .name !== "Authenticated" &&
+                  person.attributes.created.data.attributes.role.data.attributes
+                    .name}
                 {/* {person.attributes.created.data.attributes.role.data.attributes.name} */}
               </td>
 
@@ -204,20 +211,31 @@ function Table({ data }: { data: caseInterface[] }) {
               {role.name !== "Encargado de Convivencia Escolar" && (
                 <>
                   <td className="py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6 hover:text-primary space-x-2 items-center">
-                    <button onClick={() => { handleShowModal(person) }}>
+                    <button
+                      onClick={() => {
+                        handleShowModal(person);
+                      }}
+                    >
                       <EyeIcon className="h-6 w-6" aria-hidden="true" />
                     </button>
                   </td>
 
                   {person.attributes.directed.data.id === user.id ? (
-                    <td className="py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6 hover:text-primary space-x-2 items-center">
-                      <button onClick={() => handleEdit(person.id)}>
-                        <PencilIcon className="h-6 w-6" aria-hidden="true" />
-                      </button>
+                    <td className="py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6 space-x-2 items-center">
+                      <div
+                        className="tooltip tooltip-right tooltip-warning"
+                        data-tip="Derivar"
+                      >
+                        <button onClick={() => handleEdit(person.id)} className="btn btn-ghost btn-sm hover:text-warning" >
+                          <PencilIcon className="h-6 w-6" aria-hidden="true" />
+                        </button>
+                      </div>
                     </td>
                   ) : (
                     <td className="py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6 space-x-2 items-center">
-                      <p className="font-semibold badge badge-primary">Derivacion completada.</p>
+                      <p className="font-semibold badge badge-primary">
+                        Derivacion completada.
+                      </p>
                     </td>
                   )}
                 </>
@@ -227,28 +245,18 @@ function Table({ data }: { data: caseInterface[] }) {
                 <>
                   <td className="py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6 space-x-2 items-center">
                     {person.attributes.derived !== true && (
-                      <span
-                        className="badge badge-warning"
-                      >
-                        Revisar
-                      </span>
+                      <span className="badge badge-warning">Revisar</span>
                     )}
 
-                    {person.attributes.derived === true && person.attributes.fase === 1 && (
-                       <span
-                        className="badge badge-primary"
-                      >
-                        Categorizar
-                      </span>
-                    )}
+                    {person.attributes.derived === true &&
+                      person.attributes.fase === 1 && (
+                        <span className="badge badge-primary">Categorizar</span>
+                      )}
 
-                    {person.attributes.derived === true && person.attributes.fase === 2 && (
-                        <span
-                        className="badge badge-success"
-                      >
-                        Aprobar
-                      </span>
-                    )}
+                    {person.attributes.derived === true &&
+                      person.attributes.fase === 2 && (
+                        <span className="badge badge-success">Aprobar</span>
+                      )}
                   </td>
                 </>
               )}
@@ -257,52 +265,80 @@ function Table({ data }: { data: caseInterface[] }) {
                 <>
                   <td className="py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6 space-x-2 items-center">
                     {person.attributes.derived !== true && (
-                      <button onClick={() => handleEdit(person.id)} className="btn btn-ghost btn-sm hover:text-warning">
+                      <button
+                        onClick={() => handleEdit(person.id)}
+                        className="btn btn-ghost btn-sm hover:text-warning"
+                      >
                         <h1>{person.attributes.derived}</h1>
                         <PencilIcon className="h-6 w-6" aria-hidden="true" />
                       </button>
                     )}
 
-                    {person.attributes.derived === true && person.attributes.fase === 1 && (
-                      <button onClick={() => handleDerivedEdit(person.id, person.attributes.derived)} className="btn btn-ghost btn-sm hover:text-cyan-700">
-                        <FolderIcon className="h-6 w-6" aria-hidden="true" />
-                      </button>
-                    )}
+                    {person.attributes.derived === true &&
+                      person.attributes.fase === 1 && (
+                        <button
+                          onClick={() =>
+                            handleDerivedEdit(
+                              person.id,
+                              person.attributes.derived
+                            )
+                          }
+                          className="btn btn-ghost btn-sm hover:text-cyan-700"
+                        >
+                          <FolderIcon className="h-6 w-6" aria-hidden="true" />
+                        </button>
+                      )}
 
-                    {person.attributes.derived === true && person.attributes.fase === 2 && (
-                      <button onClick={() => handleClickGestionar(person.id, person.attributes.derived)} className="btn btn-ghost btn-sm hover:text-lime-800">
-                        <EnvelopeIcon className="h-6 w-6" aria-hidden="true" />
-                      </button>
-                    )}
+                    {person.attributes.derived === true &&
+                      person.attributes.fase === 2 && (
+                        <button
+                          onClick={() =>
+                            handleClickGestionar(
+                              person.id,
+                              person.attributes.derived
+                            )
+                          }
+                          className="btn btn-ghost btn-sm hover:text-lime-800"
+                        >
+                          <EnvelopeIcon
+                            className="h-6 w-6"
+                            aria-hidden="true"
+                          />
+                        </button>
+                      )}
                   </td>
 
                   <td className="py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6 hover:text-primary space-x-2 items-center">
-                    <button onClick={() => { handleShowModal(person) }} className="btn btn-ghost btn-sm hover:text-primary">
+                    <button
+                      onClick={() => {
+                        handleShowModal(person);
+                      }}
+                      className="btn btn-ghost btn-sm hover:text-primary"
+                    >
                       <EyeIcon className="h-6 w-6" aria-hidden="true" />
                     </button>
                   </td>
                 </>
               )}
-
             </tr>
           ))}
         </tbody>
       </table>
       <Modal backdrop responsive ref={creationRef} className="bg-white">
-        <Modal.Header className="font-bold">
-          Informacion del caso:
-        </Modal.Header>
+        <Modal.Header className="font-bold">Informacion del caso:</Modal.Header>
         <Divider />
         <Modal.Body>
-          <ul>
-          </ul>
+          <ul></ul>
           <div className="my-2">
             <div className="flex flex-wrap">
               <div className="flex flex-col w-full">
                 <label className="label">
                   <span className="label-text">¿Quiénes participaron?</span>
                 </label>
-                <p className="ml-1">{selectedPerson?.attributes.who?.values.join(" , ") || 'Sin datos'}</p>
+                <p className="ml-1">
+                  {selectedPerson?.attributes.who?.values.join(" , ") ||
+                    "Sin datos"}
+                </p>
               </div>
             </div>
             <div className="flex flex-wrap">
@@ -310,7 +346,10 @@ function Table({ data }: { data: caseInterface[] }) {
                 <label className="label">
                   <span className="label-text">¿Dónde ocurrió?</span>
                 </label>
-                <p className="ml-1">{selectedPerson?.attributes.where?.values.join(" , ") || 'Sin datos'}</p>
+                <p className="ml-1">
+                  {selectedPerson?.attributes.where?.values.join(" , ") ||
+                    "Sin datos"}
+                </p>
               </div>
             </div>
             <div className="flex flex-wrap">
@@ -318,7 +357,10 @@ function Table({ data }: { data: caseInterface[] }) {
                 <label className="label">
                   <span className="label-text">¿Cuándo ocurrió?</span>
                 </label>
-                <p className="ml-1">{selectedPerson?.attributes.when?.values.join(" , ") || 'Sin datos'}</p>
+                <p className="ml-1">
+                  {selectedPerson?.attributes.when?.values.join(" , ") ||
+                    "Sin datos"}
+                </p>
               </div>
             </div>
             <div className="flex flex-wrap">
@@ -326,7 +368,9 @@ function Table({ data }: { data: caseInterface[] }) {
                 <label className="label">
                   <span className="label-text">Relato de los hechos</span>
                 </label>
-                <p className="ml-1">{selectedPerson?.attributes.story || 'Sin datos'}</p>
+                <p className="ml-1">
+                  {selectedPerson?.attributes.story || "Sin datos"}
+                </p>
               </div>
             </div>
             <div className="flex flex-wrap">
@@ -334,12 +378,21 @@ function Table({ data }: { data: caseInterface[] }) {
                 <label className="label">
                   <span className="label-text">¿Se tomaron medidas?:</span>
                 </label>
-                <p className="ml-1">{selectedPerson?.attributes.measures || 'Sin datos'}</p>
+                <p className="ml-1">
+                  {selectedPerson?.attributes.measures || "Sin datos"}
+                </p>
               </div>
             </div>
             <div className="my-2">
               <div className="flex items-center justify-center">
-                <Button color="neutral" onClick={() => { handleCloseModal() }}>Cerrar</Button>
+                <Button
+                  color="neutral"
+                  onClick={() => {
+                    handleCloseModal();
+                  }}
+                >
+                  Cerrar
+                </Button>
               </div>
             </div>
           </div>
@@ -349,12 +402,18 @@ function Table({ data }: { data: caseInterface[] }) {
   );
 }
 
-function Paginator({ metadata, setMetaData }: { metadata: metaI, setMetaData: (numero: number) => void }) {
+function Paginator({
+  metadata,
+  setMetaData,
+}: {
+  metadata: metaI;
+  setMetaData: (numero: number) => void;
+}) {
   const changePage = async (number: number) => {
     if (number > metadata.pageCount) return;
     if (number <= 0) return;
     setMetaData(number);
-  }
+  };
   return (
     <div className="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6">
       <div className="flex flex-1 justify-between sm:hidden">
@@ -373,8 +432,15 @@ function Paginator({ metadata, setMetaData }: { metadata: metaI, setMetaData: (n
       </div>
       <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
         <div>
-          <p className="text-sm text-gray-700">Mostrando <span className="font-medium">{Math.min(Number(metadata.pageSize) * metadata.page, metadata.total)}</span> de{" "}
-            <span className="font-medium">{metadata.total}</span> resultados
+          <p className="text-sm text-gray-700">
+            Mostrando{" "}
+            <span className="font-medium">
+              {Math.min(
+                Number(metadata.pageSize) * metadata.page,
+                metadata.total
+              )}
+            </span>{" "}
+            de <span className="font-medium">{metadata.total}</span> resultados
           </p>
         </div>
         <div>
@@ -395,7 +461,11 @@ function Paginator({ metadata, setMetaData }: { metadata: metaI, setMetaData: (n
                 key={i}
                 onClick={() => changePage(num + 1)}
                 aria-current="page"
-                className={` cursor-pointer relative hidden items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300  focus:z-20 focus:outline-offset-0 md:inline-flex ${(num + 1) === metadata.page ? 'hover:brightness-90 bg-primary text-white shadow' : ''}`}
+                className={` cursor-pointer relative hidden items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300  focus:z-20 focus:outline-offset-0 md:inline-flex ${
+                  num + 1 === metadata.page
+                    ? "hover:brightness-90 bg-primary text-white shadow"
+                    : ""
+                }`}
               >
                 {num + 1}
               </a>
@@ -416,16 +486,25 @@ function Paginator({ metadata, setMetaData }: { metadata: metaI, setMetaData: (n
 
 export default function Casos() {
   const { user, GetRole, role } = useUserStore();
-  const [metaData, setMetaData] = useState<metaI>({ page: 1, pageCount: 0, pageSize: 0, total: 0 });
+  const [metaData, setMetaData] = useState<metaI>({
+    page: 1,
+    pageCount: 0,
+    pageSize: 0,
+    total: 0,
+  });
   const [data, setData] = useState<caseInterface[]>([]);
   const { push } = useRouter();
   const getData = async () => {
     let assigned: number | undefined = undefined;
     try {
       if (GetRole() !== "Authenticated") {
-        assigned = user?.id
+        assigned = user?.id;
       }
-      const data = await api_cases({ createdBy: user?.id, userId: assigned, page: metaData.page });
+      const data = await api_cases({
+        createdBy: user?.id,
+        userId: assigned,
+        page: metaData.page,
+      });
       setData(data.data.data);
       setMetaData(data.data.meta.pagination);
     } catch (error) {
@@ -443,12 +522,12 @@ export default function Casos() {
 
   const updatePage = (number: number) => {
     metaData.page = number;
-    metaData.pageCount = metaData.pageCount
-    metaData.pageSize = metaData.pageSize
-    metaData.total = metaData.total
+    metaData.pageCount = metaData.pageCount;
+    metaData.pageSize = metaData.pageSize;
+    metaData.total = metaData.total;
     setMetaData(metaData);
-    getData()
-  }
+    getData();
+  };
   return (
     <>
       <Head>

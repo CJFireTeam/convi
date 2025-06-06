@@ -13,15 +13,19 @@ import { api_cases } from "../../services/axios.services";
 import Head from "next/head";
 
 function Table({ data }: { data: caseInterface[] }) {
-
-  const [selectedPerson, setSelectedPerson] = useState<caseInterface | null>(null);
+  const [selectedPerson, setSelectedPerson] = useState<caseInterface | null>(
+    null
+  );
 
   const creationRef = useRef<HTMLDialogElement>(null);
 
-  const handleShowModal = useCallback((person: caseInterface) => {
-    setSelectedPerson(person);
-    creationRef.current?.showModal();
-  }, [creationRef]);
+  const handleShowModal = useCallback(
+    (person: caseInterface) => {
+      setSelectedPerson(person);
+      creationRef.current?.showModal();
+    },
+    [creationRef]
+  );
 
   const handleCloseModal = useCallback(() => {
     creationRef.current?.close();
@@ -42,36 +46,42 @@ function Table({ data }: { data: caseInterface[] }) {
         <title>Casos</title>
         <meta name="viewport" content="initial-scale=1.0, width=device-width" />
       </Head>
-      <table className="min-w-full divide-y divide-gray-300">
+      <table className="min-w-full divide-y divide-gray-300 text-center">
         <thead className="bg-gray-50">
           <tr>
             <th
               scope="col"
-              className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6"
+              className="py-3.5 pl-4 pr-3  text-sm font-semibold text-gray-900 sm:pl-6"
             >
               #
             </th>
             <th
               scope="col"
-              className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+              className="px-3 py-3.5  text-sm font-semibold text-gray-900"
             >
               Derivado a
             </th>
             <th
               scope="col"
-              className="px-3 py-3.5 text-left text-sm font-semibod text-gray-900"
+              className="px-3 py-3.5  text-sm font-semibod text-gray-900"
             >
               Cargo
             </th>
             <th
               scope="col"
-              className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+              className="px-3 py-3.5  text-sm font-semibold text-gray-900"
             >
               Fecha de creación
             </th>
             <th
               scope="col"
-              className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+              className="px-3 py-3.5  text-sm font-semibold text-gray-900"
+            >
+              Estado
+            </th>
+            <th
+              scope="col"
+              className="px-3 py-3.5  text-sm font-semibold text-gray-900"
             >
               Ver
             </th>
@@ -93,15 +103,34 @@ function Table({ data }: { data: caseInterface[] }) {
               </td>
               <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
                 {
-                  person.attributes.directed.data.attributes.role.data.attributes
-                    .name
+                  person.attributes.directed.data.attributes.role.data
+                    .attributes.name
                 }
               </td>
               <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
                 {new Date(person.attributes.createdAt).toLocaleString()}
               </td>
               <td className="py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6  space-x-2 items-center">
-                <button onClick={() => { handleShowModal(person) }}>
+                {person.attributes.derived !== true && (
+                  <span className="badge badge-warning">Por revisar</span>
+                )}
+                {person.attributes.derived === true &&
+                  person.attributes.fase === 1 && (
+                    <span className="badge badge-primary">En categorización</span>
+                  )}
+
+                {person.attributes.derived === true &&
+                  person.attributes.fase === 2 && (
+                    <span className="badge badge-success">Aprobado</span>
+                  )}
+              </td>
+              <td className="py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6  space-x-2 items-center">
+                <button
+                  onClick={() => {
+                    handleShowModal(person);
+                  }}
+                  className="btn btn-ghost btn-sm hover:text-primary"
+                >
                   <EyeIcon className="h-6 w-6" aria-hidden="true" />
                 </button>
               </td>
@@ -110,20 +139,21 @@ function Table({ data }: { data: caseInterface[] }) {
         </tbody>
       </table>
       <Modal backdrop responsive ref={creationRef} className="bg-white">
-        <Modal.Header className="font-bold">
-          Información del caso:
-        </Modal.Header>
+        <Modal.Header className="font-bold">Información del caso:</Modal.Header>
         <Divider />
         <Modal.Body>
-          <ul>
-          </ul>
+          <ul></ul>
           <div className="my-2">
             <div className="flex flex-wrap">
               <div className="flex flex-col w-full">
                 <label className="label">
                   <span className="label-text">¿Quiénes participaron?</span>
                 </label>
-                <p className="ml-1">{selectedPerson ? selectedPerson.attributes.who.values.join(" , ") : ''}</p>
+                <p className="ml-1">
+                  {selectedPerson
+                    ? selectedPerson.attributes.who.values.join(" , ")
+                    : ""}
+                </p>
               </div>
             </div>
             <div className="flex flex-wrap">
@@ -131,7 +161,11 @@ function Table({ data }: { data: caseInterface[] }) {
                 <label className="label">
                   <span className="label-text">¿Dónde ocurrió?</span>
                 </label>
-                <p className="ml-1">{selectedPerson ? selectedPerson.attributes.where.values.join(" , ") : ''}</p>
+                <p className="ml-1">
+                  {selectedPerson
+                    ? selectedPerson.attributes.where.values.join(" , ")
+                    : ""}
+                </p>
               </div>
             </div>
             <div className="flex flex-wrap">
@@ -139,7 +173,11 @@ function Table({ data }: { data: caseInterface[] }) {
                 <label className="label">
                   <span className="label-text">¿Cuándo ocurrió?</span>
                 </label>
-                <p className="ml-1">{selectedPerson ? selectedPerson.attributes.when.values.join(" , ") : ''}</p>
+                <p className="ml-1">
+                  {selectedPerson
+                    ? selectedPerson.attributes.when.values.join(" , ")
+                    : ""}
+                </p>
               </div>
             </div>
             <div className="flex flex-wrap">
@@ -147,7 +185,9 @@ function Table({ data }: { data: caseInterface[] }) {
                 <label className="label">
                   <span className="label-text">Relato de los hechos</span>
                 </label>
-                <p className="ml-1">{selectedPerson ? selectedPerson.attributes.story : ''}</p>
+                <p className="ml-1">
+                  {selectedPerson ? selectedPerson.attributes.story : ""}
+                </p>
               </div>
             </div>
             <div className="flex flex-wrap">
@@ -155,12 +195,21 @@ function Table({ data }: { data: caseInterface[] }) {
                 <label className="label">
                   <span className="label-text">¿Se tomaron medidas?:</span>
                 </label>
-                <p className="ml-1">{selectedPerson ? selectedPerson.attributes.measures : ''}</p>
+                <p className="ml-1">
+                  {selectedPerson ? selectedPerson.attributes.measures : ""}
+                </p>
               </div>
             </div>
             <div className="my-2">
               <div className="flex items-center justify-center">
-                <Button color="neutral" onClick={() => { handleCloseModal() }}>Cerrar</Button>
+                <Button
+                  color="neutral"
+                  onClick={() => {
+                    handleCloseModal();
+                  }}
+                >
+                  Cerrar
+                </Button>
               </div>
             </div>
           </div>
@@ -169,12 +218,18 @@ function Table({ data }: { data: caseInterface[] }) {
     </>
   );
 }
-function Paginator({ metadata, setMetaData }: { metadata: metaI, setMetaData: (numero: number) => void }) {
+function Paginator({
+  metadata,
+  setMetaData,
+}: {
+  metadata: metaI;
+  setMetaData: (numero: number) => void;
+}) {
   const changePage = async (number: number) => {
     if (number > metadata.pageCount) return;
     if (number <= 0) return;
     setMetaData(number);
-  }
+  };
   return (
     <div className="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6">
       <div className="flex flex-1 justify-between sm:hidden">
@@ -193,8 +248,15 @@ function Paginator({ metadata, setMetaData }: { metadata: metaI, setMetaData: (n
       </div>
       <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
         <div>
-          <p className="text-sm text-gray-700">Mostrando <span className="font-medium">{Math.min(Number(metadata.pageSize) * metadata.page, metadata.total)}</span> de{" "}
-            <span className="font-medium">{metadata.total}</span> resultados
+          <p className="text-sm text-gray-700">
+            Mostrando{" "}
+            <span className="font-medium">
+              {Math.min(
+                Number(metadata.pageSize) * metadata.page,
+                metadata.total
+              )}
+            </span>{" "}
+            de <span className="font-medium">{metadata.total}</span> resultados
           </p>
         </div>
         <div>
@@ -215,7 +277,11 @@ function Paginator({ metadata, setMetaData }: { metadata: metaI, setMetaData: (n
                 key={i}
                 onClick={() => changePage(num + 1)}
                 aria-current="page"
-                className={` cursor-pointer relative hidden items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300  focus:z-20 focus:outline-offset-0 md:inline-flex ${(num + 1) === metadata.page ? 'hover:brightness-90 bg-primary text-white shadow' : ''}`}
+                className={` cursor-pointer relative hidden items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300  focus:z-20 focus:outline-offset-0 md:inline-flex ${
+                  num + 1 === metadata.page
+                    ? "hover:brightness-90 bg-primary text-white shadow"
+                    : ""
+                }`}
               >
                 {num + 1}
               </a>
@@ -236,16 +302,25 @@ function Paginator({ metadata, setMetaData }: { metadata: metaI, setMetaData: (n
 
 export default function CasosAuthenticated() {
   const { user, GetRole } = useUserStore();
-  const [metaData, setMetaData] = useState<metaI>({ page: 1, pageCount: 0, pageSize: 0, total: 0 });
+  const [metaData, setMetaData] = useState<metaI>({
+    page: 1,
+    pageCount: 0,
+    pageSize: 0,
+    total: 0,
+  });
   const [data, setData] = useState<caseInterface[]>([]);
   const { push } = useRouter();
   const getData = async () => {
     let assigned: number | undefined = undefined;
     try {
       if (GetRole() !== "Authenticated") {
-        assigned = user?.id
+        assigned = user?.id;
       }
-      const data = await api_cases({ createdBy: user?.id, userId: assigned, page: metaData.page });
+      const data = await api_cases({
+        createdBy: user?.id,
+        userId: assigned,
+        page: metaData.page,
+      });
       setData(data.data.data);
       setMetaData(data.data.meta.pagination);
     } catch (error) {
@@ -263,12 +338,12 @@ export default function CasosAuthenticated() {
   };
   const updatePage = (number: number) => {
     metaData.page = number;
-    metaData.pageCount = metaData.pageCount
-    metaData.pageSize = metaData.pageSize
-    metaData.total = metaData.total
+    metaData.pageCount = metaData.pageCount;
+    metaData.pageSize = metaData.pageSize;
+    metaData.total = metaData.total;
     setMetaData(metaData);
-    getData()
-  }
+    getData();
+  };
 
   return (
     <div className="px-4 sm:px-6 lg:px-8">

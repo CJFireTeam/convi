@@ -177,7 +177,7 @@ export default function Index() {
         )
     }
 
-    if ((GetRole() === "admin" || GetRole() === "Encargado de Convivencia Escolar" || GetRole() === "Profesor") && user.canUploadDoc == true && user.establishment_courses.length === 0) {
+    if ((GetRole() === "admin" || GetRole() === "Encargado de Convivencia Escolar" || GetRole() === "Profesor") && user.canUploadDoc == true && (user.establishment_courses.length === 0 && [user.establishment_course].length === 0)) {
         return (
             <>
                 <SinCursoAsig />
@@ -287,7 +287,11 @@ export default function Index() {
                 <DocumentosCurso
                     establishmentId={user.establishment.id}
                     userId={user.id}
-                    userCourses={user.establishment_courses}
+                    userCourses={
+                        GetRole() === "Profesor"
+                        ? [user.establishment_course] // ✅ Convertir objeto único a arreglo
+                        : user.establishment_courses
+                    }
                 />
             </>
         )

@@ -111,7 +111,7 @@ export default function DocApoderado() {
             </>
         )
     }
-    if (!user.establishment.id) {
+    if (!user.establishment?.id) {
         return (
             <>
                 <Head>

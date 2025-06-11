@@ -32,6 +32,12 @@ interface User {
     Letter:string;
     id:number;
   }[],
+   establishment_course:{
+    Eliminado:boolean;
+    Grade:string;
+    Letter:string;
+    id:number;
+  }
   establishment: {
     id: number,
     name: string
@@ -69,11 +75,11 @@ type Actions = {
 };
 
 const baseRole = { createdAt: '', description: '', id: 0, name: '', type: '', updatedAt: '', }
-const baseUser = {role: undefined,establishment_authenticateds:[], blocked:false,confirmed:false,email: '',first_lastname: '',firstname: '',id: 0,canUploadDoc:false,second_lastname: '',secondname: '',username: '',createdAt :'',region:'',comuna:'',direccion: '',phone: '',provider:'local',establishment: {id:0,name:''},establishment_courses:[{Eliminado:false,Grade:'',Letter:'',id:0}]}
+const baseUser = {role: undefined,establishment_authenticateds:[], blocked:false,confirmed:false,email: '',first_lastname: '',firstname: '',id: 0,canUploadDoc:false,second_lastname: '',secondname: '',username: '',createdAt :'',region:'',comuna:'',direccion: '',phone: '',provider:'local',establishment: {id:0,name:''},establishment_courses:[{Eliminado:false,Grade:'',Letter:'',id:0}],establishment_course:{Eliminado:false,Grade:'',Letter:'',id:0}}
 export const useUserStore = create<State & Actions>()(
   devtools(
       (set, get) => ({
-        user: {role: undefined,establishment_authenticateds:[],blocked:false,confirmed:false,email: '',first_lastname: '',firstname: '',id: 0,canUploadDoc:false,second_lastname: '',secondname: '',username: '',createdAt :'',region:'',comuna:'',direccion: '',phone: '',provider:'local',establishment: {id:0,name:''},establishment_courses:[{Eliminado:false,Grade:'',Letter:'',id:0}]},
+        user: {role: undefined,establishment_authenticateds:[],blocked:false,confirmed:false,email: '',first_lastname: '',firstname: '',id: 0,canUploadDoc:false,second_lastname: '',secondname: '',username: '',createdAt :'',region:'',comuna:'',direccion: '',phone: '',provider:'local',establishment: {id:0,name:''},establishment_courses:[{Eliminado:false,Grade:'',Letter:'',id:0}],establishment_course:{Eliminado:false,Grade:'',Letter:'',id:0}},
         bearer: '',
         isLoading: true,
         role: { createdAt: '', description: '', id: 0, name: '', type: '', updatedAt: '', },

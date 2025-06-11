@@ -929,7 +929,7 @@ export function InsertCourse(props: props) {
                       </span>
                       <br />
                       <span className="font-semibold">
-                        {c.attributes.LeadTeacher.data.id ===
+                        {c.attributes.LeadTeacher.data?.id ===
                         Number(props.userId)
                           ? "Profesor jefe"
                           : ""}

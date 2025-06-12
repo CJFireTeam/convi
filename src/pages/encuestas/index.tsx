@@ -76,15 +76,25 @@ export default function Index() {
   const [itemsPerPageQuestionary] = useState(10) // Elementos por página para cuestionarios
 
   // Funciones originales (sin cambios)
+  const [isLoading,setIsLoading]=useState(false);//componente loading 
   const getQuestionary = async () => {
-    const questions = await api_getQuestions(user.username, true)
-    setMetaData(questions.data.meta.pagination)
-    setdataQuestionary(questions.data.data)
+    try {
+      setIsLoading(true);
+      const questions = await api_getQuestions(user.username, true)
+      setMetaData(questions.data.meta.pagination)
+      setdataQuestionary(questions.data.data)
+    } catch (error) {
+      console.log(error)
+      setIsLoading(false);
+    } finally{
+      setIsLoading(false);
+    }
   }
 
   const getData = async () => {
     let assigned: number | undefined = undefined
     try {
+     
       assigned = user?.id
       const response = await api_surveys({
         createdBy: user?.id,
@@ -95,6 +105,8 @@ export default function Index() {
       setMetaData(response.data.meta.pagination)
     } catch (error) {
       console.log(error)
+    } finally{
+      setIsLoading(false);
     }
   }
 
@@ -216,6 +228,10 @@ export default function Index() {
       return rangeWithDots
     }
 
+    if (isLoading) {
+    return <p className="text-center mt-4">Cargando encuestas...</p>;
+    }
+
     return (
       <div className="flex items-center justify-center space-x-2 mt-6">
         <Button
@@ -260,6 +276,10 @@ export default function Index() {
   if (GetRole() === "Profesor" || GetRole() === "Encargado de Convivencia Escolar") {
     const paginatedResult = getPaginatedData()
 
+    if (isLoading) {
+    return <p className="text-center mt-4">Cargando encuestas...</p>;
+  }
+
     return (
       <>
         <Head>
@@ -300,7 +320,7 @@ export default function Index() {
                 <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
                   <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
                     <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
-                      <Table data={paginatedResult.data} />
+                      <Table data={paginatedResult.data} isLoading={isLoading} />
                     </div>
                   </div>
                 </div>
@@ -337,6 +357,10 @@ export default function Index() {
 
   if (GetRole() === "Authenticated") {
     const paginatedQuestionaryResult = getPaginatedQuestionary()
+
+    if (isLoading) {
+    return <p className="text-center mt-4">Cargando encuestas...</p>;
+    }
 
     return (
       <>
@@ -445,7 +469,7 @@ export default function Index() {
             </div>
           </>
         )}
-        {form && selectedForm && <FomrularyResponse form={selectedForm} />}
+        {form && selectedForm && <FomrularyResponse form={selectedForm}/>}
       </>
     )
   }
@@ -720,11 +744,16 @@ function StarRating({ onChange, value }: StarRatingProps) {
   )
 }
 
-function Table({ data }: { data: surveyInterface[] }) {
+function Table({ data,isLoading }: { data: surveyInterface[],isLoading:boolean }) {
   const handleRouter = (id: number) => {
     sessionStorage.setItem("id_survey", id.toString())
     router.push("/encuestas/visualizar")
   }
+
+  if (isLoading) {
+    return <p className="text-center mt-4">Cargando encuestas...</p>;
+  }
+
   return (
     <>
       {data.length !== 0 ? (

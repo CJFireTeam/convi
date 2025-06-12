@@ -247,7 +247,7 @@ export default function EditarUsuario() {
             stroke="currentColor"
             className="size-12 text-primary hover:text-green-700 cursor-pointer"
             onClick={() => {
-              router.back();
+              router.push('/administrador?tab=users');
             }}
           >
             <path
@@ -279,7 +279,7 @@ export default function EditarUsuario() {
               stroke="currentColor"
               className="size-12 text-primary hover:text-green-700 cursor-pointer"
               onClick={() => {
-                router.back();
+                router.push('/administrador?tab=users');
               }}
             >
               <path

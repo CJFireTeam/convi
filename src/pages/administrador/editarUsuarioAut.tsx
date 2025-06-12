@@ -226,8 +226,8 @@ export default function EditarUsuarioAut() {
               strokeWidth={1.5}
               stroke="currentColor"
               className="size-12 text-primary hover:text-green-700 cursor-pointer"
-              onClick={() => {
-                router.back();
+               onClick={() => {
+                router.push('/administrador?tab=authenticated');
               }}
             >
               <path
@@ -253,8 +253,8 @@ export default function EditarUsuarioAut() {
                   strokeWidth={1.5}
                   stroke="currentColor"
                   className="size-12 text-primary hover:text-green-700 cursor-pointer"
-                  onClick={() => {
-                    router.back();
+                   onClick={() => {
+                    router.push('/administrador?tab=authenticated');
                   }}
                 >
                   <path

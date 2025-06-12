@@ -37,10 +37,17 @@ export interface IUser {
 }
 
 export default function Index() {
-  const { push } = useRouter();
+  const { push,query } = useRouter();
   const redirect = () => {
     push("administrador/crearusuario");
   };
+
+  //estado para manejar pestañas
+  /* const [activeTab, setActiveTab] = useState<'users' | 'authenticated'>('users'); */
+   // Usamos el parámetro de consulta para determinar la pestaña activa
+  const [activeTab, setActiveTab] = useState<'users' | 'authenticated'>(() => {
+    return query.tab === 'authenticated' ? 'authenticated' : 'users';
+  });
 
   const { user, GetRole } = useUserStore();
   const [data, setData] = useState<IUser[]>([]);
@@ -107,9 +114,6 @@ export default function Index() {
     toast.success("Usuario seleccionado");
     // Implementar la lógica de redirección aquí
   };
-
-  const [editAut, setEditAut] = useState(false);
-
   const [searchTerm, setSearchTerm] = useState("");
 
   const filteredUsers = data.filter(
@@ -126,7 +130,7 @@ export default function Index() {
 
   return (
     <>
-      <Head>
+       <Head>
         <title>Administrar usuarios</title>
         <meta name="viewport" content="initial-scale=1.0, width=device-width" />
       </Head>
@@ -137,33 +141,44 @@ export default function Index() {
               Lista de usuarios
             </h1>
           </div>
-          <div className="my-4 ">
-            <button
-              onClick={() => {
-                setEditAut(true);
-              }}
-              className="w-full md:w-auto btn btn-secondary btn-outline md:mr-2"
-            >
-              Editar Autenticados
-            </button>
+          <div className="my-4">
             <button
               onClick={redirect}
               className="w-full md:w-auto btn btn-primary btn-outline mt-4 md:mt-0"
+              disabled={activeTab === 'authenticated'}
             >
               Crear nuevo usuario
             </button>
           </div>
         </div>
+        
+        {/* Selector de pestañas */}
+        <div className="tabs tabs-boxed bg-white shadow-sm p-1">
+          <button
+            className={`tab ${activeTab === 'users' ? 'tab-active font-bold' : ''}`}
+            onClick={() => setActiveTab('users')}
+          >
+            Usuarios
+          </button> 
+          <button
+            className={`tab ${activeTab === 'authenticated' ? 'tab-active font-bold' : ''}`}
+            onClick={() => setActiveTab('authenticated')}
+          >
+            Usuarios Autenticados
+          </button>
+        </div>
+
         {isLoading ? (
+          <p className="text-center mt-4">Cargando usuarios...</p>
+        ) : (
           <>
-            <p className="text-center mt-4">Cargando usuarios...</p>
-          </>
-        ) : !editAut ? (
-          <>
-            {data.length === 0 ? (
-              <WarningAlert message="No se han encontrado usuarios" />
-            ) : (
+            {activeTab === 'users' ? (
+              // Tabla de usuarios normales
               <>
+                {data.length === 0 ? (
+                  <WarningAlert message="No se han encontrado usuarios" />
+                ) : (
+                   <>
                 <div className="mt-4 mb-4">
                   <div className="relative">
                     <input
@@ -347,10 +362,12 @@ export default function Index() {
                 </div>
               </div>
             )}
-          </>
-        ) : (
-          <>
-            <EditAuthenticated editAut={setEditAut} dataEdit={editAut} />
+                
+              </>
+            ) : (
+              // Tabla de usuarios autenticados
+              <EditAuthenticated />
+            )}
           </>
         )}
       </div>
@@ -358,10 +375,6 @@ export default function Index() {
   );
 }
 
-interface props {
-  editAut: (value: boolean) => void; // Acepta un booleano
-  dataEdit: boolean;
-}
 interface IUserAut {
   id: number;
   username: string;
@@ -380,14 +393,16 @@ interface IUserAut {
   tipo: string;
 }
 
-export function EditAuthenticated(props: props) {
+export function EditAuthenticated() {
   const { user, GetRole } = useUserStore();
 
   const [data, setData] = useState<IUserAut[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
+  const [isLoading, setIsLoading] = useState(true); // Estado de carga agregado
   const usersPerPage = 10;
 
   const getData = async () => {
+  setIsLoading(true); // Activar loading al iniciar
     if (user?.establishment?.name) {
       try {
         const response = await api_getAllUsersAutByEstablishment({
@@ -398,7 +413,11 @@ export function EditAuthenticated(props: props) {
       } catch (error) {
         console.error(error);
         toast.error("Error al cargar los usuarios");
+      } finally {
+        setIsLoading(false); // Desactivar loading al finalizar
       }
+    } else {
+      setIsLoading(false);
     }
   };
 
@@ -406,7 +425,7 @@ export function EditAuthenticated(props: props) {
     if (user?.id !== 0 && GetRole() === "admin") {
       getData();
     }
-  }, [user, currentPage, props.dataEdit]);
+  }, [user, currentPage]);
 
   //estados para el eliminar
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -448,6 +467,10 @@ export function EditAuthenticated(props: props) {
       user.tipo.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  if (isLoading) {
+    return <p className="text-center mt-4">Cargando usuarios autenticados...</p>;
+  }
+
   if (GetRole() !== "admin") {
     return <WarningAlert message="No tienes permisos para ver esta página" />;
   }
@@ -456,23 +479,6 @@ export function EditAuthenticated(props: props) {
     <>
       {data.length !== 0 ? (
         <>
-          <div className="md:col-start-0 md:col-end-2">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth={1.5}
-              stroke="currentColor"
-              className="size-12 text-primary hover:text-green-700 cursor-pointer"
-              onClick={() => props.editAut(false)}
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="m11.25 9-3 3m0 0 3 3m-3-3h7.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
-              />
-            </svg>
-          </div>
           {!data ? (
             <WarningAlert message="No se han encontrado usuarios" />
           ) : (
@@ -662,23 +668,6 @@ export function EditAuthenticated(props: props) {
         </>
       ) : (
         <div className="grid md:grid-cols-12 gap-4 p-4">
-          <div className="md:col-start-0 md:col-end-2">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth={1.5}
-              stroke="currentColor"
-              className="size-12 text-primary hover:text-green-700 cursor-pointer"
-              onClick={() => props.editAut(false)}
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="m11.25 9-3 3m0 0 3 3m-3-3h7.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
-              />
-            </svg>
-          </div>
           <div className="md:col-start-2 md:col-end-13 mx-auto my-auto">
             <WarningAlert message={"Colegio sin usuarios Autenticados"} />
           </div>

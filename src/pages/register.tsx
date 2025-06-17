@@ -4,7 +4,7 @@ import axios, { AxiosError } from "axios";
 import { useEffect, useState } from "react";
 import convi from "./convi.jpg";
 import Image from "next/image";
-import { CheckIcon } from "@heroicons/react/20/solid";
+import { CheckIcon, EyeSlashIcon,EyeIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from "@heroicons/react/20/solid";
 import { toast } from "react-toastify";
 import Modal from "react-modal";
 import { useForm } from "react-hook-form";
@@ -73,10 +73,13 @@ export default function Register() {
       router.push({ pathname: "/login" });
     }, 500);
   }
+  const[loading,setLoading]=useState(false);
   const Submit = async (data: Inputs) => {
     const id = toast.loading("Creando...");
     data.username = data.email
+    setemail(data.email);
     try {  
+      setLoading(true);
       await axios.post(
         process.env.NEXT_PUBLIC_BACKEND_URL + "auth/local/register",
         data
@@ -89,6 +92,7 @@ export default function Register() {
         autoClose: 3000,
       });
     } catch (error) {
+      setLoading(false);
       if (error instanceof AxiosError) {
         if (error.response) {
           if (error.response.data.error.message)
@@ -110,6 +114,8 @@ export default function Register() {
           autoClose: 3000,
         });
       }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -143,7 +149,8 @@ export default function Register() {
     if (!regionWatch || regionWatch.length === 0) return;
     handleChangeRegion(regionWatch)
   }, [regionWatch])
-  
+
+  const [showPassword, setShowPassword] = useState(false);
 
   const onSubmits = handleSubmit((data) => Submit(data))
 
@@ -158,25 +165,45 @@ export default function Register() {
         }`}
       >
         <div className="bg-white p-6 rounded-lg w-full sm:w-3/4 md:w-1/2 lg:max-w-md mx-auto flex flex-col">
-          <div className="flex items-center justify-center mb-4">
-            <CheckIcon className="w-6 text-primary-500" aria-hidden="true" />
+          <div className="grid grid-cols-2 border border-primary rounded-md mb-2">
+            <div className="col-span-2 md:col-span-1 p-2">
+              <span className="text-left">
+              Hemos enviado un correo electrónico a<span className="text-blue-500"> {email} </span>con un enlace de verificación. 
+              </span>
+            </div>
+           
+            <div className="col-span-2 md:col-span-1 my-auto mx-auto p-2">
+              <CheckIcon className="w-10 text-primary" aria-hidden="true" />
+            </div>
           </div>
-          <span className="text-left">
-            Hemos enviado un correo electrónico a
-            <span className="text-blue-500"> {email} </span>
-            con un enlace de verificación.
-          </span>
-          <span className="text-left">
-            Por favor, verifica tu correo electrónico para completar tu
-            registro.
-          </span>
-          <span className="text-left text-red-500">
-            Si no recibes el correo electrónico en unos minutos, por favor
-            revisa tu carpeta de correo no deseado o spam.
-          </span>
+          
+          <div className="grid grid-cols-2 border border-warning rounded-md mb-2">
+            <div className="col-span-2 md:col-span-1 p-2">
+              <span className="text-left">
+                Por favor, verifica tu correo electrónico para completar tu registro.
+              </span>
+            </div>
+
+            <div className="col-span-2 md:col-span-1 my-auto mx-auto p-2">
+              <ExclamationCircleIcon className="w-10 text-warning" aria-hidden="true" />
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-2 border border-error rounded-md mb-2">
+            <div className="col-span-2 md:col-span-1 p-2">
+              <span className="text-left text-red-500">
+                Si no recibes el correo electrónico en unos minutos, por favor revisa tu carpeta de correo no deseado o spam.
+              </span>
+            </div>
+
+            <div className="col-span-2 md:col-span-1 my-auto mx-auto p-2">
+              <ExclamationTriangleIcon className="w-10 text-error" aria-hidden="true" />
+            </div>
+          </div>
+          
           <button
             onClick={closeModal}
-            className="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+            className="rounded-md bg-primary px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
           >
             Ir a mi cuenta
           </button>
@@ -237,15 +264,27 @@ export default function Register() {
                     >
                       Contraseña
                     </label>
-                    <div className="flex rounded-md shadow-sm ring-1 ring-inset ring-gray-300 focus-within:ring-2 focus-within:ring-inset focus-within:ring-primary sm:max-w-md">
-                      <input
-                        
-                        minLength={6}
-                        type="password"
-                        id="password"
-                        {...register("password", {setValueAs: (value) => value === "" ? undefined : value})}
-                        className="block flex-1 border-0 bg-transparent py-1.5 pl-1 text-gray-900 placeholder:text-gray-400 focus:ring-0 sm:text-sm sm:leading-6"
-                      />
+                    <div className="relative mt-2">
+                      <div className="flex rounded-md shadow-sm ring-1 ring-inset ring-gray-300 focus-within:ring-2 focus-within:ring-inset focus-within:ring-primary sm:max-w-md">
+                        <input
+                          minLength={6}
+                          type={showPassword ? "text" : "password"}
+                          id="password"
+                          {...register("password", {setValueAs: (value) => value === "" ? undefined : value})}
+                          className="block flex-1 border-0 bg-transparent py-1.5 pl-1 text-gray-900 placeholder:text-gray-400 focus:ring-0 sm:text-sm sm:leading-6 pr-10"
+                        />
+                        <button
+                          type="button"
+                          className="absolute inset-y-0 right-0 px-3 flex items-center"
+                          onClick={() => setShowPassword(!showPassword)}
+                        >
+                          {!showPassword ? (
+                            <EyeSlashIcon className="h-5 w-5 text-gray-500" />
+                          ) : (
+                            <EyeIcon className="h-5 w-5 text-gray-500" />
+                          )}
+                        </button>
+                      </div>
                     </div>
                     <span className="text-error text-weight-600">{errors.password?.message ? errors.password?.message : ""}</span>
                   </div>
@@ -426,8 +465,9 @@ export default function Register() {
               <button
                 type="submit"
                 className="rounded-md bg-primary px-3 py-2 text-sm font-semibold text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                disabled={loading}
               >
-                Registrarme
+                {loading ? 'Cargando...' : 'Registrarme'}
               </button>
             </div>
           </form>

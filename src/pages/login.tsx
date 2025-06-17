@@ -6,16 +6,18 @@ import Image from "next/image";
 import convi from "./convi.jpg";
 import { Bounce, toast } from "react-toastify";
 import { ExclamationTriangleIcon } from "@heroicons/react/24/outline";
-import  {useUserStore} from "../store/userStore";
-import { Button } from "@/components/ui/button"
+import { useUserStore } from "../store/userStore";
+import { Button } from "@/components/ui/button";
 import { Input } from "../components/ui/input";
-import '../styles/login.module.css'
+import "../styles/login.module.css";
+import { EyeIcon, EyeSlashIcon } from "@heroicons/react/20/solid";
+import { set } from "date-fns";
 export default function Login() {
   const router = useRouter();
-  const {setUser,setBearer} = useUserStore()
+  const { setUser, setBearer } = useUserStore();
 
   const [isVisible, setIsVisible] = useState(true);
-  const [error,setError] = useState(false);
+  const [error, setError] = useState(false);
   useEffect(() => {
     if (router.query.verify) {
       toast.success("Su cuenta fue verificada correctamente", {
@@ -31,11 +33,13 @@ export default function Login() {
       });
     }
   }, [router.query]);
+  const [loading, setLoading] = useState(false);
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     const id = toast.loading("Entrando al sistema...");
     event.preventDefault();
     const data = new FormData(event.currentTarget);
     try {
+      setLoading(true);
       const resp = await axios.post(
         process.env.NEXT_PUBLIC_BACKEND_URL + "auth/local",
         {
@@ -50,51 +54,68 @@ export default function Login() {
         autoClose: 1500,
       });
       Cookies.set("bearer", resp.data.jwt);
-      setBearer(resp.data.jwt)
-      setUser(resp.data.user)
+      setBearer(resp.data.jwt);
+      setUser(resp.data.user);
       setIsVisible(false);
       setTimeout(() => {
         router.push({ pathname: "/" });
       }, 500);
     } catch (error) {
-      setError(true)
+      setLoading(false);
+      setError(true);
       if (error instanceof AxiosError) {
         if (error.response) {
           if (error.response.data.error.message)
-            if (error.response.data.error.message === "Your account has been blocked by an administrator") toast.update(id, {
-              render: "Tu cuenta se encuentra bloqueada, Contatate con un Administrador.",
-              type: "error",
-              isLoading: false,
-              autoClose: 3000,
-            });
+            if (
+              error.response.data.error.message ===
+              "Your account has been blocked by an administrator"
+            )
+              toast.update(id, {
+                render:
+                  "Tu cuenta se encuentra bloqueada, Contatate con un Administrador.",
+                type: "error",
+                isLoading: false,
+                autoClose: 3000,
+              });
         }
       }
       if (error instanceof AxiosError) {
         if (error.response) {
           if (error.response.data.error.message)
-            if (error.response.data.error.message === "Your account email is not confirmed") toast.update(id, {
-              render: "Aún no has confirmado tu correo electrónico, Revisa tu correo electronico.",
-              type: "error",
-              isLoading: false,
-              autoClose: 3000,
-            });
+            if (
+              error.response.data.error.message ===
+              "Your account email is not confirmed"
+            )
+              toast.update(id, {
+                render:
+                  "Aún no has confirmado tu correo electrónico, Revisa tu correo electronico.",
+                type: "error",
+                isLoading: false,
+                autoClose: 3000,
+              });
         }
       }
       if (error instanceof AxiosError) {
         if (error.response) {
           if (error.response.data.error.message)
-            if (error.response.data.error.message === "Invalid identifier or password") toast.update(id, {
-              render: "Correo o contraseña invalidas.",
-              type: "error",
-              isLoading: false,
-              autoClose: 3000,
-            });
+            if (
+              error.response.data.error.message ===
+              "Invalid identifier or password"
+            )
+              toast.update(id, {
+                render: "Correo o contraseña invalidas.",
+                type: "error",
+                isLoading: false,
+                autoClose: 3000,
+              });
         }
       }
       setTimeout(() => {
-        setError(false)
+        setError(false);
       }, 1500);
       console.log(error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -119,6 +140,9 @@ export default function Login() {
   const recover = () => {
     router.push({ pathname: "/recover" });
   };
+
+  const [showPassword, setShowPassword] = useState(false);
+
   return (
     <>
       <div
@@ -133,7 +157,6 @@ export default function Login() {
             alt="Convi"
             priority
           />
-
         </div>
 
         <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm ">
@@ -166,27 +189,67 @@ export default function Login() {
                   Contraseña
                 </label>
                 <div className="text-sm">
-                <Button type="button" onClick={recover} variant="link" className="font-semibold">Olvide mi contraseña</Button>
-                  
+                  <Button
+                    type="button"
+                    onClick={recover}
+                    variant="link"
+                    className="font-semibold"
+                  >
+                    Olvide mi contraseña
+                  </Button>
                 </div>
               </div>
-              <div className="mt-2">
-                <Input
-                  id="password"
-                  name="password"
-                  type="password"
-                  autoComplete="current-password"
-                  required
-                  className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-info sm:text-sm sm:leading-6"
-                />
+              <div className="mt-2 relative">
+                <div className="relative">
+                  <Input
+                    id="password"
+                    name="password"
+                    type={showPassword ? "text" : "password"}
+                    autoComplete="current-password"
+                    required
+                    className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-info sm:text-sm sm:leading-6 pr-10"
+                  />
+                  <button
+                    type="button"
+                    className="absolute inset-y-0 right-0 px-3 flex items-center"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {!showPassword ? (
+                      <EyeSlashIcon className="h-5 w-5 text-gray-500" />
+                    ) : (
+                      <EyeIcon className="h-5 w-5 text-gray-500" />
+                    )}
+                  </button>
+                </div>
               </div>
             </div>
 
             <div>
-            <Button className="flex w-full justify-center">
-            {error && (<ExclamationTriangleIcon className="w-6 text-white" aria-hidden="true" />)}
-            Conectar</Button>
-
+              {loading ? (
+                <>
+                  <Button className="flex w-full justify-center" disabled>
+                    {error && (
+                      <ExclamationTriangleIcon
+                        className="w-6 text-white"
+                        aria-hidden="true"
+                      />
+                    )}
+                    cargando...
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Button className="flex w-full justify-center">
+                    {error && (
+                      <ExclamationTriangleIcon
+                        className="w-6 text-white"
+                        aria-hidden="true"
+                      />
+                    )}
+                    Conectar
+                  </Button>
+                </>
+              )}
               {/* <button
                 type="submit"
                 className={`flex w-full justify-center rounded-md ${error ? `bg-primary` : `bg-primary hover:bg-accent`} px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600`}

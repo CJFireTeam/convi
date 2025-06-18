@@ -6,6 +6,7 @@ import { ArrowDownTrayIcon, ChevronLeftIcon, ChevronRightIcon } from "@heroicons
 import Head from "next/head";
 import { useEffect, useState } from "react";
 import WarningAlert from "../alerts/warningAlert";
+import { toast } from "react-toastify";
 
 interface props {
     establishmentId: number;
@@ -16,8 +17,10 @@ export default function DocumentosEstablecimiento(props: props) {
 
     const [documentEstablishment, setDocumentEstablishment] = useState<IDocuments[]>([]);
     const [metaData, setMetaData] = useState<metaI>({ page: 1, pageCount: 0, pageSize: 0, total: 0 });
+    const[isLoading,setIsLoading] = useState(false);
     const dataDocumentByEstablishment = async () => {
         try {
+            setIsLoading(true);
             const data = await api_getDocumentsByEstablishment2(props.establishmentId, props.userId, metaData.page);
             setDocumentEstablishment(data.data.data);
             setMetaData(data.data.meta.pagination);
@@ -26,7 +29,11 @@ export default function DocumentosEstablecimiento(props: props) {
                 updatePage(metaData.page - 1); // Retrocede a la página anterior
             }
         } catch (error) {
-            console.error('Error fetching data:', error)
+            console.error('Error fetching data:', error);
+            toast.error('Ocurrió un error al obtener los documentos del establecimiento.')
+            setIsLoading(false);
+        } finally {
+            setIsLoading(false);
         }
     }
 
@@ -70,6 +77,14 @@ export default function DocumentosEstablecimiento(props: props) {
         };
         setMetaData(newMetaData);
     };
+
+    if (isLoading) {
+        return (
+            <div className="flex flex-col items-center">
+                <span className="loading loading-spinner loading-lg text-primary"></span>
+            </div>
+        );
+    }
 
     return (
         <>

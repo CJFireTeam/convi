@@ -95,12 +95,18 @@ export default function Index() {
     };
 
     const [userEstablishment, setUserEstablishment] = useState<IUserEstablishment[]>([]);
+    const [loading,setLoading]=useState(false);
     const getAllUserByEstablishment = async () => {
         try {
+            setLoading(true);
             const data = await api_getAllUserByEstablishment(user.establishment.id, user.id);
             setUserEstablishment(data.data);
         } catch (error) {
             console.log(error);
+            toast.error('ocurrió un error al obtener los usuarios.');
+            setLoading(false);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -168,6 +174,14 @@ export default function Index() {
             setIsSubmitting(false);
         }
     };
+
+    if (loading) {
+        return (
+        <div className="flex flex-col items-center">
+            <span className="loading loading-spinner loading-lg text-primary"></span>
+        </div>
+        );
+    }
 
 
     if ((GetRole() === "admin" || GetRole() === "Encargado de Convivencia Escolar" || GetRole() === "Profesor") && user.canUploadDoc == false) {

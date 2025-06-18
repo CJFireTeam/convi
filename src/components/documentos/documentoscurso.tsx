@@ -4,6 +4,7 @@ import { api_getDocumentsByCourse2 } from "@/services/axios.services";
 import { getFile } from "@/services/images.service";
 import { ArrowDownTrayIcon } from "@heroicons/react/20/solid";
 import { ICourse, IDocuments } from "@/interfaces/documentos.interface";
+import { toast } from "react-toastify";
 
 interface props {
     establishmentId: number;
@@ -14,9 +15,10 @@ interface props {
 export default function DocumentosCurso(props: props) {
     const [documentCourse, setDocumentCourse] = useState<IDocuments[]>([]);
     const [metaData, setMetaData] = useState({ page: 1, pageSize: 3, total: 0 }); // Cambia pageSize a 3
-
+    const [isLoading,setIsLoading]=useState(false);
     const dataDocumentByCourse = async () => {
         try {
+            setIsLoading(true);
             const allDocuments = await Promise.all(
                 props.userCourses.map(course =>
                     api_getDocumentsByCourse2(props.establishmentId, course.id, props.userId)
@@ -32,6 +34,10 @@ export default function DocumentosCurso(props: props) {
             }));
         } catch (error) {
             console.error('Error fetching data:', error);
+            toast.error('Ocurrió un error al obtener los documentos del curso.');
+            setIsLoading(false);
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -82,6 +88,15 @@ export default function DocumentosCurso(props: props) {
             setLoading(false);
         }
     };
+
+    if (isLoading) {
+        return (
+            <div className="flex flex-col items-center">
+                <span className="loading loading-spinner loading-lg text-primary"></span>
+            </div>
+        );
+    }
+
     return (
         <>
             <div className="border rounded-lg shadow-md p-4 items-center w-full mb-4">

@@ -18,6 +18,7 @@ import { EyeIcon, PencilIcon } from "@heroicons/react/24/outline";
 import { useMenuStore } from "../../store/menus.store";
 import { Button, Divider, Modal } from "react-daisyui";
 import Head from "next/head";
+import { toast } from "react-toastify";
 enum UserTypes {
   "apoderado" = "Apoderado",
   "alumno" = "Alumno",
@@ -226,7 +227,10 @@ function Table({ data }: { data: caseInterface[] }) {
                         className="tooltip tooltip-right tooltip-warning"
                         data-tip="Derivar"
                       >
-                        <button onClick={() => handleEdit(person.id)} className="btn btn-ghost btn-sm hover:text-warning" >
+                        <button
+                          onClick={() => handleEdit(person.id)}
+                          className="btn btn-ghost btn-sm hover:text-warning"
+                        >
                           <PencilIcon className="h-6 w-6" aria-hidden="true" />
                         </button>
                       </div>
@@ -493,10 +497,12 @@ export default function Casos() {
     total: 0,
   });
   const [data, setData] = useState<caseInterface[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
   const { push } = useRouter();
   const getData = async () => {
     let assigned: number | undefined = undefined;
     try {
+      setLoading(true);
       if (GetRole() !== "Authenticated") {
         assigned = user?.id;
       }
@@ -509,6 +515,10 @@ export default function Casos() {
       setMetaData(data.data.meta.pagination);
     } catch (error) {
       console.log(error);
+      toast.error("ocurrió un error al obtener los casos.");
+      setLoading(false);
+    } finally {
+      setLoading(false);
     }
   };
   useEffect(() => {
@@ -528,6 +538,15 @@ export default function Casos() {
     setMetaData(metaData);
     getData();
   };
+
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center">
+        <span className="loading loading-spinner loading-lg text-primary"></span>
+      </div>
+    );
+  }
+
   return (
     <>
       <Head>

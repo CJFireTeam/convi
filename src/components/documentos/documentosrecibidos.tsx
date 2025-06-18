@@ -17,8 +17,10 @@ export default function DocumentosRecibidos(props: props) {
 
     const [documentDestiny, setDocumentDestiny] = useState<IDocuments[]>([]);
     const [metaData, setMetaData] = useState<metaI>({ page: 1, pageCount: 0, pageSize: 0, total: 0 });
+    const[isLoading,setIsLoading]=useState(false);
     const dataDocumentByDestiny = async () => {
         try {
+            setIsLoading(true);
             const data = await api_getDocumentsByUserDestinity2(props.establishmentId, props.userId, metaData.page);
             setDocumentDestiny(data.data.data);
             setMetaData(data.data.meta.pagination);
@@ -29,6 +31,10 @@ export default function DocumentosRecibidos(props: props) {
             }
         } catch (error) {
             console.error('Error fetching data:', error)
+            toast.error('Ocurrió un error en obtener los documentos recibidos.');
+            setIsLoading(false);
+        } finally {
+            setIsLoading(false);
         }
     }
 
@@ -74,6 +80,14 @@ export default function DocumentosRecibidos(props: props) {
 
         setMetaData(newMetaData);
     };
+
+    if (isLoading) {
+    return (
+      <div className="flex flex-col items-center">
+        <span className="loading loading-spinner loading-lg text-primary"></span>
+      </div>
+        );
+    }
 
     return (
         <>

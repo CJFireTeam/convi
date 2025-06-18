@@ -7,6 +7,7 @@ import Head from "next/head";
 import { useEffect, useState } from "react";
 import { Menu } from '@headlessui/react'
 import { ArrowDownTrayIcon, ChevronDownIcon } from "@heroicons/react/20/solid";
+import { toast } from "react-toastify";
 
 
 export default function DocumentosAlumno() {
@@ -16,9 +17,10 @@ export default function DocumentosAlumno() {
     const [displayedDocuments, setDisplayedDocuments] = useState<IDocuments[]>([])
     const [currentPage, setCurrentPage] = useState(1);
     const documentsPerPage = 5;
-
+    const[isLoading,setIsLoading]=useState(false);
     const fetchDocuments = async () => {
         try {
+            setIsLoading(true);
             const [establishmentDocs, userDocs] = await Promise.all([
                 api_getDocumentsByEstablishment(user.establishment_authenticateds[0].id),
                 api_getDocumentsByUserDestinity(user.establishment_authenticateds[0].id, user.id)
@@ -39,7 +41,11 @@ export default function DocumentosAlumno() {
             setDocuments(allDocs)
             setDisplayedDocuments(allDocs.slice(0, documentsPerPage))
         } catch (error) {
-            console.error('Error al obtener documentos:', error)
+            console.error('Error al obtener documentos:', error);
+            toast.error('Ocurrió un error al obtener los documentos.');
+            setIsLoading(false);
+        } finally {
+            setIsLoading(false);
         }
 
     }
@@ -92,6 +98,14 @@ export default function DocumentosAlumno() {
             setLoading(false);
         }
     };
+
+    if (isLoading) {
+        return (
+            <div className="flex flex-col items-center">
+                <span className="loading loading-spinner loading-lg text-primary"></span>
+            </div>
+        );
+    }
 
     if (!documents || !user) {
         return (

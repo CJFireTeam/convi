@@ -17,8 +17,10 @@ export default function DocumentosCreados(props: props) {
 
     const [documentCreate, setDocumentCreate] = useState<IDocuments[]>([]);
     const [metaData, setMetaData] = useState<metaI>({ page: 1, pageCount: 0, pageSize: 0, total: 0 });
+    const [isLoading,setIsLoading]=useState(false);
     const dataDocumentByCreate = async () => {
         try {
+            setIsLoading(true);
             const data = await api_getDocumentUserCreated(props.establishmentId, props.userId, metaData.page);
             setDocumentCreate(data.data.data);
             setMetaData(data.data.meta.pagination);
@@ -27,6 +29,10 @@ export default function DocumentosCreados(props: props) {
             }
         } catch (error) {
             console.error('Error fetching data:', error)
+            toast.error('ocurrió un error al obtener los documentos.');
+            setIsLoading(false);
+        } finally {
+            setIsLoading(false);
         }
     }
 
@@ -84,6 +90,14 @@ export default function DocumentosCreados(props: props) {
             console.error('Error al eliminar el documento:', error);
         }
     };
+
+    if (isLoading) {
+      return (
+        <div className="flex flex-col items-center">
+            <span className="loading loading-spinner loading-lg text-primary"></span>
+        </div>
+      );
+    }
 
     return (
         <>

@@ -77,6 +77,7 @@ export default function Index() {
 
   // Funciones originales (sin cambios)
   const [isLoading,setIsLoading]=useState(false);//componente loading 
+  const [isLoading2,setIsLoading2]=useState(false);//componente loading 
   const getQuestionary = async () => {
     try {
       setIsLoading(true);
@@ -94,7 +95,7 @@ export default function Index() {
   const getData = async () => {
     let assigned: number | undefined = undefined
     try {
-     
+     setIsLoading2(true);
       assigned = user?.id
       const response = await api_surveys({
         createdBy: user?.id,
@@ -105,8 +106,9 @@ export default function Index() {
       setMetaData(response.data.meta.pagination)
     } catch (error) {
       console.log(error)
+      setIsLoading2(false);
     } finally{
-      setIsLoading(false);
+      setIsLoading2(false);
     }
   }
 
@@ -229,7 +231,9 @@ export default function Index() {
     }
 
     if (isLoading) {
-    return <p className="text-center mt-4">Cargando encuestas...</p>;
+    return  <div className="flex flex-col items-center">
+        <span className="loading loading-spinner loading-lg text-primary"></span>
+      </div>;
     }
 
     return (
@@ -336,7 +340,7 @@ export default function Index() {
               {metaData.page < metaData.pageCount && (
                 <div className="flex justify-center mt-4">
                   <Button onClick={handleLoadMore} color="secondary" variant="outline">
-                    Cargar más encuestas del servidor
+                    Cargar más encuestas
                   </Button>
                 </div>
               )}

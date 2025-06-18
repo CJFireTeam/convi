@@ -121,7 +121,9 @@ function Cargos() {
     ref.current?.close();
   }, [ref]);
 
+  const[loading,setLoading]=useState(false);
   const getPositions = async (stablishment: string, page = 1, search = "") => {
+    setLoading(true);
     try {
       const dataPos = await api_getPositions({
         Stablishment: stablishment,
@@ -133,6 +135,10 @@ function Cargos() {
       setMetaData(dataPos.data.meta.pagination);
     } catch (error) {
       console.log(error);
+      toast.error('ocurrió un error al obtener las posiciones.')
+      setLoading(false);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -239,6 +245,14 @@ function Cargos() {
   useEffect(() => {
     console.log(errors);
   }, [errors]);
+
+   if (loading) {
+    return (
+      <div className="flex flex-col items-center">
+        <span className="loading loading-spinner loading-lg text-primary"></span>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -554,6 +568,7 @@ function Profesional({
     search = ""
   ) => {
     try {
+      setIsLoading(true);
       const dataPos = await api_getProfessionals({
         position: name,
         Stablishment: stablishment,
@@ -578,6 +593,8 @@ function Profesional({
       }
     } catch (error) {
       console.log(error);
+      toast.error('ocurrió un error al obtener los profesionales.');
+      setIsLoading(false);
       // En caso de error, limpiar los datos
       setData([]);
       setMetaData({
@@ -586,6 +603,8 @@ function Profesional({
         pageSize: metaData.pageSize,
         total: 0,
       });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -607,7 +626,6 @@ function Profesional({
     currentStatus: boolean
   ) => {
     try {
-      setIsLoading(true);
       const newStatus = !currentStatus;
 
       await api_putProfessionals(professionalId, {
@@ -628,12 +646,12 @@ function Profesional({
       });
       setData(updatedData);
 
-      setIsLoading(false);
+     
       toast.success("Se actualizó el estado correctamente");
     } catch (error) {
       console.log(error);
       toast.error("No se pudo actualizar el estado");
-      setIsLoading(false);
+      
     }
   };
 
@@ -660,6 +678,14 @@ function Profesional({
     setProfessionalSearchTerm("");
     setMetaData((prev) => ({ ...prev, page: 1 }));
   };
+
+   if (isLoading) {
+    return (
+      <div className="flex flex-col items-center">
+        <span className="loading loading-spinner loading-lg text-primary"></span>
+      </div>
+    );
+  }
 
   return (
     <>

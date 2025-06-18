@@ -66,7 +66,7 @@ export default function HomeEncargado() {
   }, [user]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 animate-fadein">
       <div className="max-w-6xl mx-auto">
         {/* Tarjeta principal de bienvenida */}
         <div className="bg-white rounded-2xl shadow-xl p-8 mb-6">

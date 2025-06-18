@@ -55,7 +55,7 @@ export default function ContadorUsuarios() {
   }, [user.establishment]);
 
   return (
-    <div className="grid md:grid-cols-3 gap-4 border rounded-lg shadow-md p-4">
+    <div className="grid md:grid-cols-3 gap-4 border rounded-lg shadow-md p-4 animate-fadein">
       <div className="md:col-span-3 text-center">
         <span className="font-semibold text-2xl">
           Bienvenido administrador {user.firstname + " " + user.first_lastname}

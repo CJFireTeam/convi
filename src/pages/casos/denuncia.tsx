@@ -173,10 +173,10 @@ export default function Denuncia() {
   const nameLeadTeacher =
     userCase[0]?.attributes.created.data.attributes.tipo === "alumno"
       ? userCase[0]?.attributes.created.data.attributes.establishment_courses
-          .data[0].attributes.LeadTeacher.data.attributes.firstname +
+          .data[0]?.attributes.LeadTeacher.data.attributes.firstname +
         " " +
         userCase[0]?.attributes.created.data.attributes.establishment_courses
-          .data[0].attributes.LeadTeacher.data.attributes.first_lastname
+          .data[0]?.attributes.LeadTeacher.data.attributes.first_lastname
       : "";
 
   const isNameReadOnly = !!nameEstudent; // Solo lectura si hay un nombre

@@ -14,6 +14,13 @@ import { EyeIcon, EyeSlashIcon } from "@heroicons/react/20/solid";
 import { set } from "date-fns";
 export default function Login() {
   const router = useRouter();
+
+  useEffect(() => {
+    if (router.query.confirmed) {
+      toast.success("¡Cuenta confirmada! Por favor inicia sesión");
+    }
+  }, [router.query]);
+
   const { setUser, setBearer } = useUserStore();
 
   const [isVisible, setIsVisible] = useState(true);
